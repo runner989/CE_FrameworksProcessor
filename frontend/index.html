@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>CE Frameworks Processor</title>
+    <link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+<script src="./src/main.js"></script>
+<script src="./src/htmx.min.js"></script>        
+<div id="app">
+    <div id="logo-title-container">
+        <img alt="CE logo" id="logo" src="./src/assets/images/CFLogo.png">
+        <h1>Compliance Essentials Frameworks Processor</h1>
+    </div>
+    <div class="controls"> 
+        <div class="section-container" id="evidence">
+            Evidence List/Mapping<br>
+            <div class="evButtons" id="buttons">
+                <button class="btn" on:click={greet}>Update Evidence List from Airtable</button>
+            </div>
+        </div>
+        <div class="section-container" id="frameworks">
+            Frameworks
+            <div class="fwButtons" id="buttons">
+                <button class="btn" on:click={greet}>Add New Framework</button>
+                <button class="btn" on:click={greet}>Update Framework(s)</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
