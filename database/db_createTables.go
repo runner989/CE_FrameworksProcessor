@@ -74,6 +74,7 @@ func CreateFrameworkLookupTable(db *sql.DB) error {
 		"CEFramework" TEXT,
 		"FrameworkId_Staging" INTEGER,
 		"FrameworkId_Prod" INTEGER,
+		"FrameworkId_UAT" INTEGER,
 		"Version" INTEGER,
 		"Description" TEXT,
 		"Comments" TEXT

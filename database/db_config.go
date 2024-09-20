@@ -14,6 +14,35 @@ type DB struct {
 	mux  *sync.RWMutex
 }
 
+type Framework struct {
+	SortID                               int
+	Identifier                           string
+	ParentIdentifier                     string
+	Description                          string
+	DisplayName                          string
+	Guidance                             string
+	Recommendations                      string
+	RequirementType                      string
+	PolicyAndProcedureAIPromptTemplateId int
+	ControlNarrativeAllPromptTemplateId  int
+	TestType                             string
+	Framework                            string
+}
+
+type Framework_Lookup struct {
+	AirtableBase              string
+	AirtableFramework         string
+	AirtableView              string
+	EvidenceLibraryMappedName string
+	CEFramework               string
+	FrameworkID_Staging       int
+	FrameworkID_Prod          int
+	FrameworkID_UAT           int
+	Version                   int
+	Description               string
+	Comments                  string
+}
+
 // create new database connection and create the file if it doen't exit
 func NewDB(path string) (*sql.DB, error) {
 	dbase := &DB{

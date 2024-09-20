@@ -2,6 +2,7 @@ package main
 
 import (
 	"cefp/airtable"
+	"cefp/database"
 	"context"
 	"database/sql"
 	"fmt"
@@ -30,8 +31,13 @@ func (a *App) startup(ctx context.Context) {
 }
 
 // Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+func (a *App) GetMissingFramework() ([]string, error) {
+	records, err := database.GetMissingFrameworks(a.db)
+	if err != nil {
+		log.Printf("Error fetching missing frameworks: %v", err)
+		return nil, fmt.Errorf("failed to retrieve missing frameworks")
+	}
+	return records, nil
 }
 
 // Expose GetFrameworkLookup to the frontend
