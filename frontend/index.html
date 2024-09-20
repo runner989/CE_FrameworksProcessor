@@ -7,28 +7,113 @@
     <link rel="stylesheet" href="src/style.css" />
 </head>
 <body>
-<script src="./src/main.js"></script>
-<script src="./src/htmx.min.js"></script>        
-<div id="app">
-    <div id="logo-title-container">
-        <img alt="CE logo" id="logo" src="./src/assets/images/CFLogo.png">
-        <h1>Compliance Essentials Frameworks Processor</h1>
-    </div>
-    <div class="controls"> 
-        <div class="section-container" id="evidence">
-            Evidence List/Mapping<br>
-            <div class="evButtons" id="buttons">
-                <button class="btn" on:click={greet}>Update Evidence List from Airtable</button>
+    <script src="./src/main.js"></script>      
+    <div id="app">
+        <div id="logo-title-container">
+            <img alt="CE logo" id="logo" src="./src/assets/images/CFLogo.png">
+            <h1>Compliance Essentials Frameworks Processor</h1>
+        </div>
+        <div class="controls"> 
+            <div class="section-container" id="evidence">
+                Evidence List/Mapping<br>
+                <div class="evButtons" id="buttons">
+                    <button class="btn" on:click={greet}>Update Evidence List from Airtable</button>
+                </div>
+            </div>
+            <div class="section-container" id="frameworks">
+                Frameworks
+                <div class="fwButtons" id="buttons">
+                    <button class="btn">Add New Framework</button>
+                    <button class="btn">Update Framework(s)</button>
+                </div>
+            </div>
+            <div class="section-container" id="build">
+                Framework Build List
+                <div class="fbButtons" id="buttons">
+                    <button class="btn" id="getFrameworkBuildListButton">Get Frameworks Build List</button>
+                </div>
+
+                <div id="recordsModal" class="modal">
+                    <div class="modal-content">
+                        <span id="closeModal">&times;</span>
+                        <div id="recordsContainer"></div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="section-container" id="frameworks">
-            Frameworks
-            <div class="fwButtons" id="buttons">
-                <button class="btn" on:click={greet}>Add New Framework</button>
-                <button class="btn" on:click={greet}>Update Framework(s)</button>
-            </div>
-        </div>
     </div>
-</div>
+
+    <script>
+            // Define the specific fields to display in the desired order
+            var orderedFields = [
+                'Name',
+                'Category',
+                'Status',
+                'Notes',
+                'UAT_Stage',
+                'Stage Framework Number',
+                'Production Framework Number',
+            ];
+            document.getElementById('getFrameworkBuildListButton').addEventListener('click',function() {
+                window.go.main.App.GetFrameworkLookup()
+                    .then(function(records) {
+                        // console.log('Records:', records)
+                        displayRecords(records);
+                    })
+                    .catch(function(err) {
+                        console.error('Error fetching records:', err);
+                        alert('Failed to retrieve records.');
+                    });
+            });
+            // Function to display records in the modal
+            function displayRecords(records) {
+                var modal = document.getElementById('recordsModal');
+                var recordsContainer = document.getElementById('recordsContainer');
+
+
+                var content = '<h2>Frameworks Build List</h2>';
+                content = '<table><thead><tr>';
+
+                orderedFields.forEach(function(field){
+                    content += '<th>' + field + '</th>';
+                });
+                content += '</tr></thead><tbody>';
+
+                records.forEach(function(record) {
+                    var fields = record.fields;
+                    content += '<tr>';
+                    orderedFields.forEach(function(field) {
+                        var value = fields[field];
+                        // Handle different data types
+                        if (Array.isArray(value)) {
+                            value = value.join(', ');
+                        } else if (typeof value == 'object' && value !== null) {
+                            value = JSON.stringify(value);
+                        } else if (value == undefined || value === null) {
+                            value = '';
+                        }
+                        content += '<td>' + value + '</td>';
+                    });
+                    content += '</tr>';    
+                });
+                content += '</tbody></table>';
+                recordsContainer.innerHTML = content;
+                modal.style.display = 'block';
+            }
+
+            // Close modal when the 'x' is clicked
+            document.getElementById('closeModal').onclick = function() {
+                var modal = document.getElementById('recordsModal');
+                modal.style.display = 'none';
+            };
+
+            // Close modal when clicking outside of the modal content
+            window.onclick = function(event) {
+                var modal = document.getElementById('recordsModal');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+    </script>
 </body>
 </html>

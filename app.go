@@ -1,18 +1,26 @@
 package main
 
 import (
+	"cefp/airtable"
 	"context"
+	"database/sql"
 	"fmt"
+	"log"
 )
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx    context.Context
+	db     *sql.DB
+	apiKey string
 }
 
 // NewApp creates a new App application struct
-func NewApp() *App {
-	return &App{}
+func NewApp(apiKey string, db *sql.DB) *App {
+	return &App{
+		apiKey: apiKey,
+		db:     db,
+	}
 }
 
 // startup is called when the app starts. The context is saved
@@ -24,4 +32,17 @@ func (a *App) startup(ctx context.Context) {
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+
+// Expose GetFrameworkLookup to the frontend
+func (a *App) GetFrameworkLookup() ([]airtable.AirtableFrameworks, error) {
+	if a.apiKey == "" {
+		log.Fatal("API Key is missing")
+	}
+	records, err := airtable.GetFrameworksLookup(a.apiKey)
+	if err != nil {
+		log.Printf("Error fetching frameworks lookup: %v", err)
+		return nil, fmt.Errorf("failed to retrieve frameworks lookup")
+	}
+	return records, nil
 }

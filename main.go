@@ -3,23 +3,15 @@ package main
 import (
 	"cefp/database"
 	"cefp/secret"
-	"database/sql"
 	"embed"
 	"log"
 	"os"
-	"sync"
 
 	"github.com/joho/godotenv"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
-
-type apiConfig struct {
-	mu     sync.Mutex
-	db     *sql.DB
-	apiKey string
-}
 
 //go:embed all:frontend/dist
 var assets embed.FS
@@ -32,18 +24,13 @@ func main() {
 	}
 	defer db.Close()
 
-	cfg := &apiConfig{
-		apiKey: getAPIKey(),
-		db:     db,
-	}
-	if cfg.apiKey == "" {
-		log.Fatal("no API key provided")
+	apiKey := getAPIKey()
+	if apiKey == "" {
+		log.Fatal("No API key provided")
 	}
 
-	// _ = &apiConfig{db: db, apiKey: apiKey}
-
-	// Create an instance of the app structure
-	app := NewApp()
+	// Create an instance of the app structure with initialized fields
+	app := NewApp(apiKey, db)
 
 	// Create application with options
 	err = wails.Run(&options.App{
@@ -53,7 +40,6 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		// BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		BackgroundColour: &options.RGBA{R: 255, G: 255, B: 255, A: 0},
 		OnStartup:        app.startup,
 		Bind: []interface{}{
@@ -62,7 +48,7 @@ func main() {
 	})
 
 	if err != nil {
-		println("Error:", err.Error())
+		log.Fatalf("Error: %v", err)
 	}
 }
 

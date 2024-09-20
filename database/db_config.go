@@ -81,7 +81,6 @@ func (db *DB) ensureDB() (*sql.DB, error) {
 		if err != nil {
 			log.Fatalf("unable to create Test Procedures Lookup table: %v", err)
 		}
-		defer db.Close()
 		log.Println("cefp.db created")
 	}
 	sqliteDatabase, err := sql.Open(
@@ -91,6 +90,5 @@ func (db *DB) ensureDB() (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	//defer sqliteDatabase.Close()
 	return sqliteDatabase, err
 }
