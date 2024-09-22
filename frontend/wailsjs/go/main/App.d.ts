@@ -4,4 +4,6 @@ import {airtable} from '../models';
 
 export function GetFrameworkLookup():Promise<Array<airtable.AirtableFrameworks>>;
 
-export function Greet(arg1:string):Promise<string>;
+export function GetMissingFramework():Promise<Array<string>>;
+
+export function ReadAPIEvidenceTable():Promise<string>;

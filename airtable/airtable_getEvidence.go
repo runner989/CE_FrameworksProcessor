@@ -1,17 +1,26 @@
 package airtable
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/mattn/go-sqlite3"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+type Config struct {
+	AdditionalSkipFields []string `yaml:"additional_skip_fields"`
+}
 
 const (
 	baseURL          = "https://api.airtable.com/v0/applEdk0gS7gMZ9o7/tbl6gMhn2VNnl4cOA"
@@ -49,25 +58,70 @@ type AirtableResponse struct {
 	Offset  string     `json:"offset,omitempty"`
 }
 
-func ReadAPI_EvidenceTable(db *sql.DB, apiKey string) error {
+func loadAdditionalSkipFields() (map[string]struct{}, error) {
+	data, err := os.ReadFile("config.yaml")
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config.yaml: %v", err)
+	}
+	var config Config
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse config.yaml: %v", err)
+	}
+
+	additionalSkipFields := make(map[string]struct{})
+	for _, field := range config.AdditionalSkipFields {
+		additionalSkipFields[field] = struct{}{}
+	}
+	return additionalSkipFields, nil
+}
+
+func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error {
+	skipFields := map[string]struct{}{
+		"EvidenceID":                             {},
+		"Evidence Title":                         {},
+		"Requirement":                            {},
+		"Description_FromEvidence":               {},
+		"AnecdotesEvidenceIds":                   {},
+		"Control Families CCM (from Card Title)": {},
+		"Card Title":                             {},
+		"Sync Source":                            {},
+		"Evidence Type":                          {},
+		"Priority":                               {},
+	}
+
+	additionalSkipFields, err := loadAdditionalSkipFields()
+	if err != nil {
+		// log.Printf("proceeding with hardcoded skipped fields only.", err)
+	}
+
+	for field := range additionalSkipFields {
+		skipFields[field] = struct{}{}
+	}
+
 	reqURL := fmt.Sprintf("%s?view=%s&Rand=%s", baseURL, evidenceViewName, GenerateRandomString())
 
 	done := false
 
 	// allResponses = append(allResponses, airtableResp)
-	_, err := db.Exec("DELETE FROM tblMapping")
+	_, err = db.Exec("DELETE FROM tblMapping")
 	if err != nil {
+		runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error deleting from tblMapping: %v", err))
 		return fmt.Errorf("error deleting from tblMapping: %v", err)
 	}
 	_, err = db.Exec("DELETE FROM Evidence")
 	if err != nil {
+		runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error deleting from Evidence: %v", err))
 		return fmt.Errorf("error deleting from Evidence: %v", err)
 	}
+
+	runtime.EventsEmit(ctx, "progress", "Cleared existing evidence and mapping data.")
 
 	for !done {
 		response, err := makeHTTPRequest(reqURL, apiKey)
 		if err != nil {
 			log.Fatalf("Error making request: %v", err)
+			runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error makeing request: %v", err))
 			return err
 		}
 		// strResponses = strResponses + response
@@ -75,6 +129,7 @@ func ReadAPI_EvidenceTable(db *sql.DB, apiKey string) error {
 		err = json.Unmarshal([]byte(response), &airtableResp)
 		if err != nil {
 			log.Fatalf("Error parsing JSON: %v", err)
+			runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error parsing JSON: %v", err))
 			return err
 		}
 
@@ -82,9 +137,11 @@ func ReadAPI_EvidenceTable(db *sql.DB, apiKey string) error {
 			// if strings.HasPrefix(response, `{"error"`) {
 			errorType := airtableResp.Records[0].ID
 			if errorType != "" {
+				runtime.EventsEmit(ctx, "progress", fmt.Sprintf("There is an error: %v", err))
 				return fmt.Errorf("there is an error: %s", errorType)
 			}
 			if strings.Contains(response, "NOT_FOUND") {
+				runtime.EventsEmit(ctx, "progress", fmt.Sprintf("The framework was not found.: %v", err))
 				return fmt.Errorf("the framework was not found. please check the name and try again")
 			}
 		}
@@ -92,6 +149,7 @@ func ReadAPI_EvidenceTable(db *sql.DB, apiKey string) error {
 		for _, record := range airtableResp.Records {
 			evidenceID, ok := record.Fields["EvidenceID"].(float64)
 			if !ok {
+				runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping record due to missing or invalid EvidenceID: %v", err))
 				log.Printf("skipping record due to missing or invalid EvidenceID")
 			}
 			evidenceTitle, _ := record.Fields["Evidence Title"].(string)
@@ -100,20 +158,23 @@ func ReadAPI_EvidenceTable(db *sql.DB, apiKey string) error {
 			priority, _ := record.Fields["Priority"].(string)
 			evidenceType, _ := record.Fields["Evidence Type"].(string)
 
-			fmt.Printf("processing EvidenceID: %d, Evidence: %s \n", int(evidenceID), evidenceTitle)
+			message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", int(evidenceID), evidenceTitle)
+			runtime.EventsEmit(ctx, "progress", message)
 
 			// Insert records
 			err := insertEvidenceRecord(db, int(evidenceID), evidenceTitle, description, anecdotesIds, priority, evidenceType)
 			if err != nil {
 				log.Printf("skipping EvidenceID %d due to error: %v", int(evidenceID), err)
+				runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping EvidenceID %d due to error: %v", int(evidenceID), err))
 				continue
 			}
 
-			// This is wrong!  I need to fix this
 			// I need to split the value (requirements) and iterate through the list and save each to the db
 			for key, value := range record.Fields {
-				if key == "EvidenceID" || key == "Evidence Title" || key == "Requirement" || key == "Description_FromEvidence" || key == "AnecdotesEvidenceIds" ||
-					key == "Control Families CCM (from Card Title)" || key == "Card Title" || key == "Sync Source" || key == "Evidence Type" || key == "Priority" {
+				if _, skip := skipFields[key]; skip {
+					// if key == "EvidenceID" || key == "Evidence Title" || key == "Requirement" || key == "Description_FromEvidence" || key == "AnecdotesEvidenceIds" ||
+					// 	key == "Control Families CCM (from Card Title)" || key == "Card Title" || key == "Sync Source" || key == "Evidence Type" || key == "Priority" ||
+					// 	key == "Tags" {
 					continue
 				}
 
@@ -123,6 +184,7 @@ func ReadAPI_EvidenceTable(db *sql.DB, apiKey string) error {
 					err = insertMappingRecord(db, int(evidenceID), key, fmt.Sprintf("%v", values[i]))
 					if err != nil {
 						log.Printf("skipping dynamic field %s for EvidenceID %d due to error: %v", key, int(evidenceID), err)
+						runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping dynamic field %s for EvidenceID %d due to error: %v", key, int(evidenceID), err))
 					}
 				}
 			}
@@ -136,17 +198,7 @@ func ReadAPI_EvidenceTable(db *sql.DB, apiKey string) error {
 		}
 	}
 
-	// err := saveStringResponsesToFile(strResponses)
-	// if err != nil {
-	// 	return fmt.Errorf("error saving raw responses to file: %v", err)
-	// }
-
-	// err = saveResponsesToFile(allResponses)
-	// if err != nil {
-	// 	return fmt.Errorf("error saving responses to file: %v", err)
-	// }
-
-	fmt.Println("Done!")
+	runtime.EventsEmit(ctx, "progress", "Done updating Evidence and Mapping tables!")
 	return nil
 }
 

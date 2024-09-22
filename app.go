@@ -30,7 +30,16 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
+func (a *App) ReadAPIEvidenceTable() (string, error) {
+	err := airtable.ReadAPI_EvidenceTable(a.ctx, a.db, a.apiKey)
+	if err != nil {
+		log.Printf("Error updating evidence table: %v", err)
+		return "", fmt.Errorf("failed to read/update evidence table")
+	}
+	message := "Updated Evidence and Mapping tables"
+	return message, nil
+}
+
 func (a *App) GetMissingFramework() ([]string, error) {
 	records, err := database.GetMissingFrameworks(a.db)
 	if err != nil {

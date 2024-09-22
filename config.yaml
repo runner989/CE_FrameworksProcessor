@@ -1,0 +1,6 @@
+# config.yaml
+# Fields that are showing in as Missing Frameworks need to be added as additional_skip_fields
+# so they are not imported to tblMapping as a Framework when running Update Evidence List. 
+
+additional_skip_fields:
+  - Tags

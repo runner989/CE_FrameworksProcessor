@@ -26,7 +26,7 @@
 
 
         var content = '<h2>Frameworks Build List</h2>';
-        content += '<div id="selectedRecordLabel">...</div>';
+        content += '<div id="selectedRecordLabel"></div>';
         content += '<div id="tableContainer"><table><thead><tr>';
 
         orderedFields.forEach(function(field){

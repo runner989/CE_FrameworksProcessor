@@ -43,9 +43,10 @@ func GetMissingFrameworks(db *sql.DB) ([]string, error) {
 	if db == nil {
 		return nil, fmt.Errorf("database connection is nil")
 	}
-	var uniqueFrameworks []string
 
-	rows, err := db.Query("SELECT DISTINCT Framework FROM Framework WHERE Framework NOT IN (SELECT AirtableFramework FROM Framework_Lookup);")
+	uniqueFrameworks := []string{}
+
+	rows, err := db.Query("SELECT DISTINCT Framework FROM tblMapping WHERE Framework NOT IN (SELECT AirtableFramework FROM Framework_Lookup) ORDER BY Framework;")
 	if err != nil {
 		log.Fatal(err)
 	}

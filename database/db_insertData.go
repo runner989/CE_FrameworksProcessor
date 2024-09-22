@@ -8,7 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func InsertRecord(
+func InsertFrameworkRecord(
 	db *sql.DB,
 	id int,
 	identifier string,

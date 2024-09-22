@@ -6,6 +6,10 @@ export function GetFrameworkLookup() {
   return window['go']['main']['App']['GetFrameworkLookup']();
 }
 
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
+export function GetMissingFramework() {
+  return window['go']['main']['App']['GetMissingFramework']();
+}
+
+export function ReadAPIEvidenceTable() {
+  return window['go']['main']['App']['ReadAPIEvidenceTable']();
 }

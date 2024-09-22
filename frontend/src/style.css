@@ -37,7 +37,10 @@ body {
 }
 
 .button-container {
-    width: 25%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    /* width: 25%; */
     /* column-width: 200px; */
 }
 
@@ -117,7 +120,7 @@ tbody tr:hover {
 }
 
 button {
-    width: 75%;
+    width: 200px;
     padding: 20px;
     margin: 5px;
     margin-right: 100px;

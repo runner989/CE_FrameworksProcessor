@@ -7,11 +7,22 @@ import (
 )
 
 const (
-	frameworks_TablesURL = "https://api.airtable.com/v0/meta/bases/appspojzJxIM9tUaC/tables"
+	frameworks_TablesURL = "https://api.airtable.com/v0/meta/bases/appspojzJxIM9tUaC/tables" // this is the Framework Build table
 	frameworks_BaseURL   = "https://api.airtable.com/v0/appspojzJxIM9tUaC/tblRjgSEfrpsd4Llp"
+	frameworksViewName   = "All%20tasks%20grid"
 
-	frameworksViewName = "All%20tasks%20grid"
+	devMasterBase     = "app???"
+	tableViewsMetaURL = "https://api.airtable.com/v0/meta/bases/{baseId}/views"
+	tableViews        = "/views"
+
+	getRecordURL = "https://api.airtable.com/v0/{baseId}/{tableIdOrName}/{recordId}"
 )
+
+type Record struct {
+	ID          string                 `json:"id"`
+	CreatedTime string                 `json:"createdTime"`
+	Fields      map[string]interface{} `json:"fields"`
+}
 
 type Table struct {
 	ID              string                 `json:"id"`
@@ -30,6 +41,20 @@ type AirtableFrameworks struct {
 	ID          string                 `json:"id"`
 	CreatedTime string                 `json:"createdTime"`
 	Fields      map[string]interface{} `json:"fields"`
+}
+
+type AirtableFrameworksTable struct {
+}
+
+type AirtableViewsRoot struct {
+	Views []View `json:"views"`
+}
+
+type View struct {
+	ID                string `json:"id"`
+	Name              string `json:"name"`
+	PersonalForUserId string `json:"personalForUserId,omitempty"`
+	Type              string `json:"type"`
 }
 
 type AirtableFrameworksResponse struct {
@@ -65,6 +90,27 @@ func GetFrameworksTables(apiKey string) error {
 
 	return nil
 }
+
+// get the airtable tables and allow user to click on the table name (framework name)
+
+// upon clicking the framework name, get the views for that table and have user click the view to use
+
+// get the framework using the selected name and view
+
+// once all data is fetched, parse it and add it to the database
+
+func GetFramework(apiKey string) ([]AirtableFrameworks, error) {
+	// frameworks := []AirtableFrameworksTable{}
+
+	return nil, nil
+}
+
+// func GetFrameworkViews(apiKey string) (View, error) {
+// 	var root AirtableViewsRoot
+// 	views := []View{}
+// 	// http get the data
+// 	return views, nil
+// }
 
 func GetFrameworksLookup(apiKey string) ([]AirtableFrameworks, error) {
 	reqURL := fmt.Sprintf("%s?view=%s&Rand=%s", frameworks_BaseURL, frameworksViewName, GenerateRandomString())
