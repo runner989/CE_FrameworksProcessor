@@ -55,16 +55,9 @@ function displaySelectedFrameworkDetails(record) {
     label.innerHTML = `
         <strong>Selected Framework</strong>
         <br><strong>Name:</strong> ${record}
-<!--        <br><button id="chooseFrameworkButton">Choose Framework from Build List</button>-->
         <div id="selectedFrameworkDetails"></div>
     `;
     openFrameworkBuildListModal();
-
-    // // from here, open the Framework Build List
-    // document.getElementById('chooseFrameworkButton').addEventListener('click', function() {
-    //     window.selectedMissingFramework = record;
-    //     openFrameworkBuildListModal();
-    // });
 }
 
 function openFrameworkBuildListModal() {
@@ -159,6 +152,9 @@ function displaySelectedFrameworkFromBuildList(selectedFramework) {
         prodNumber: prodNumber
     }
 
+    // From here, instead of updating the framework lookup table, let's go fetch the Frameworks
+    // from Airtable and make it so the user can select the Airtable framework and View to import the correct Framework
+    // and update the Framework Lookup table with all of the data!
     document.getElementById('okButton').addEventListener('click', function() {
         updateFrameworkLookup();
     });

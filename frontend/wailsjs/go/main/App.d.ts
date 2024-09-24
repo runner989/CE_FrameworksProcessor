@@ -8,6 +8,6 @@ export function GetMissingFramework():Promise<Array<string>>;
 
 export function ReadAPIEvidenceTable():Promise<string>;
 
-export function UpdateFrameworkLookup(arg1:{[key: string]: any}):Promise<void>;
+export function UpdateBuildFrameworkLookupTable(arg1:Array<{[key: string]: any}>):Promise<void>;
 
-export function UpdateFrameworkLookupTable(arg1:Array<{[key: string]: any}>):Promise<void>;
+export function UpdateFrameworkLookup(arg1:{[key: string]: any}):Promise<void>;

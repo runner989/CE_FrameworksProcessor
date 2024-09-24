@@ -114,7 +114,7 @@ function updateFrameworkLookupTable(records) {
     var data = records.map(function(record) {
         return record.fields;
     });
-    window.go.main.App.UpdateFrameworkLookupTable(data)
+    window.go.main.App.UpdateBuildFrameworkLookupTable(data)
         .then(function (response) {
             alert('Framework Lookup table updated successfully.');
         })

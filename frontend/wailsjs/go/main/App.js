@@ -14,10 +14,10 @@ export function ReadAPIEvidenceTable() {
   return window['go']['main']['App']['ReadAPIEvidenceTable']();
 }
 
-export function UpdateFrameworkLookup(arg1) {
-  return window['go']['main']['App']['UpdateFrameworkLookup'](arg1);
+export function UpdateBuildFrameworkLookupTable(arg1) {
+  return window['go']['main']['App']['UpdateBuildFrameworkLookupTable'](arg1);
 }
 
-export function UpdateFrameworkLookupTable(arg1) {
-  return window['go']['main']['App']['UpdateFrameworkLookupTable'](arg1);
+export function UpdateFrameworkLookup(arg1) {
+  return window['go']['main']['App']['UpdateFrameworkLookup'](arg1);
 }
