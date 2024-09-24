@@ -4,7 +4,7 @@ go 1.21
 
 toolchain go1.23.1
 
-require github.com/wailsapp/wails/v2 v2.9.1
+require github.com/wailsapp/wails/v2 v2.9.2
 
 require gopkg.in/yaml.v2 v2.4.0
 

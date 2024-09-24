@@ -1,3 +1,4 @@
+
 window.runtime.EventsOn("progress", (message) => {
     updateProgressModal(message)
 });

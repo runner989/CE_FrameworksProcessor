@@ -43,7 +43,7 @@ type Framework_Lookup struct {
 	Comments                  string
 }
 
-// create new database connection and create the file if it doen't exit
+// NewDB create new database connection and create the file if it doen't exit
 func NewDB(path string) (*sql.DB, error) {
 	dbase := &DB{
 		path: path,
@@ -53,7 +53,7 @@ func NewDB(path string) (*sql.DB, error) {
 	return sqlDB, err
 }
 
-// create the database file if it does not exist
+// ensureDB create the database file if it does not exist
 func (db *DB) ensureDB() (*sql.DB, error) {
 	_, err := os.ReadFile(db.path)
 	if os.IsNotExist(err) {
@@ -70,6 +70,8 @@ func (db *DB) ensureDB() (*sql.DB, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		// Create the database tables
 		err = CreateFrameworkTable(db)
 		if err != nil {
 			log.Fatalf("unable to create framework table: %v", err)
@@ -98,9 +100,9 @@ func (db *DB) ensureDB() (*sql.DB, error) {
 		if err != nil {
 			log.Fatalf("unable to create Placeholder Mappings table: %v", err)
 		}
-		err = CreatetblMappingTable(db)
+		err = CreateMappingTable(db)
 		if err != nil {
-			log.Fatalf("unable to create tblMapping table: %v", err)
+			log.Fatalf("unable to create Mapping table: %v", err)
 		}
 		err = CreateTestProceduresTable(db)
 		if err != nil {

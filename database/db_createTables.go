@@ -71,10 +71,10 @@ func CreateFrameworkLookupTable(db *sql.DB) error {
 		"AirtableFramework" TEXT,
 		"AirtableView" TEXT,
 		"EvidenceLibraryMappedName" TEXT,
-		"CEFramework" TEXT,
+		"CEFramework" TEXT PRIMARY KEY,
+		"FrameworkId_UAT" INTEGER,
 		"FrameworkId_Staging" INTEGER,
 		"FrameworkId_Prod" INTEGER,
-		"FrameworkId_UAT" INTEGER,
 		"Version" INTEGER,
 		"Description" TEXT,
 		"Comments" TEXT
@@ -85,7 +85,10 @@ func CreateFrameworkLookupTable(db *sql.DB) error {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	statement.Exec()
+	_, err = statement.Exec()
+	if err != nil {
+		return fmt.Errorf("error creating Framework_Lookup table: %v", err)
+	}
 	log.Println("Framework_Lookup table created")
 	return err
 }
@@ -117,7 +120,10 @@ func CreateAirTableBaseTable(db *sql.DB) error {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	statement.Exec()
+	_, err = statement.Exec()
+	if err != nil {
+		return fmt.Errorf("error creating Airtable_Base table: %v", err)
+	}
 	log.Println("Airtable_Base table created")
 	return err
 }
@@ -154,7 +160,10 @@ func CreateCEMappingProdTable(db *sql.DB) error {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	statement.Exec()
+	_, err = statement.Exec()
+	if err != nil {
+		return fmt.Errorf("error creating CEMapping_Prod table: %v", err)
+	}
 	log.Println("CEMapping_Prod table created")
 	return err
 }
@@ -191,7 +200,10 @@ func CreateCEMappingStagingTable(db *sql.DB) error {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	statement.Exec()
+	_, err = statement.Exec()
+	if err != nil {
+		return fmt.Errorf("error creating CEMapping_Staging table: %v", err)
+	}
 	log.Println("CEMapping_Staging table created")
 	return err
 }
@@ -222,13 +234,16 @@ func CreateEvidenceTable(db *sql.DB) error {
 	);`
 
 	log.Println("Create Evidence table...")
-	statement, err := db.Prepare(createTableSQL)
-	if err != nil {
-		log.Fatal(err.Error())
+	statement, createErr := db.Prepare(createTableSQL)
+	if createErr != nil {
+		log.Fatal(createErr.Error())
 	}
-	statement.Exec()
+	_, err = statement.Exec()
+	if err != nil {
+		return fmt.Errorf("error creating Evidence table: %v", err)
+	}
 	log.Println("Evidence table created")
-	return err
+	return nil
 }
 
 func CreatePlaceholderMappingsTable(db *sql.DB) error {
@@ -263,28 +278,31 @@ func CreatePlaceholderMappingsTable(db *sql.DB) error {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	statement.Exec()
+	_, err = statement.Exec()
+	if err != nil {
+		return fmt.Errorf("error creating Placeholder_Mappings table: %v", err)
+	}
 	log.Println("Placeholder_Mappings table created")
 	return err
 }
 
-func CreatetblMappingTable(db *sql.DB) error {
+func CreateMappingTable(db *sql.DB) error {
 	if db == nil {
 		return fmt.Errorf("database connection is nil")
 	}
 	var tableName string
-	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='tblMapping';`
+	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='Mapping';`
 	err := db.QueryRow(query).Scan(&tableName)
 	if err != nil && err != sql.ErrNoRows {
 		return fmt.Errorf("error checking for table existence: %v", err)
 	}
 
 	if tableName != "" {
-		log.Println("tblMapping table already exists, skipping creation")
+		log.Println("Mapping table already exists, skipping creation")
 		return nil
 	}
 
-	createTableSQL := `CREATE TABLE tblMapping (
+	createTableSQL := `CREATE TABLE Mapping (
 		"EvidenceID" INTEGER,
 		"Framework" TEXT,
 		"FrameworkId" TEXT,
@@ -295,13 +313,16 @@ func CreatetblMappingTable(db *sql.DB) error {
 		"Delete" TEXT
 	);`
 
-	log.Println("Create Mappings table...")
+	log.Println("Create Mapping table...")
 	statement, err := db.Prepare(createTableSQL)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	statement.Exec()
-	log.Println("tblMapping table created")
+	_, err = statement.Exec()
+	if err != nil {
+		return fmt.Errorf("error creating Mapping table: %v", err)
+	}
+	log.Println("Mapping table created")
 	return err
 }
 

@@ -13,3 +13,11 @@ export function GetMissingFramework() {
 export function ReadAPIEvidenceTable() {
   return window['go']['main']['App']['ReadAPIEvidenceTable']();
 }
+
+export function UpdateFrameworkLookup(arg1) {
+  return window['go']['main']['App']['UpdateFrameworkLookup'](arg1);
+}
+
+export function UpdateFrameworkLookupTable(arg1) {
+  return window['go']['main']['App']['UpdateFrameworkLookupTable'](arg1);
+}

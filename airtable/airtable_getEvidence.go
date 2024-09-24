@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -104,10 +105,10 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 	done := false
 
 	// allResponses = append(allResponses, airtableResp)
-	_, err = db.Exec("DELETE FROM tblMapping")
+	_, err = db.Exec("DELETE FROM Mapping")
 	if err != nil {
-		runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error deleting from tblMapping: %v", err))
-		return fmt.Errorf("error deleting from tblMapping: %v", err)
+		runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error deleting from Mapping: %v", err))
+		return fmt.Errorf("error deleting from Mapping: %v", err)
 	}
 	_, err = db.Exec("DELETE FROM Evidence")
 	if err != nil {
@@ -121,7 +122,7 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 		response, err := makeHTTPRequest(reqURL, apiKey)
 		if err != nil {
 			log.Fatalf("Error making request: %v", err)
-			runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error makeing request: %v", err))
+			runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error making request: %v", err))
 			return err
 		}
 		// strResponses = strResponses + response
@@ -206,7 +207,8 @@ func insertEvidenceRecord(db *sql.DB, evidenceID int, evidenceTitle, description
 	_, err := db.Exec("INSERT INTO Evidence (EvidenceID, Evidence, Description, AnecdotesEvidenceIds, Priority, EvidenceType) VALUES (?, ?, ?, ?, ?, ?)",
 		evidenceID, evidenceTitle, description, anecdotesIds, priority, evidenceType)
 	if err != nil {
-		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) && errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
 			// Handle UNIQUE constraint violation (duplicate EvidenceID)
 			return fmt.Errorf("duplicate EvidenceID: %d", evidenceID)
 		}
@@ -216,10 +218,10 @@ func insertEvidenceRecord(db *sql.DB, evidenceID int, evidenceTitle, description
 }
 
 func insertMappingRecord(db *sql.DB, evidenceID int, framework, requirement string) error {
-	_, err := db.Exec("INSERT INTO tblMapping (EvidenceID, Framework, Requirement) VALUES (?, ?, ?)",
+	_, err := db.Exec("INSERT INTO Mapping (EvidenceID, Framework, Requirement) VALUES (?, ?, ?)",
 		evidenceID, framework, requirement)
 	if err != nil {
-		return fmt.Errorf("error inserting into tblMapping: %v", err)
+		return fmt.Errorf("error inserting into Mapping: %v", err)
 	}
 	return nil
 }

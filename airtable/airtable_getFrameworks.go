@@ -112,9 +112,9 @@ func GetFramework(apiKey string) ([]AirtableFrameworks, error) {
 // 	return views, nil
 // }
 
+// GetFrameworksLookup function to read the Framework Build table on Airtable
 func GetFrameworksLookup(apiKey string) ([]AirtableFrameworks, error) {
 	reqURL := fmt.Sprintf("%s?view=%s&Rand=%s", frameworks_BaseURL, frameworksViewName, GenerateRandomString())
-	// reqURL := frameworks_BaseURL
 	done := false
 
 	var allRecords []AirtableFrameworks

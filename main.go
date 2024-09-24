@@ -3,7 +3,9 @@ package main
 import (
 	"cefp/database"
 	"cefp/secret"
+	"database/sql"
 	"embed"
+	"fmt"
 	"log"
 	"os"
 
@@ -22,7 +24,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create database: %v", err)
 	}
-	defer db.Close()
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			fmt.Printf("Failed to close database connection: %v", err)
+		}
+	}(db)
 
 	apiKey := getAPIKey()
 	if apiKey == "" {
@@ -34,9 +41,12 @@ func main() {
 
 	// Create application with options
 	err = wails.Run(&options.App{
-		Title:  "Compliance Essentials Frameworks Processor",
-		Width:  1280,
-		Height: 800,
+		Title:            "Compliance Essentials Frameworks Processor",
+		Width:            1020,
+		Height:           768,
+		Fullscreen:       false,
+		DisableResize:    false,
+		WindowStartState: options.Normal,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
@@ -46,12 +56,12 @@ func main() {
 			app,
 		},
 	})
-
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
 }
 
+// getAPIKey check .env to see if new API Key is there
 func getAPIKey() string {
 	var apiKey string
 	// Try to load the .env file

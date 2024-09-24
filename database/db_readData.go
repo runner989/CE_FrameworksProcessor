@@ -46,7 +46,7 @@ func GetMissingFrameworks(db *sql.DB) ([]string, error) {
 
 	uniqueFrameworks := []string{}
 
-	rows, err := db.Query("SELECT DISTINCT Framework FROM tblMapping WHERE Framework NOT IN (SELECT AirtableFramework FROM Framework_Lookup) ORDER BY Framework;")
+	rows, err := db.Query("SELECT DISTINCT Framework FROM Mapping WHERE Framework NOT IN (SELECT DISTINCT EvidenceLibraryMappedName FROM Framework_Lookup WHERE EvidenceLibraryMappedName IS NOT NULL) ORDER BY Framework;")
 	if err != nil {
 		log.Fatal(err)
 	}
