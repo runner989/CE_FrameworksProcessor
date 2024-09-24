@@ -135,3 +135,27 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+.table-item {
+    margin-bottom: 10px;
+}
+
+.table-name {
+    cursor: pointer;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.views-list {
+    margin-left: 20px;
+    list-style-type: none;
+}
+
+.view-item {
+    cursor: pointer;
+    color: #333;
+}
+
+.view-item:hover {
+    color: #007bff;
+}

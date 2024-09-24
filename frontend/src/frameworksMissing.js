@@ -142,7 +142,7 @@ function displaySelectedFrameworkFromBuildList(selectedFramework) {
         <br><strong>UAT Stage:</strong> ${uatStage}
         <br><strong>Staging Number:</strong> ${stageNumber}
         <br><strong>Production Framework Number:</strong> ${prodNumber}
-        <br><button id="okButton">OK</button>
+        <br><button id="selectTableViewButton">Select Framework Table and View</button>
     `;
 
     window.selectedFrameworkDetails = {
@@ -152,9 +152,112 @@ function displaySelectedFrameworkFromBuildList(selectedFramework) {
         prodNumber: prodNumber
     }
 
-    // From here, instead of updating the framework lookup table, let's go fetch the Frameworks
-    // from Airtable and make it so the user can select the Airtable framework and View to import the correct Framework
-    // and update the Framework Lookup table with all of the data!
+    document.getElementById('selectTableViewButton').addEventListener('click', function() {
+        fetchAirtableTablesandViews();
+    });
+}
+
+function fetchAirtableTablesandViews() {
+    window.go.main.App.GetAirtableBaseTables()
+        .then(function(response) {
+            displayFrameworkTablesModal(response.tables);
+        })
+        .catch(function(err) {
+            console.error('Error fetching Airtable tables and views.', err);
+            alert('Failed to fetch Airtable tables and views.');
+        })
+}
+
+
+
+function closeFrameworkTablesModalX() {
+    var modal = document.getElementById('frameworkTablesModal');
+    modal.style.display = 'none';
+}
+
+function displayFrameworkTablesModal(tables) {
+    document.getElementById('closeFrameworkTablesModal').addEventListener('click',function() {
+        closeFrameworkTablesModalX();
+    });
+
+    var modal = document.getElementById('frameworkTablesModal');
+    var container = document.getElementById('frameworkTablesContainer');
+
+    var content = '<h4>Select a Framework Table and View</h4><ul>';
+
+    tables.forEach(function (table, index) {
+        content += `<li class="table-item" data-index="${index}">
+            <span class="table-name">${table.name}</span>
+            <ul class="views-list" id="views-${index}" style="display: none;">`;
+
+        table.views.forEach(function(view) {
+            content += `<li class="view-item" data-table-name="${table.name}" data-view-name="${view.name}">
+                ${view.name}
+            </li>`;
+        });
+        content += `</ul></li>`;
+    });
+
+    content += '</ul>';
+
+    container.innerHTML = content;
+    modal.style.display = 'block';
+
+    var tableItems = container.querySelectorAll('.table-item');
+    tableItems.forEach(function(item) {
+        var index = item.getAttribute('data-index');
+        var viewsList = document.getElementById(`views-${index}`);
+
+        item.querySelector('.table-name').addEventListener('click', function() {
+            if (viewsList.style.display === 'none') {
+                viewsList.style.display = 'block';
+            } else {
+                viewsList.style.display = 'none';
+            }
+        });
+    });
+
+    var viewItems = container.querySelectorAll('.view-item');
+    viewItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            var tableName = item.getAttribute('data-table-name');
+            var viewName = item.getAttribute('data-view-name');
+            handleTableViewSelector(tableName, viewName);
+        });
+    });
+}
+
+function handleTableViewSelector(tableName, viewName) {
+    window.selectedFrameworkTable = tableName;
+    window.selectedFrameworkView = viewName;
+
+    var modal = document.getElementById('frameworkTablesModal');
+    modal.style.display = 'none';
+
+    updateMissingFrameworkModalWithTableView();
+}
+
+function updateMissingFrameworkModalWithTableView() {
+    var detailsDiv = document.getElementById('selectedFrameworkDetails');
+
+    var tableViewInfo = `
+    <br><strong>Selected Framework Table and View</strong>
+    <br><strong>Table Name:</strong> ${window.selectedFrameworkTable}
+    <br><strong>View Name:</strong> ${window.selectedFrameworkView}
+    <br><button id="okButton">OK</button>
+    `;
+
+    var existingInfo = detailsDiv.querySelector('.table-view-info');
+
+    if (existingInfo) {
+        existingInfo.innerHTML = tableViewInfo;
+    } else {
+        var div = document.createElement('div');
+        div.classList.add('table-view-info');
+        div.innerHTML = tableViewInfo;
+        detailsDiv.appendChild(div);
+    }
+
     document.getElementById('okButton').addEventListener('click', function() {
         updateFrameworkLookup();
     });
@@ -163,9 +266,16 @@ function displaySelectedFrameworkFromBuildList(selectedFramework) {
 function updateFrameworkLookup() {
     var data = {
         missingFrameworkName: window.selectedMissingFramework,
-        selectedFrameworkDetails: window.selectedFrameworkDetails
+        selectedFrameworkDetails: {
+            cename: window.selectedFrameworkDetails.name,
+            uatStage: window.selectedFrameworkDetails.uatStage,
+            prodNumber: window.selectedFrameworkDetails.prodNumber,
+            stageNumber: window.selectedFrameworkDetails.stageNumber,
+            tableName: window.selectedFrameworkTable,
+            viewName: window.selectedFrameworkView,
+        }
     };
-
+    console.log(data)
     window.go.main.App.UpdateFrameworkLookup(data)
         .then(function (response) {
             alert('Framework Lookup updated successfully.');

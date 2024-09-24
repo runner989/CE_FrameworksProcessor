@@ -5,8 +5,10 @@ import (
 	"cefp/database"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
+	"sort"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -79,12 +81,14 @@ func (a *App) UpdateFrameworkLookup(data map[string]interface{}) error {
 	}
 
 	// Extract details
-	name, _ := selectedFrameworkDetails["name"].(string)
+	cename, _ := selectedFrameworkDetails["cename"].(string)
 	uatStage, _ := selectedFrameworkDetails["uatStage"].(string)
 	prodNumber, _ := selectedFrameworkDetails["prodNumber"].(string)
 	stageNumber, _ := selectedFrameworkDetails["stageNumber"].(string)
+	tableName, _ := selectedFrameworkDetails["tableName"].(string)
+	viewName, _ := selectedFrameworkDetails["viewName"].(string)
 
-	err := database.UpdateFrameworkLookupTable(a.db, missingFrameworkName, name, uatStage, stageNumber, prodNumber)
+	err := database.UpdateFrameworkLookupTable(a.db, missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName)
 	if err != nil {
 		return fmt.Errorf("failed to update framework lookup: %v", err)
 	}
@@ -96,46 +100,6 @@ func (a *App) UpdateBuildFrameworkLookupTable(records []map[string]interface{}) 
 		return fmt.Errorf("database connection is nil")
 	}
 
-	// tx, err := a.db.Begin()
-	// if err != nil {
-	// 	return fmt.Errorf("failed to begin transaction: %v", err)
-	// }
-
-	// defer func() {
-	// 	if err != nil {
-	// 		_ = tx.Rollback()
-	// 	} else {
-	// 		_ = tx.Commit()
-	// 	}
-	// }()
-
-	// query := `
-	// 	INSERT OR REPLACE INTO Framework_Lookup (CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod)
-	// 	VALUES (?, ?, ?, ?);
-	// `
-
-	// Let's plan to move this to the database package and out of app.go
-	query := `
-		INSERT INTO Framework_Lookup (CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod)
-		VALUES (?, ?, ?, ?)
-		ON CONFLICT(CEFramework) DO UPDATE SET
-		  FrameworkId_UAT = excluded.FrameworkId_UAT,
-		  FrameworkId_Staging = excluded.FrameworkId_Staging,
-		  FrameworkId_Prod = excluded.FrameworkId_Prod;
-		`
-	// log.Println("running upsert for Framework_Lookup table")
-
-	stmt, err := a.db.Prepare(query)
-	if err != nil {
-		return fmt.Errorf("error preparing statement: %v", err)
-	}
-	defer func(stmt *sql.Stmt) {
-		err := stmt.Close()
-		if err != nil {
-			log.Printf("error closing statement: %v", err)
-		}
-	}(stmt)
-
 	for _, fields := range records {
 		ceFramework, _ := fields["Name"].(string)
 		frameworkIdUAT, _ := fields["UAT_Stage"].(string)
@@ -146,12 +110,86 @@ func (a *App) UpdateBuildFrameworkLookupTable(records []map[string]interface{}) 
 			continue // Skip records without a name
 		}
 
-		// log.Printf("Insert or replace %s", ceFramework)
-
-		_, err = stmt.Exec(ceFramework, frameworkIdUAT, frameworkIdStaging, frameworkIdProd)
+		err := database.UpdateBuildFramework_LookupTable(a.db, ceFramework, frameworkIdUAT, frameworkIdStaging, frameworkIdProd)
 		if err != nil {
-			return fmt.Errorf("failed to update framework lookup table: %v", err)
+			return fmt.Errorf("failed to update framework lookup: %v", err)
 		}
 	}
 	return nil
+}
+
+func (a *App) GetAirtableBaseTables() (map[string]interface{}, error) {
+	if a.apiKey == "" {
+		log.Fatal("API Key is missing")
+	}
+	tables, err := airtable.GetAirtableTablesandViews(a.apiKey)
+	if err != nil {
+		log.Printf("Error fetching Airtable tables: %v", err)
+	}
+
+	var result map[string]interface{}
+	err = json.Unmarshal([]byte(tables), &result)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing tables JSON: %v", err)
+	}
+
+	tablesArray, ok := result["tables"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("error extracting tables array")
+	}
+
+	sort.SliceStable(tablesArray, func(i, j int) bool {
+		tableI := tablesArray[i].(map[string]interface{})
+		tableJ := tablesArray[j].(map[string]interface{})
+
+		nameI, okI := tableI["name"].(string)
+		nameJ, okJ := tableJ["name"].(string)
+
+		if !okI || !okJ {
+			return false
+		}
+
+		return nameI < nameJ
+	})
+
+	result["tables"] = tablesArray
+
+	return result, err
+}
+
+func (a *App) GetMappedFrameworks() ([]string, error) {
+	if a.db == nil {
+		log.Fatal("database connection is missing")
+	}
+
+	uniqueFrameworks, err := database.GetMappedFrameworkRecords(a.db)
+	if err != nil {
+		log.Printf("Error fetching mapped frameworks: %v", err)
+	}
+	return uniqueFrameworks, err
+}
+
+func (a *App) GetUniqueFrameworks() ([]string, error) {
+	if a.db == nil {
+		log.Fatal("database connection is missing")
+	}
+
+	uniqueFrameworks, err := database.GetFrameworkLookupFrameworks(a.db)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching unique frameworks: %v", err)
+	}
+	return uniqueFrameworks, err
+}
+
+func (a *App) GetFrameworkDetails(framework string) (map[string]interface{}, error) {
+	if a.db == nil {
+		log.Fatal("Database is missing")
+	}
+	log.Printf("Getting framework details for %s", framework)
+	frameworkInfo, err := database.GetFrameworkInfoBackend(a.db, framework)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching framework details: %v", err)
+	}
+
+	return frameworkInfo, err
 }

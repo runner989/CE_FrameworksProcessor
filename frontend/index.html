@@ -23,29 +23,10 @@
                     <button id="updateEvidenceButton">Update Evidence List from Airtable</button>
                 </div>    
                 <div class="button-container">
-                    <button>Process Evidence Mappings</button>
+                    <button id="processEvidenceMappingsButton">Process Evidence Mappings</button>
                 </div>
             </div>
 
-            <div class="row">
-                <strong>Frameworks</strong>
-            </div>
-            <div class="row">
-                <div class="button-container">
-                    <button>Add New Framework</button>
-                </div>
-                <div class="button-container">
-                    <button>Update Framework(s)</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="button-container">
-                    <button>Export Framework(s)</button>
-                </div>
-                <div class="button-container">
-                    <button>Remove/Delete Framework</button>
-                </div>
-            </div>
             <div class="row">
                 <strong>Framework Build List</strong>
             </div>
@@ -73,12 +54,43 @@
                         <div id="frameworkBuildContainer"></div>
                     </div>
                 </div>
+                <div id="frameworkTablesModal" class="modal">
+                    <div class="modal-content">
+                        <span id="closeFrameworkTablesModal">&times;</span>
+                        <div id="frameworkTablesContainer"></div>
+                    </div>
+                </div>
             </div>
-    </div>
-    </div>
+            <div class="row">
+                <strong>Frameworks</strong>
+            </div>
+            <div class="row">
+                <div class="button-container">
+                    <button id="addFrameworkButton">Add/Update Framework</button>
+                </div>
+                <div class="button-container">
+                    <button>Update All Framework</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="button-container">
+                    <button>Export Framework(s)</button>
+                </div>
+                <div class="button-container">
+                    <button>Remove/Delete Framework</button>
+                </div>
+            </div>
 
-<script src="./src/frameworkBuild.js"></script>
-<script src="./src/frameworksMissing.js"></script>
-<script src="./src/evidenceUpdate.js"></script>
+        </div>
+    </div>
+    <script>
+        document.getElementById('processEvidenceMappingsButton').addEventListener('click', function() {
+            window.location.href = 'processevidence.html'
+        })
+    </script>
+    <script src="./src/frameworkBuild.js"></script>
+    <script src="./src/frameworksMissing.js"></script>
+    <script src="./src/evidenceUpdate.js"></script>
+    <script src="./src/frameworkUpdate.js"></script>
 </body>
 </html>

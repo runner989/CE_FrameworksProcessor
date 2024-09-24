@@ -54,20 +54,21 @@ func InsertFrameworkRecord(
 	return err
 }
 
-func UpdateFrameworkLookupTable(db *sql.DB, missingFrameworkName, name, uatStage, stageNumber, prodNumber string) error {
+func UpdateFrameworkLookupTable(db *sql.DB, missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName string) error {
 	if db == nil {
 		return fmt.Errorf("database connection is nil")
 	}
 
-	// fmt.Printf("ELMN: %s, CEName: %s, UAT: %s, stage: %s, prod: %s\n", missingFrameworkName, name, uatStage, stageNumber, prodNumber)
-
-	query := `INSERT INTO Framework_Lookup (EvidenceLibraryMappedName, CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod)
-		VALUES (?, ?, ?, ?, ?)
+	log.Printf("missing framework %s, cename: %s, uatStage: %s, stageNumber: %s, prodNumber: %s, tableName: %s, viewName: %s", missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName)
+	query := `INSERT INTO Framework_Lookup (EvidenceLibraryMappedName, CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod, AirtableFramework, AirtableView)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(CEFramework) DO UPDATE SET
 		  EvidenceLibraryMappedName = excluded.EvidenceLibraryMappedName,
 		  FrameworkId_UAT = excluded.FrameworkId_UAT,
 		  FrameworkId_Staging = excluded.FrameworkId_Staging,
-		  FrameworkId_Prod = excluded.FrameworkId_Prod;
+		  FrameworkId_Prod = excluded.FrameworkId_Prod,
+		  AirtableFramework = excluded.AirtableFramework,
+		  AirtableView = excluded.AirtableView;
 		`
 	//UPDATE Framework_Lookup SET CEFramework = ?, FrameworkId_UAT = ?, FrameworkId_Staging = ?, FrameworkId_Prod = ? WHERE EvidenceLibraryMappedName = ?`
 
@@ -75,14 +76,14 @@ func UpdateFrameworkLookupTable(db *sql.DB, missingFrameworkName, name, uatStage
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	_, err = statement.Exec(missingFrameworkName, name, uatStage, stageNumber, prodNumber)
+	_, err = statement.Exec(missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 	return err
 }
 
-func UpdateBuildFrameworkLookupTable(db *sql.DB, records []map[string]interface{}) error {
+func UpdateBuildFramework_LookupTable(db *sql.DB, CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod string) error {
 	if db == nil {
 		return fmt.Errorf("database connection is nil")
 	}
@@ -108,9 +109,7 @@ func UpdateBuildFrameworkLookupTable(db *sql.DB, records []map[string]interface{
 		  FrameworkId_Staging = excluded.FrameworkId_Staging,
 		  FrameworkId_Prod = excluded.FrameworkId_Prod;
 		`
-	// 	INSERT OR REPLACE INTO Framework_Lookup (CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod)
-	// 	VALUES (?, ?, ?, ?);
-	// `
+
 	stmt, err := tx.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error preparing statement: %v", err)
@@ -122,20 +121,10 @@ func UpdateBuildFrameworkLookupTable(db *sql.DB, records []map[string]interface{
 		}
 	}(stmt)
 
-	for _, fields := range records {
-		ceFramework, _ := fields["Name"].(string)
-		frameworkIdUAT, _ := fields["UAT_Stage"].(string)
-		frameworkIdStaging, _ := fields["Stage Framework Number"].(string)
-		frameworkIdProd, _ := fields["Production Framework Number"].(string)
+	_, err = stmt.Exec(CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod)
+	if err != nil {
 
-		if ceFramework == "" {
-			continue // Skip records without a name
-		}
-
-		_, err = stmt.Exec(ceFramework, frameworkIdUAT, frameworkIdStaging, frameworkIdProd)
-		if err != nil {
-			return fmt.Errorf("failed to update framework lookup table: %v", err)
-		}
+		return fmt.Errorf("failed to update framework lookup table: %v", err)
 	}
 	return nil
 }

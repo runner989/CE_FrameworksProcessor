@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Process Evidence Mappings</title>
+    <link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+<script type="module" src="./src/main.js"></script>      
+    <div id="app">
+        <div class="row" id="logo-title-container">
+            <img alt="CE logo" id="logo" src="./src/assets/images/CFLogo.png">
+            <h1>Compliance Essentials Frameworks Processor</h1>
+        </div>
+        <div class="appContainer">
+            <h2>Process Evidence Mappings</h2>
+            <div class="evidence-container">
+                <div class="column">
+                    <h2>Staging</h2>
+                    <div class="row">
+                        <button>Import Evidence Map from CE Staging</button>
+                        <button>Create Staging Evidence Map Report</button>
+                        <button>Create CE UAT Evidence Map Report</button>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <h2>Production</h2>
+                    <div class="row">
+                        <button>Import Evidence Map from CE Production</button>
+                        <button>Create Production Evidence Map Report</button>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="exit-button-container">
+                <button id="exitButton">Exit</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('exitButton').addEventListener('click', function() {
+            window.location.href='index.html';
+        })
+    </script>
+</body>
+</html>

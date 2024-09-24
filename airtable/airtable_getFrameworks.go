@@ -112,6 +112,17 @@ func GetFramework(apiKey string) ([]AirtableFrameworks, error) {
 // 	return views, nil
 // }
 
+func GetAirtableTablesandViews(apiKey string) (string, error) {
+	baseID := "app5fTueYfRM65SzX"
+	reqURL := fmt.Sprintf("https://api.airtable.com/v0/meta/bases/%s/tables", baseID)
+
+	response, err := makeHTTPRequest(reqURL, apiKey)
+	if err != nil {
+		return "", fmt.Errorf("error making request: %v", err)
+	}
+	return response, nil
+}
+
 // GetFrameworksLookup function to read the Framework Build table on Airtable
 func GetFrameworksLookup(apiKey string) ([]AirtableFrameworks, error) {
 	reqURL := fmt.Sprintf("%s?view=%s&Rand=%s", frameworks_BaseURL, frameworksViewName, GenerateRandomString())
