@@ -109,13 +109,9 @@ func (a *App) UpdateFrameworkLookupTable(records []map[string]interface{}) error
 	}()
 
 	query := `
-			INSERT INTO Framework_Lookup (CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod)
-			VALUES (?, ?, ?, ?)
-			ON CONFLICT(CEFramework) DO UPDATE SET
-			FrameworkId_UAT = excluded.FrameworkId_UAT,
-			FrameworkId_Staging = excluded.FrameworkId_Staging,
-			FrameworkId_Prod = excluded.FrameworkId_Prod;
-		`
+		INSERT OR REPLACE INTO Framework_Lookup (CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod)
+		VALUES (?, ?, ?, ?);
+	`
 	stmt, err := tx.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error preparing statement: %v", err)
