@@ -275,7 +275,6 @@ function updateFrameworkLookup() {
             viewName: window.selectedFrameworkView,
         }
     };
-    console.log(data)
     window.go.main.App.UpdateFrameworkLookup(data)
         .then(function (response) {
             alert('Framework Lookup updated successfully.');
