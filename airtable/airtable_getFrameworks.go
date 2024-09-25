@@ -1,21 +1,24 @@
 package airtable
 
 import (
+	"cefp/database"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 )
 
 const (
-	frameworks_TablesURL = "https://api.airtable.com/v0/meta/bases/appspojzJxIM9tUaC/tables" // this is the Framework Build table
-	frameworks_BaseURL   = "https://api.airtable.com/v0/appspojzJxIM9tUaC/tblRjgSEfrpsd4Llp"
-	frameworksViewName   = "All%20tasks%20grid"
+	//frameworks_TablesURL = "https://api.airtable.com/v0/meta/bases/appspojzJxIM9tUaC/tables" // this is the Framework Build table
+	frameworksBaseURL  = "https://api.airtable.com/v0/appspojzJxIM9tUaC/tblRjgSEfrpsd4Llp"
+	frameworksViewName = "All%20tasks%20grid"
 
-	devMasterBase     = "app???"
-	tableViewsMetaURL = "https://api.airtable.com/v0/meta/bases/{baseId}/views"
-	tableViews        = "/views"
-
-	getRecordURL = "https://api.airtable.com/v0/{baseId}/{tableIdOrName}/{recordId}"
+	devMasterBase = "app5fTueYfRM65SzX"
+	//tableViewsMetaURL = "https://api.airtable.com/v0/meta/bases/{baseId}/views"
+	//tableViews        = "/views"
+	//
+	//getRecordURL = "https://api.airtable.com/v0/{baseId}/{tableIdOrName}/{recordId}"
 )
 
 type Record struct {
@@ -37,16 +40,16 @@ type TablesResponse struct {
 	Tables []Table `json:"tables"`
 }
 
-type AirtableFrameworks struct {
+type Framework struct {
 	ID          string                 `json:"id"`
 	CreatedTime string                 `json:"createdTime"`
 	Fields      map[string]interface{} `json:"fields"`
 }
 
-type AirtableFrameworksTable struct {
+type FrameworksTable struct {
 }
 
-type AirtableViewsRoot struct {
+type ViewsRoot struct {
 	Views []View `json:"views"`
 }
 
@@ -57,62 +60,41 @@ type View struct {
 	Type              string `json:"type"`
 }
 
-type AirtableFrameworksResponse struct {
-	Records []AirtableFrameworks `json:"records"`
-	Offset  string               `json:"offset,omitempty"`
+type FrameworksResponse struct {
+	Records []Framework `json:"records"`
+	Offset  string      `json:"offset,omitempty"`
 }
 
-func GetFrameworksTables(apiKey string) error {
-	reqURL := frameworks_TablesURL //fmt.Sprintf("%s?view=%s&Rand=%s", frameworks_BaseURL, frameworksViewName, generateRandomString())
+//func GetFrameworksTables(apiKey string) error {
+//	reqURL := frameworks_TablesURL //fmt.Sprintf("%s?view=%s&Rand=%s", frameworks_BaseURL, frameworksViewName, generateRandomString())
+//
+//	done := false
+//
+//	for {
+//		response, err := makeHTTPRequest(reqURL, apiKey)
+//		if err != nil {
+//			log.Fatalf("Error making request: %v", err)
+//			return err
+//		}
+//		fmt.Println(response)
+//		// strResponses = strResponses + response
+//		var airtableResp TablesResponse
+//		err = json.Unmarshal([]byte(response), &airtableResp)
+//		if err != nil {
+//			log.Fatalf("Error parsing JSON: %v", err)
+//			return err
+//		}
+//
+//		for _, table := range airtableResp.Tables {
+//			fmt.Printf("%s", table)
+//		}
+//
+//	}
+//
+//	return nil
+//}
 
-	done := false
-
-	for !done {
-		response, err := makeHTTPRequest(reqURL, apiKey)
-		if err != nil {
-			log.Fatalf("Error making request: %v", err)
-			return err
-		}
-		fmt.Println(response)
-		// strResponses = strResponses + response
-		var airtableResp TablesResponse
-		err = json.Unmarshal([]byte(response), &airtableResp)
-		if err != nil {
-			log.Fatalf("Error parsing JSON: %v", err)
-			return err
-		}
-
-		for _, table := range airtableResp.Tables {
-			fmt.Printf("%s", table)
-		}
-
-	}
-
-	return nil
-}
-
-// get the airtable tables and allow user to click on the table name (framework name)
-
-// upon clicking the framework name, get the views for that table and have user click the view to use
-
-// get the framework using the selected name and view
-
-// once all data is fetched, parse it and add it to the database
-
-func GetFramework(apiKey string) ([]AirtableFrameworks, error) {
-	// frameworks := []AirtableFrameworksTable{}
-
-	return nil, nil
-}
-
-// func GetFrameworkViews(apiKey string) (View, error) {
-// 	var root AirtableViewsRoot
-// 	views := []View{}
-// 	// http get the data
-// 	return views, nil
-// }
-
-func GetAirtableTablesandViews(apiKey string) (string, error) {
+func GetAirtableTablesAndViews(apiKey string) (string, error) {
 	baseID := "app5fTueYfRM65SzX"
 	reqURL := fmt.Sprintf("https://api.airtable.com/v0/meta/bases/%s/tables", baseID)
 
@@ -123,12 +105,12 @@ func GetAirtableTablesandViews(apiKey string) (string, error) {
 	return response, nil
 }
 
-// GetFrameworksLookup function to read the Framework Build table on Airtable
-func GetFrameworksLookup(apiKey string) ([]AirtableFrameworks, error) {
-	reqURL := fmt.Sprintf("%s?view=%s&Rand=%s", frameworks_BaseURL, frameworksViewName, GenerateRandomString())
+// GetFrameworksLookup function to read the Frameworks Build table on Airtable
+func GetFrameworksLookup(apiKey string) ([]Framework, error) {
+	reqURL := fmt.Sprintf("%s?view=%s&Rand=%s", frameworksBaseURL, frameworksViewName, GenerateRandomString())
 	done := false
 
-	var allRecords []AirtableFrameworks
+	var allRecords []Framework
 
 	for !done {
 		response, err := makeHTTPRequest(reqURL, apiKey)
@@ -137,7 +119,7 @@ func GetFrameworksLookup(apiKey string) ([]AirtableFrameworks, error) {
 			return allRecords, err
 		}
 
-		var airtableFrameworksResp AirtableFrameworksResponse
+		var airtableFrameworksResp FrameworksResponse
 		err = json.Unmarshal([]byte(response), &airtableFrameworksResp)
 		if err != nil {
 			log.Fatalf("Error parsing JSON: %v", err)
@@ -153,9 +135,105 @@ func GetFrameworksLookup(apiKey string) ([]AirtableFrameworks, error) {
 		if airtableFrameworksResp.Offset == "" {
 			done = true
 		} else {
-			reqURL = fmt.Sprintf("%s?offset=%s&view=%s&Rand=%s", frameworks_BaseURL, airtableFrameworksResp.Offset, frameworksViewName, GenerateRandomString())
+			reqURL = fmt.Sprintf("%s?offset=%s&view=%s&Rand=%s", frameworksBaseURL, airtableFrameworksResp.Offset, frameworksViewName, GenerateRandomString())
 		}
 
 	}
 	return allRecords, nil
+}
+
+func GetFrameworkData(db *sql.DB, apiKey, tableName, tableID, tableView string) error {
+	if db == nil {
+		return fmt.Errorf("db is nil")
+	}
+	if apiKey == "" {
+		return fmt.Errorf("no apiKey provided")
+	}
+
+	reqURL := fmt.Sprintf("https://api.airtable.com/v0/%s/%s?view=%s&Rand=%s", devMasterBase, tableID, tableView, GenerateRandomString())
+
+	done := false
+
+	delQry := fmt.Sprintf("DELETE FROM Framework WHERE Framework='%s';", tableName)
+	_, err := db.Exec(delQry)
+	if err != nil {
+		//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error deleting from Framework: %v", err))
+		log.Printf("error deleting from Framework: %v", err)
+		return fmt.Errorf("error deleting from Framework: %v", err)
+	}
+
+	for !done {
+		response, err := makeHTTPRequest(reqURL, apiKey)
+		if err != nil {
+			log.Fatalf("Error making request: %v", err)
+			return err
+		}
+
+		//log.Print(response)
+
+		var airtableFrameworksResp FrameworksResponse
+		err = json.Unmarshal([]byte(response), &airtableFrameworksResp)
+
+		if strings.Contains(response, `"error":{`) {
+			errorType := airtableFrameworksResp.Records[0].ID
+			if errorType != "" {
+				//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("There is an error: %v", err))
+				return fmt.Errorf("there is an error: %s", errorType)
+			}
+			if strings.Contains(response, "NOT_FOUND") {
+				//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("The framework was not found.: %v", err))
+				return fmt.Errorf("the framework was not found. please check the name and try again")
+			}
+		}
+		sortID := 0
+		for _, record := range airtableFrameworksResp.Records {
+			//log.Println(record)
+			var testType string
+			identifier, ok := record.Fields["Identifier"].(string)
+			if !ok {
+				//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping record due to missing or invalid EvidenceID: %v", err))
+				log.Printf("skipping record due to missing or invalid Identifier")
+			}
+			parentID, _ := record.Fields["ParentIdentifier"].(string)
+			displayName, _ := record.Fields["DisplayName"].(string)
+			description, _ := record.Fields["Description"].(string)
+			guidance, _ := record.Fields["Guidance"].(string)
+			tags, _ := record.Fields["Tags"].(string)
+			promptID, _ := record.Fields["Prompt ID"].(int)
+			controlNarrative, _ := record.Fields["ControlNarrativeAIPromptTemplateId"].(int)
+			frameworkName := tableName
+			sortID += 1
+			switch v := record.Fields["TestType"].(type) {
+			case []interface{}:
+				if len(v) > 0 {
+					testType, _ = v[0].(string)
+				}
+			case string:
+				testType = v
+			case nil:
+				testType = ""
+			default:
+				log.Printf("unknown type for TestType: %T", v)
+			}
+
+			//message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", int(evidenceID), evidenceTitle)
+			//runtime.EventsEmit(ctx, "progress", message)
+			//log.Printf("identifier: %s, parentID: %s, displayName: %s, testType: %s", identifier, parentID, displayName, testType)
+			// Insert records
+			err := database.InsertFrameworkRecord(db, sortID, promptID, controlNarrative, frameworkName, identifier, parentID, displayName, description, guidance, tags, testType)
+			// sortID int, frameworkName, identifier, parentID, displayName, description, guidance, tags, testType, policyID, controlNarrative
+			if err != nil {
+				log.Printf("skipping Framework %s Identifier %s due to error: %v", identifier, frameworkName, err)
+				//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping EvidenceID %d due to error: %v", int(evidenceID), err))
+				continue
+			}
+
+			if airtableFrameworksResp.Offset == "" {
+				done = true
+			} else {
+				reqURL = fmt.Sprintf("https://api.airtable.com/v0/%s/%s?offset=%s&view=%s&Rand=%s", devMasterBase, tableID, airtableFrameworksResp.Offset, tableView, GenerateRandomString())
+			}
+		}
+	}
+	return nil
 }

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -57,7 +58,7 @@ func (a *App) GetMissingFramework() ([]string, error) {
 }
 
 // GetFrameworkLookup Expose to the frontend
-func (a *App) GetFrameworkLookup() ([]airtable.AirtableFrameworks, error) {
+func (a *App) GetFrameworkLookup() ([]airtable.Framework, error) {
 	if a.apiKey == "" {
 		log.Fatal("API Key is missing")
 	}
@@ -75,20 +76,21 @@ func (a *App) UpdateFrameworkLookup(data map[string]interface{}) error {
 		return fmt.Errorf("invalid missing framework name")
 	}
 
-	selectedFrameworkDetails, ok := data["selectedFrameworkDetails"].(map[string]interface{})
-	if !ok {
-		return fmt.Errorf("invalid missing framework details")
-	}
+	//selectedFrameworkDetails, ok := data["selectedFrameworkDetails"].(map[string]interface{})
+	//if !ok {
+	//	return fmt.Errorf("invalid missing framework details")
+	//}
 
 	// Extract details
-	cename, _ := selectedFrameworkDetails["cename"].(string)
-	uatStage, _ := selectedFrameworkDetails["uatStage"].(string)
-	prodNumber, _ := selectedFrameworkDetails["prodNumber"].(string)
-	stageNumber, _ := selectedFrameworkDetails["stageNumber"].(string)
-	tableName, _ := selectedFrameworkDetails["tableName"].(string)
-	viewName, _ := selectedFrameworkDetails["viewName"].(string)
+	cename, _ := data["cename"].(string)
+	uatStage, _ := data["uatStage"].(string)
+	prodNumber, _ := data["prodNumber"].(string)
+	stageNumber, _ := data["stageNumber"].(string)
+	tableID, _ := data["tableID"].(string)
+	tableName, _ := data["tableName"].(string)
+	tableView, _ := data["tableView"].(string)
 
-	err := database.UpdateFrameworkLookupTable(a.db, missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName)
+	err := database.UpdateFrameworkLookupTable(a.db, missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableID, tableName, tableView)
 	if err != nil {
 		return fmt.Errorf("failed to update framework lookup: %v", err)
 	}
@@ -122,7 +124,7 @@ func (a *App) GetAirtableBaseTables() (map[string]interface{}, error) {
 	if a.apiKey == "" {
 		log.Fatal("API Key is missing")
 	}
-	tables, err := airtable.GetAirtableTablesandViews(a.apiKey)
+	tables, err := airtable.GetAirtableTablesAndViews(a.apiKey)
 	if err != nil {
 		log.Printf("Error fetching Airtable tables: %v", err)
 	}
@@ -185,11 +187,24 @@ func (a *App) GetFrameworkDetails(framework string) (map[string]interface{}, err
 	if a.db == nil {
 		log.Fatal("Database is missing")
 	}
-	log.Printf("Getting framework details for %s", framework)
+	//log.Printf("Getting framework details for %s", framework)
 	frameworkInfo, err := database.GetFrameworkInfoBackend(a.db, framework)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching framework details: %v", err)
 	}
 
 	return frameworkInfo, err
+}
+
+func (a *App) GetFrameworkRecords(data map[string]interface{}) error {
+	tableName, _ := data["tableName"].(string)
+	tableID, _ := data["tableID"].(string)
+	tableView, _ := data["tableView"].(string)
+	tableView = strings.ReplaceAll(tableView, " ", "%20")
+
+	err := airtable.GetFrameworkData(a.db, a.apiKey, tableName, tableID, tableView)
+	if err != nil {
+		return fmt.Errorf("error fetching framework data: %v", err)
+	}
+	return err
 }

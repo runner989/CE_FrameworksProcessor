@@ -6,7 +6,9 @@ export function GetAirtableBaseTables():Promise<{[key: string]: any}>;
 
 export function GetFrameworkDetails(arg1:string):Promise<{[key: string]: any}>;
 
-export function GetFrameworkLookup():Promise<Array<airtable.AirtableFrameworks>>;
+export function GetFrameworkLookup():Promise<Array<airtable.Framework>>;
+
+export function GetFrameworkRecords(arg1:{[key: string]: any}):Promise<void>;
 
 export function GetMappedFrameworks():Promise<Array<string>>;
 

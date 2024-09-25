@@ -4,69 +4,26 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/mattn/go-sqlite3"
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func InsertFrameworkRecord(
-	db *sql.DB,
-	id int,
-	identifier string,
-	parentident string,
-	description string,
-	displayName string,
-	guidance string,
-	recommendations string,
-	requirementType string,
-	pandpPromptId int,
-	controlNarrativeId int,
-	testType string,
-	framework string,
-	frameworkId int,
-) error {
+func UpdateFrameworkLookupTable(db *sql.DB, missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableID, tableName, viewName string) error {
 	if db == nil {
 		return fmt.Errorf("database connection is nil")
 	}
 
-	var existingID int
-	query := `SELECT sortID FROM framework WHERE sortID = ?;`
-	err := db.QueryRow(query, id).Scan(&existingID)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return fmt.Errorf("error checking for existing sortID: %v", err)
-	} else if err == nil {
-		log.Printf("Record with sortID %d already exists, skipping insertion", id)
-		return nil
-	}
-
-	log.Println("Inserting framework record")
-	insertFrameworkRecord := `INSERT INTO framework(sortID, Identifier, ParentIdentifier, Description, Guidance, 
-	DisplayName, Recommendations, RequirementType, PolicyAndProcedureAIPromptTemplateId, ControlNarrativeAllPromptTemplateId,
-	TestType, Framework, FrameworkID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	statement, err := db.Prepare(insertFrameworkRecord)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	_, err = statement.Exec(id, identifier, parentident, description, displayName, guidance, recommendations, requirementType, pandpPromptId, controlNarrativeId, testType, framework, frameworkId)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	return err
-}
-
-func UpdateFrameworkLookupTable(db *sql.DB, missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName string) error {
-	if db == nil {
-		return fmt.Errorf("database connection is nil")
-	}
-
-	log.Printf("missing framework %s, cename: %s, uatStage: %s, stageNumber: %s, prodNumber: %s, tableName: %s, viewName: %s", missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName)
-	query := `INSERT INTO Framework_Lookup (EvidenceLibraryMappedName, CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod, AirtableFramework, AirtableView)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+	//log.Printf("missing framework %s, cename: %s, uatStage: %s, stageNumber: %s, prodNumber: %s, tableName: %s, viewName: %s", missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName)
+	query := `INSERT INTO Framework_Lookup (EvidenceLibraryMappedName, CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod, AirtableTableID ,AirtableFramework, AirtableView)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(CEFramework) DO UPDATE SET
 		  EvidenceLibraryMappedName = excluded.EvidenceLibraryMappedName,
 		  FrameworkId_UAT = excluded.FrameworkId_UAT,
 		  FrameworkId_Staging = excluded.FrameworkId_Staging,
 		  FrameworkId_Prod = excluded.FrameworkId_Prod,
+		  AirtableTableID = excluded.AirtableTableID,
 		  AirtableFramework = excluded.AirtableFramework,
 		  AirtableView = excluded.AirtableView;
 		`
@@ -76,14 +33,14 @@ func UpdateFrameworkLookupTable(db *sql.DB, missingFrameworkName, cename, uatSta
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	_, err = statement.Exec(missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName)
+	_, err = statement.Exec(missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableID, tableName, viewName)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 	return err
 }
 
-func UpdateBuildFramework_LookupTable(db *sql.DB, CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod string) error {
+func UpdateBuildFramework_LookupTable(db *sql.DB, CEFramework, FrameworkidUat, FrameworkidStaging, FrameworkidProd string) error {
 	if db == nil {
 		return fmt.Errorf("database connection is nil")
 	}
@@ -121,10 +78,25 @@ func UpdateBuildFramework_LookupTable(db *sql.DB, CEFramework, FrameworkId_UAT, 
 		}
 	}(stmt)
 
-	_, err = stmt.Exec(CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod)
+	_, err = stmt.Exec(CEFramework, FrameworkidUat, FrameworkidStaging, FrameworkidProd)
 	if err != nil {
 
 		return fmt.Errorf("failed to update framework lookup table: %v", err)
 	}
 	return nil
+}
+
+func InsertFrameworkRecord(db *sql.DB, sortID, policyID, controlNarrative int, frameworkName, identifier, parentID, displayName, description, guidance, tags, testType string) error {
+	_, err := db.Exec("INSERT INTO Framework (Framework, sortID, Identifier, ParentIdentifier, DisplayName, Description, Guidance, TestType, Tags, PolicyAndProcedureAIPromptTemplateId, ControlNarrativeAllPromptTemplateId) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?,?)",
+		frameworkName, sortID, identifier, parentID, displayName, description, guidance, testType, tags, policyID, controlNarrative)
+	if err != nil {
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) && errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+			// Handle UNIQUE constraint violation (duplicate EvidenceID)
+			return fmt.Errorf("duplicate record: %s", identifier)
+		}
+		return fmt.Errorf("error inserting Framework: %v", err)
+	}
+	return nil
+
 }

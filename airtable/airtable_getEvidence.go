@@ -135,7 +135,6 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 		}
 
 		if strings.Contains(response, `"error":{`) {
-			// if strings.HasPrefix(response, `{"error"`) {
 			errorType := airtableResp.Records[0].ID
 			if errorType != "" {
 				runtime.EventsEmit(ctx, "progress", fmt.Sprintf("There is an error: %v", err))

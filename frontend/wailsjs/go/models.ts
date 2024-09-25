@@ -1,12 +1,12 @@
 export namespace airtable {
 	
-	export class AirtableFrameworks {
+	export class Framework {
 	    id: string;
 	    createdTime: string;
 	    fields: {[key: string]: any};
 	
 	    static createFrom(source: any = {}) {
-	        return new AirtableFrameworks(source);
+	        return new Framework(source);
 	    }
 	
 	    constructor(source: any = {}) {

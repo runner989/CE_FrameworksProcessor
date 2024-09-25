@@ -14,6 +14,10 @@ export function GetFrameworkLookup() {
   return window['go']['main']['App']['GetFrameworkLookup']();
 }
 
+export function GetFrameworkRecords(arg1) {
+  return window['go']['main']['App']['GetFrameworkRecords'](arg1);
+}
+
 export function GetMappedFrameworks() {
   return window['go']['main']['App']['GetMappedFrameworks']();
 }

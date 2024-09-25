@@ -66,13 +66,13 @@ func GetFrameworkInfoBackend(db *sql.DB, framework string) (map[string]interface
 	if db == nil {
 		return nil, fmt.Errorf("database connection is nil")
 	}
-	query := "SELECT EvidenceLibraryMappedName, AirtableFramework, AirtableView, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Staging FROM Framework_Lookup WHERE CEFramework = ?"
+	query := "SELECT EvidenceLibraryMappedName, AirtableTableID, AirtableFramework, AirtableView, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Staging FROM Framework_Lookup WHERE CEFramework = ?"
 	row := db.QueryRow(query, framework)
 
 	var details map[string]interface{}
-	var evidenceLibraryName, airtableFramework, airtableView, frameworkId_UAT, frameworkId_Stage, frameworkId_Prod sql.NullString
+	var evidenceLibraryName, airtableID, airtableFramework, airtableView, frameworkId_UAT, frameworkId_Stage, frameworkId_Prod sql.NullString
 
-	err := row.Scan(&evidenceLibraryName, &airtableFramework, &airtableView, &frameworkId_UAT, &frameworkId_Stage, &frameworkId_Prod)
+	err := row.Scan(&evidenceLibraryName, &airtableID, &airtableFramework, &airtableView, &frameworkId_UAT, &frameworkId_Stage, &frameworkId_Prod)
 	if err != nil {
 		return nil, fmt.Errorf("error querying framework details: %w", err)
 	}
@@ -80,6 +80,7 @@ func GetFrameworkInfoBackend(db *sql.DB, framework string) (map[string]interface
 	details = map[string]interface{}{
 		"CEName":                    framework,
 		"EvidenceLibraryMappedName": nullStringToString(evidenceLibraryName),
+		"AirtableTableID":           nullStringToString(airtableID),
 		"AirtableFramework":         nullStringToString(airtableFramework),
 		"AirtableView":              nullStringToString(airtableView),
 		"FrameworkId_UAT":           nullStringToString(frameworkId_UAT),

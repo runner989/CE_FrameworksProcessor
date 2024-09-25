@@ -25,19 +25,20 @@ func CreateFrameworkTable(db *sql.DB) error {
 	}
 
 	createTableSQL := `CREATE TABLE Framework (
-		"sortID" integer NOT NULL PRIMARY KEY,
+		"sortID" INTEGER,
+		"Framework" TEXT,
+		"FrameworkID" TEXT,
 		"Identifier" TEXT,
 		"ParentIdentifier" TEXT,
 		"Description" TEXT,
 		"Guidance" TEXT,
 		"DisplayName" TEXT,
 		"Recommendations" TEXT,
-		"RequirementType" TEXT,
-		"PolicyAndProcedureAIPromptTemplateId" integer,
-		"ControlNarrativeAllPromptTemplateId" integer,
 		"TestType" TEXT,
-		"Framework" TEXT,
-		"FrameworkID" TEXT
+		"RequirementType" TEXT,
+		"Tags" TEXT,
+		"PolicyAndProcedureAIPromptTemplateId" integer,
+		"ControlNarrativeAllPromptTemplateId" integer
 	);`
 
 	log.Println("Create Framework table...")
@@ -68,6 +69,7 @@ func CreateFrameworkLookupTable(db *sql.DB) error {
 
 	createTableSQL := `CREATE TABLE Framework_Lookup (
 		"AirtableBase" TEXT,
+		"AirtableTableID" TEXT,
 		"AirtableFramework" TEXT,
 		"AirtableView" TEXT,
 		"EvidenceLibraryMappedName" TEXT,

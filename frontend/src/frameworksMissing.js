@@ -191,7 +191,7 @@ function displayFrameworkTablesModal(tables) {
             <ul class="views-list" id="views-${index}" style="display: none;">`;
 
         table.views.forEach(function(view) {
-            content += `<li class="view-item" data-table-name="${table.name}" data-view-name="${view.name}">
+            content += `<li class="view-item" data-table-id="${table.id}" data-table-name="${table.name}" data-view-name="${view.name}">
                 ${view.name}
             </li>`;
         });
@@ -222,12 +222,14 @@ function displayFrameworkTablesModal(tables) {
         item.addEventListener('click', function() {
             var tableName = item.getAttribute('data-table-name');
             var viewName = item.getAttribute('data-view-name');
-            handleTableViewSelector(tableName, viewName);
+            let tableID = item.getAttribute('data-table-id');
+            handleTableViewSelector(tableID, tableName, viewName);
         });
     });
 }
 
-function handleTableViewSelector(tableName, viewName) {
+function handleTableViewSelector(tableID, tableName, viewName) {
+    window.selectedFrameworkTableID = tableID;
     window.selectedFrameworkTable = tableName;
     window.selectedFrameworkView = viewName;
 
@@ -244,6 +246,7 @@ function updateMissingFrameworkModalWithTableView() {
     <br><strong>Selected Framework Table and View</strong>
     <br><strong>Table Name:</strong> ${window.selectedFrameworkTable}
     <br><strong>View Name:</strong> ${window.selectedFrameworkView}
+    <span style="display: none;">${window.selectedFrameworkTableID}</span>
     <br><button id="okButton">OK</button>
     `;
 
@@ -271,6 +274,7 @@ function updateFrameworkLookup() {
             uatStage: window.selectedFrameworkDetails.uatStage,
             prodNumber: window.selectedFrameworkDetails.prodNumber,
             stageNumber: window.selectedFrameworkDetails.stageNumber,
+            tableID: window.selectedFrameworkTableID,
             tableName: window.selectedFrameworkTable,
             viewName: window.selectedFrameworkView,
         }
