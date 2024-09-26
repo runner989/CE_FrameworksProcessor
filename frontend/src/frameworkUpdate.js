@@ -16,6 +16,8 @@ function displayUniqueFrameworks(frameworks) {
 
 
     let content = '<h3>Frameworks from Lookup Table</h3>';
+    content += '<p>This list is the Framework Build list that was imported.</p>';
+    content += '<strong>NOTE: </strong>Not all frameworks in this list exist in Airtable. If you do not see it in the next selection, it is not yet ready.</p>';
     content += '<div id="selectedRecordLabel"></div>';
     content += '<div id="tableContainer"><table><thead><tr>';
 
@@ -110,6 +112,7 @@ function displayMappedFrameworkRecords(records) {
 
 
     let content = '<h3>Frameworks From Mapping Table</h3>';
+    content += '<p>Framework is missing the Framework name from the Mapping table.</p>'
     content += '<div id="selectedRecordLabel"></div>';
     content += '<div id="tableContainer"><table><thead><tr>';
 

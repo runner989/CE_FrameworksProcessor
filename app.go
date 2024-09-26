@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -78,23 +79,23 @@ func (a *App) UpdateFrameworkLookup(data map[string]interface{}) error {
 	}
 
 	// Extract details
-	cename, _ := data["cename"].(string)
-	uatStage, _ := data["uatStage"].(string)
-	prodNumber, _ := data["prodNumber"].(string)
-	stageNumber, _ := data["stageNumber"].(string)
-	tableID, _ := data["tableID"].(string)
-	tableName, _ := data["tableName"].(string)
-	tableView, _ := data["tableView"].(string)
+	//cename, _ := data["cename"].(string)
+	//uatStage, _ := data["uatStage"].(int64)
+	//prodNumber, _ := data["prodNumber"].(int64)
+	//stageNumber, _ := data["stageNumber"].(int64)
+	//tableID, _ := data["tableID"].(string)
+	//tableName, _ := data["tableName"].(string)
+	//tableView, _ := data["tableView"].(string)
 
 	lookupRecord := structs.FrameworkLookup{
-		MappedName:  missingFrameworkName,
-		CeName:      cename,
-		UatStage:    uatStage,
-		ProdNumber:  prodNumber,
-		StageNumber: stageNumber,
-		TableID:     tableID,
-		TableName:   tableName,
-		TableView:   tableView,
+		MappedName:  sql.NullString{String: missingFrameworkName, Valid: true},
+		CeName:      sql.NullString{String: data["cename"].(string), Valid: true},
+		UatStage:    sql.NullString{String: data["uatStage"].(string), Valid: true},
+		ProdNumber:  sql.NullString{String: data["prodNumber"].(string), Valid: true},
+		StageNumber: sql.NullString{String: data["stageNumber"].(string), Valid: true},
+		TableID:     sql.NullString{String: data["tableID"].(string), Valid: true},
+		TableName:   sql.NullString{String: data["tableName"].(string), Valid: true},
+		TableView:   sql.NullString{String: data["tableView"].(string), Valid: true},
 	}
 
 	err := database.UpdateFrameworkLookupTable(a.db, lookupRecord) //missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableID, tableName, tableView)
@@ -109,23 +110,43 @@ func (a *App) UpdateBuildFrameworkLookupTable(records []map[string]interface{}) 
 		return fmt.Errorf("database connection is nil")
 	}
 
+	//var ceName, uatStage, stageNumber, prodNumber string
+
 	for _, fields := range records {
+		//ceName = fields["Name"].(string)
+		//uatStage = fields["UAT_Stage"].(string)
+		//stageNumber = fields["Stage Framework Number"].(string)
+		//prodNumber = fields["Production Framework Number"].(string)
+
 		lookupRecord := structs.FrameworkLookup{
-			CeName:      fields["Name"].(string),
-			UatStage:    fields["UAT_Stage"].(string),
-			StageNumber: fields["Stage Framework Number"].(string),
-			ProdNumber:  fields["Production Framework Number"].(string),
+			CeName:      safeString(fields["Name"]),
+			UatStage:    safeString(fields["UAT_Stage"]),
+			StageNumber: safeString(fields["Stage Framework Number"]),
+			ProdNumber:  safeString(fields["Production Framework Number"]),
 		}
 
-		if lookupRecord.CeName == "" {
+		if !lookupRecord.CeName.Valid || lookupRecord.CeName.String == "" {
 			continue // Skip records without a name
 		}
-		err := database.UpdateBuildFramework_LookupTable(a.db, lookupRecord) //ceFramework, frameworkIdUAT, frameworkIdStaging, frameworkIdProd)
+		err := database.UpdateBuildFramework_LookupTable(a.db, lookupRecord)
 		if err != nil {
 			return fmt.Errorf("failed to update framework lookup: %v", err)
 		}
 	}
 	return nil
+}
+
+func safeString(value interface{}) sql.NullString {
+	if value == nil {
+		return sql.NullString{String: "", Valid: false}
+	}
+
+	str, ok := value.(string)
+	if !ok {
+		return sql.NullString{String: "", Valid: false}
+	}
+
+	return sql.NullString{String: str, Valid: true}
 }
 
 func (a *App) GetAirtableBaseTables() (map[string]interface{}, error) {
@@ -205,14 +226,139 @@ func (a *App) GetFrameworkDetails(framework string) (map[string]interface{}, err
 }
 
 func (a *App) GetFrameworkRecords(data map[string]interface{}) error {
-	tableName, _ := data["tableName"].(string)
-	tableID, _ := data["tableID"].(string)
 	tableView, _ := data["tableView"].(string)
 	tableView = strings.ReplaceAll(tableView, " ", "%20")
 
-	err := airtable.GetFrameworkData(a.db, a.apiKey, tableName, tableID, tableView)
+	lookupRecord := structs.FrameworkLookup{
+		TableName: sql.NullString{String: data["tableName"].(string), Valid: true},
+		TableID:   sql.NullString{String: data["tableID"].(string), Valid: true},
+		TableView: sql.NullString{String: tableView, Valid: true},
+	}
+	err := airtable.GetFrameworkData(a.db, a.apiKey, lookupRecord)
 	if err != nil {
 		return fmt.Errorf("error fetching framework data: %v", err)
 	}
 	return err
+}
+
+func (a *App) GetFrameworkLookupTable() ([]map[string]interface{}, error) {
+	query := "SELECT ROWID, * FROM Framework_Lookup ORDER BY CEFramework"
+	rows, err := a.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying framework lookup table: %v", err)
+	}
+	defer rows.Close()
+
+	var records []map[string]interface{}
+	for rows.Next() {
+		// Use sql.NullString and sql.NullInt64 for nullable columns
+		var airtableBase, airtableTableID, airtableFramework, airtableView, evidenceLibraryMappedName, ceFramework, description, comments sql.NullString
+		var frameworkidUat, frameworkidStaging, frameworkidProd, version sql.NullString
+		var rowID int64
+
+		// Scan the values into the appropriate variables
+		err := rows.Scan(
+			&rowID,
+			&airtableBase,
+			&airtableTableID,
+			&airtableFramework,
+			&airtableView,
+			&evidenceLibraryMappedName,
+			&ceFramework,
+			&frameworkidUat,
+			&frameworkidStaging,
+			&frameworkidProd,
+			&version,
+			&description,
+			&comments,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning row: %v", err)
+		}
+
+		// Convert sql.NullString and sql.NullInt64 to normal types or handle NULLs
+		record := map[string]interface{}{
+			"RowID":                     rowID,
+			"AirtableBase":              nullStringToString(airtableBase),
+			"AirtableTableID":           nullStringToString(airtableTableID),
+			"AirtableFramework":         nullStringToString(airtableFramework),
+			"AirtableView":              nullStringToString(airtableView),
+			"EvidenceLibraryMappedName": nullStringToString(evidenceLibraryMappedName),
+			"CEFramework":               nullStringToString(ceFramework),
+			"FrameworkId_UAT":           stringToInt(frameworkidUat.String),
+			"FrameworkId_Staging":       stringToInt(frameworkidStaging.String),
+			"FrameworkId_Prod":          stringToInt(frameworkidProd.String),
+			"Version":                   stringToInt(version.String),
+			"Description":               nullStringToString(description),
+			"Comments":                  nullStringToString(comments),
+		}
+
+		records = append(records, record)
+	}
+
+	return records, nil
+}
+
+func nullStringToString(ns sql.NullString) string {
+	if ns.Valid {
+		return ns.String
+	}
+	return "" // Return empty string if NULL
+}
+
+// Helper function to convert string to int safely
+func stringToInt(s string) int {
+	if s == "" {
+		return 0 // Return 0 if the string is empty
+	}
+
+	// Convert the string to an integer
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return 0 // Handle conversion error (return 0 if conversion fails)
+	}
+	return i
+}
+
+func (a *App) UpdateFrameworkLookupRecord(updatedRecord map[string]interface{}) error {
+	log.Printf("Updating framework lookup record: %v", updatedRecord)
+
+	query := `
+        UPDATE Framework_Lookup SET
+            AirtableBase = ?,
+            AirtableTableID = ?,
+            AirtableFramework = ?,
+            AirtableView = ?,
+            EvidenceLibraryMappedName = ?,
+            CEFramework = ?,
+            FrameworkId_UAT = ?,
+            FrameworkId_Staging = ?,
+            FrameworkId_Prod = ?,
+            Version = ?,
+            Description = ?,
+            Comments = ?
+        WHERE ROWID = ?
+    `
+	_, err := a.db.Exec(
+		query,
+		updatedRecord["airtableBase"],
+		updatedRecord["airtableTableID"],
+		updatedRecord["airtableFramework"],
+		updatedRecord["airtableView"],
+		updatedRecord["evidenceLibraryMappedName"],
+		updatedRecord["ceFramework"],
+		updatedRecord["frameworkId_UAT"],
+		updatedRecord["frameworkId_Staging"],
+		updatedRecord["frameworkId_Prod"],
+		updatedRecord["version"],
+		updatedRecord["description"],
+		updatedRecord["comments"],
+		updatedRecord["rowID"],
+	)
+	if err != nil {
+		log.Printf("Error updating framework lookup record: %v", err)
+		return fmt.Errorf("error updating framework record: %v", err)
+	}
+
+	return nil
 }

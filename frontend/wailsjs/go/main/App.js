@@ -14,6 +14,10 @@ export function GetFrameworkLookup() {
   return window['go']['main']['App']['GetFrameworkLookup']();
 }
 
+export function GetFrameworkLookupTable() {
+  return window['go']['main']['App']['GetFrameworkLookupTable']();
+}
+
 export function GetFrameworkRecords(arg1) {
   return window['go']['main']['App']['GetFrameworkRecords'](arg1);
 }
@@ -40,4 +44,8 @@ export function UpdateBuildFrameworkLookupTable(arg1) {
 
 export function UpdateFrameworkLookup(arg1) {
   return window['go']['main']['App']['UpdateFrameworkLookup'](arg1);
+}
+
+export function UpdateFrameworkLookupRecord(arg1) {
+  return window['go']['main']['App']['UpdateFrameworkLookupRecord'](arg1);
 }

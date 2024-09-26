@@ -1,4 +1,4 @@
-export namespace airtable {
+export namespace structs {
 	
 	export class Framework {
 	    id: string;

@@ -15,7 +15,13 @@ func GetMissingFrameworks(db *sql.DB) ([]string, error) {
 
 	uniqueFrameworks := []string{}
 
-	rows, err := db.Query("SELECT DISTINCT Framework FROM Mapping WHERE Framework NOT IN (SELECT DISTINCT EvidenceLibraryMappedName FROM Framework_Lookup WHERE EvidenceLibraryMappedName IS NOT NULL) ORDER BY Framework;")
+	query := ` 
+		SELECT DISTINCT Mapping.Framework FROM Mapping 
+		LEFT JOIN Framework_Lookup ON Mapping.Framework = Framework_Lookup.EvidenceLibraryMappedName
+		WHERE Framework_Lookup.EvidenceLibraryMappedName IS NULL ORDER BY Mapping.Framework;
+		`
+	rows, err := db.Query(query)
+	//SELECT DISTINCT Framework FROM Mapping WHERE Framework NOT IN (SELECT DISTINCT EvidenceLibraryMappedName FROM Framework_Lookup WHERE EvidenceLibraryMappedName IS NOT NULL) ORDER BY Framework;
 	if err != nil {
 		log.Fatal(err)
 	}

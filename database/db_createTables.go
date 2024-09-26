@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
@@ -15,7 +16,7 @@ func CreateFrameworkTable(db *sql.DB) error {
 	var tableName string
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='Framework';`
 	err := db.QueryRow(query).Scan(&tableName)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("error checking for table existence: %v", err)
 	}
 
@@ -46,7 +47,10 @@ func CreateFrameworkTable(db *sql.DB) error {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	statement.Exec()
+	_, err = statement.Exec()
+	if err != nil {
+		return fmt.Errorf("error creating Framework table: %v", err)
+	}
 	log.Println("Framework table created")
 	return err
 }
@@ -58,7 +62,7 @@ func CreateFrameworkLookupTable(db *sql.DB) error {
 	var tableName string
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='Framework_Lookup';`
 	err := db.QueryRow(query).Scan(&tableName)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("error checking for table existence: %v", err)
 	}
 
@@ -73,7 +77,7 @@ func CreateFrameworkLookupTable(db *sql.DB) error {
 		"AirtableFramework" TEXT,
 		"AirtableView" TEXT,
 		"EvidenceLibraryMappedName" TEXT,
-		"CEFramework" TEXT PRIMARY KEY,
+		"CEFramework" TEXT UNIQUE,
 		"FrameworkId_UAT" INTEGER,
 		"FrameworkId_Staging" INTEGER,
 		"FrameworkId_Prod" INTEGER,
@@ -102,7 +106,7 @@ func CreateAirTableBaseTable(db *sql.DB) error {
 	var tableName string
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='Airtable_Base';`
 	err := db.QueryRow(query).Scan(&tableName)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("error checking for table existence: %v", err)
 	}
 
@@ -137,7 +141,7 @@ func CreateCEMappingProdTable(db *sql.DB) error {
 	var tableName string
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='CEMapping_Prod';`
 	err := db.QueryRow(query).Scan(&tableName)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("error checking for table existence: %v", err)
 	}
 
@@ -177,7 +181,7 @@ func CreateCEMappingStagingTable(db *sql.DB) error {
 	var tableName string
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='CEMapping_Staging';`
 	err := db.QueryRow(query).Scan(&tableName)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("error checking for table existence: %v", err)
 	}
 
@@ -217,7 +221,7 @@ func CreateEvidenceTable(db *sql.DB) error {
 	var tableName string
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='Evidence';`
 	err := db.QueryRow(query).Scan(&tableName)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("error checking for table existence: %v", err)
 	}
 
@@ -255,7 +259,7 @@ func CreatePlaceholderMappingsTable(db *sql.DB) error {
 	var tableName string
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='Placeholder_Mappings';`
 	err := db.QueryRow(query).Scan(&tableName)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("error checking for table existence: %v", err)
 	}
 
@@ -295,7 +299,7 @@ func CreateMappingTable(db *sql.DB) error {
 	var tableName string
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='Mapping';`
 	err := db.QueryRow(query).Scan(&tableName)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("error checking for table existence: %v", err)
 	}
 

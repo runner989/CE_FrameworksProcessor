@@ -136,6 +136,36 @@ button:hover {
     background-color: #0056b3;
 }
 
+.edit-button {
+    width: 100px;
+    height: 30px;
+    text-align: center;
+    vertical-align: top;
+    padding: 0px;
+    margin: 1px;
+}
+.delete-button {
+    width: 100px;
+    height: 30px;
+    text-align: center;
+    vertical-align: top;
+    padding: 0px;
+    margin: 1px;
+}
+#getFrameworkLookupButton {
+    text-align: center;
+    vertical-align: top;
+    padding: 5px;
+    margin-left: 10px;
+}
+
+#backButton {
+    text-align: center;
+    vertical-align: top;
+    padding: 5px;
+    margin: 10px;
+}
+
 .table-item {
     margin-bottom: 10px;
 }

@@ -35,12 +35,12 @@
                     <button id="getFrameworkBuildListButton">Import Frameworks Build List</button>
                 </div>
                 <div class="button-container">
-                    <button id="updateFrameworkIDsButton">Update Framework IDs</button>
+                    <button id="editFrameworkLookupButton">Edit Framework Lookup</button>
                 </div>
             </div>
             <div class="row">
                 <div class="button-container">
-                    <button id="getMissingFrameworksButton">Show Missing Frameworks</button>
+                    <button id="getMissingFrameworksButton">Missing from Framework Lookup Table</button>
                 </div>
                 <div id="recordsModal" class="modal">
                     <div class="modal-content">
@@ -84,7 +84,7 @@
                     <button>Export Framework(s)</button>
                 </div>
                 <div class="button-container">
-                    <button>Remove/Delete Framework</button>
+                    <button id="deleteFrameworkButton">Remove/Delete Framework</button>
                 </div>
             </div>
 
@@ -92,7 +92,13 @@
     </div>
     <script>
         document.getElementById('processEvidenceMappingsButton').addEventListener('click', function() {
-            window.location.href = 'processevidence.html'
+            window.location.href = 'processEvidence.html'
+        })
+        document.getElementById('editFrameworkLookupButton').addEventListener('click', function() {
+            window.location.href = 'editFrameworks.html'
+        })
+        document.getElementById('deleteFrameworkButton').addEventListener('click', function() {
+            window.location.href = 'deleteFrameworks.html'
         })
     </script>
     <script src="./src/frameworkBuild.js"></script>

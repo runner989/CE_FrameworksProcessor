@@ -11,11 +11,12 @@ document.getElementById('getMissingFrameworksButton').addEventListener('click',f
 });
 
 function displayMissingRecords(records) {
-    var modal = document.getElementById('recordsModal');
-    var recordsContainer = document.getElementById('recordsContainer');
+    let modal = document.getElementById('recordsModal');
+    let recordsContainer = document.getElementById('recordsContainer');
 
 
-    var content = '<h3>Frameworks Missing From Lookup Table</h3>';
+    let content = '<h3>Frameworks Missing From Lookup Table</h3>';
+    content += '<p>Frameworks listed are from the Mapped table that are not in the Framework Lookup table</P';
     content += '<div id="selectedRecordLabel"></div>';
     content += '<div id="tableContainer"><table><thead><tr>';
 
@@ -35,14 +36,14 @@ function displayMissingRecords(records) {
 }
 
 function addMissingRowEventListeners(records) {
-    var tableRows = document.querySelectorAll('#recordsContainer tbody tr');
+    let tableRows = document.querySelectorAll('#recordsContainer tbody tr');
     tableRows.forEach(function(row, index) {
         row.addEventListener('click', function() {
             tableRows.forEach(function(r) {
                 r.classList.remove('selected');
             });
             row.classList.add('selected');
-            var selectedRecord = records[index];
+            let selectedRecord = records[index];
             displaySelectedFrameworkDetails(selectedRecord);
         });
     }); 
@@ -51,7 +52,7 @@ function addMissingRowEventListeners(records) {
 function displaySelectedFrameworkDetails(record) {
     window.selectedMissingFramework = record;
     // openFrameworkBuildListModal();
-    var label = document.getElementById('selectedRecordLabel');
+    let label = document.getElementById('selectedRecordLabel');
     label.innerHTML = `
         <strong>Selected Framework</strong>
         <br><strong>Name:</strong> ${record}
@@ -75,10 +76,12 @@ function openFrameworkBuildListModal() {
 }
 
 function displayFrameworkBuildList(records, onFrameworkSelected) {
-    var modal = document.getElementById('frameworkBuildModal');
-    var recordsContainer = document.getElementById('frameworkBuildContainer');
+    let modal = document.getElementById('frameworkBuildModal');
+    let recordsContainer = document.getElementById('frameworkBuildContainer');
 
-    var content = '<h3>Frameworks Build List</h3>';
+    let missingFramework = window.selectedMissingFramework
+    let content = '<h3>Frameworks Build List</h3>';
+    content += '<div id="selectedFrameworkDetails">Looking for Framework: '+ missingFramework +'</div>';
     content += '<div id="tableContainer"><table><thead><tr>';
 
     orderedFields.forEach(function(field){
@@ -87,15 +90,15 @@ function displayFrameworkBuildList(records, onFrameworkSelected) {
     content += '</tr></thead><tbody>';
 
     records.forEach(function(record, index) {
-        var fields = record.fields;
+        let fields = record.fields;
         content += '<tr data-index="' + index + '">';
         orderedFields.forEach(function(field) {
-            var value = fields[field];
+            let value = fields[field];
             if (Array.isArray(value)) {
                 value = value.join(', ');
             } else if (typeof value == 'object' && value !== null) {
                 value = JSON.stringify(value);
-            } else if (value == undefined || value == null) {
+            } else if (value === undefined || value == null) {
                 value = '';
             }
             content += '<td>' + value + '</td>';
@@ -110,32 +113,32 @@ function displayFrameworkBuildList(records, onFrameworkSelected) {
 }
 
 function addFrameworkBuildRowEventListeners(records, onFrameworkSelected) {
-    var tableRows = document.querySelectorAll('#frameworkBuildContainer tbody tr');
+    let tableRows = document.querySelectorAll('#frameworkBuildContainer tbody tr');
     tableRows.forEach(function(row, index) {
         row.addEventListener('click', function() {
             tableRows.forEach(function(r) {
                 r.classList.remove('selected');
             });
             row.classList.add('selected');
-            var selectedRecord = records[index];
+            let selectedRecord = records[index];
             onFrameworkSelected(selectedRecord);
         });
     });
 }
 
 function closeFrameworkBuildListModal() {
-    var modal = document.getElementById('frameworkBuildModal');
+    let modal = document.getElementById('frameworkBuildModal');
     modal.style.display = 'none';
 }
 
 function displaySelectedFrameworkFromBuildList(selectedFramework) {
-    var fields = selectedFramework.fields;
-    var name = fields['Name'] || 'N/A';
-    var uatStage = fields['UAT_Stage'] || 'N/A';
-    var prodNumber = fields['Production Framework Number'] || 'N/A';
-    var stageNumber = fields['Stage Framework Number'] || 'N/A';
+    let fields = selectedFramework.fields;
+    let name = fields['Name'] || 'N/A';
+    let uatStage = fields['UAT_Stage'] || 'N/A';
+    let prodNumber = fields['Production Framework Number'] || 'N/A';
+    let stageNumber = fields['Stage Framework Number'] || 'N/A';
 
-    var detailsDiv = document.getElementById('selectedFrameworkDetails');
+    let detailsDiv = document.getElementById('selectedFrameworkDetails');
     detailsDiv.innerHTML = `
         <strong>Selected Framework from Build List</strong>
         <br><strong>Name:</strong> ${name}
@@ -171,7 +174,7 @@ function fetchAirtableTablesandViews() {
 
 
 function closeFrameworkTablesModalX() {
-    var modal = document.getElementById('frameworkTablesModal');
+    let modal = document.getElementById('frameworkTablesModal');
     modal.style.display = 'none';
 }
 
@@ -180,14 +183,16 @@ function displayFrameworkTablesModal(tables) {
         closeFrameworkTablesModalX();
     });
 
-    var modal = document.getElementById('frameworkTablesModal');
-    var container = document.getElementById('frameworkTablesContainer');
+    let modal = document.getElementById('frameworkTablesModal');
+    let container = document.getElementById('frameworkTablesContainer');
 
-    var content = '<h4>Select a Framework Table and View</h4><ul>';
+    let content = '<h4>Select a Framework Table and View</h4><ul>';
+    content += '<div id="selectedFramework"><p>Looking for Framework: ' + window.selectedMissingFramework + '</p></div>';
 
     tables.forEach(function (table, index) {
         content += `<li class="table-item" data-index="${index}">
             <span class="table-name">${table.name}</span>
+            <span class="table-view" style="display: none;">${table.view}</span>
             <ul class="views-list" id="views-${index}" style="display: none;">`;
 
         table.views.forEach(function(view) {
@@ -203,10 +208,10 @@ function displayFrameworkTablesModal(tables) {
     container.innerHTML = content;
     modal.style.display = 'block';
 
-    var tableItems = container.querySelectorAll('.table-item');
+    let tableItems = container.querySelectorAll('.table-item');
     tableItems.forEach(function(item) {
-        var index = item.getAttribute('data-index');
-        var viewsList = document.getElementById(`views-${index}`);
+        let index = item.getAttribute('data-index');
+        let viewsList = document.getElementById(`views-${index}`);
 
         item.querySelector('.table-name').addEventListener('click', function() {
             if (viewsList.style.display === 'none') {
@@ -217,11 +222,11 @@ function displayFrameworkTablesModal(tables) {
         });
     });
 
-    var viewItems = container.querySelectorAll('.view-item');
+    let viewItems = container.querySelectorAll('.view-item');
     viewItems.forEach(function(item) {
         item.addEventListener('click', function() {
-            var tableName = item.getAttribute('data-table-name');
-            var viewName = item.getAttribute('data-view-name');
+            let tableName = item.getAttribute('data-table-name');
+            let viewName = item.getAttribute('data-view-name');
             let tableID = item.getAttribute('data-table-id');
             handleTableViewSelector(tableID, tableName, viewName);
         });
@@ -233,16 +238,16 @@ function handleTableViewSelector(tableID, tableName, viewName) {
     window.selectedFrameworkTable = tableName;
     window.selectedFrameworkView = viewName;
 
-    var modal = document.getElementById('frameworkTablesModal');
+    let modal = document.getElementById('frameworkTablesModal');
     modal.style.display = 'none';
 
     updateMissingFrameworkModalWithTableView();
 }
 
 function updateMissingFrameworkModalWithTableView() {
-    var detailsDiv = document.getElementById('selectedFrameworkDetails');
+    let detailsDiv = document.getElementById('selectedFrameworkDetails');
 
-    var tableViewInfo = `
+    let tableViewInfo = `
     <br><strong>Selected Framework Table and View</strong>
     <br><strong>Table Name:</strong> ${window.selectedFrameworkTable}
     <br><strong>View Name:</strong> ${window.selectedFrameworkView}
@@ -250,12 +255,12 @@ function updateMissingFrameworkModalWithTableView() {
     <br><button id="okButton">OK</button>
     `;
 
-    var existingInfo = detailsDiv.querySelector('.table-view-info');
+    let existingInfo = detailsDiv.querySelector('.table-view-info');
 
     if (existingInfo) {
         existingInfo.innerHTML = tableViewInfo;
     } else {
-        var div = document.createElement('div');
+        let div = document.createElement('div');
         div.classList.add('table-view-info');
         div.innerHTML = tableViewInfo;
         detailsDiv.appendChild(div);
@@ -267,23 +272,21 @@ function updateMissingFrameworkModalWithTableView() {
 }
 
 function updateFrameworkLookup() {
-    var data = {
+    let data = {
         missingFrameworkName: window.selectedMissingFramework,
-        selectedFrameworkDetails: {
-            cename: window.selectedFrameworkDetails.name,
-            uatStage: window.selectedFrameworkDetails.uatStage,
-            prodNumber: window.selectedFrameworkDetails.prodNumber,
-            stageNumber: window.selectedFrameworkDetails.stageNumber,
-            tableID: window.selectedFrameworkTableID,
-            tableName: window.selectedFrameworkTable,
-            viewName: window.selectedFrameworkView,
-        }
+        cename: window.selectedFrameworkDetails.name,
+        uatStage: window.selectedFrameworkDetails.uatStage,
+        prodNumber: window.selectedFrameworkDetails.prodNumber,
+        stageNumber: window.selectedFrameworkDetails.stageNumber,
+        tableID: window.selectedFrameworkTableID,
+        tableName: window.selectedFrameworkTable,
+        tableView: window.selectedFrameworkView,
     };
     window.go.main.App.UpdateFrameworkLookup(data)
         .then(function (response) {
             alert('Framework Lookup updated successfully.');
             // Close the Missing Frameworks modal
-            var modal = document.getElementById('recordsModal');
+            let modal = document.getElementById('recordsModal');
             modal.style.display = 'none';
         })
         .catch(function(err) {

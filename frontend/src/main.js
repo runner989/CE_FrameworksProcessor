@@ -9,5 +9,7 @@ import {
     GetFrameworkDetails,
     GetUniqueFrameworks,
     UpdateFrameworkLookup,
-    GetFrameworkRecords
+    GetFrameworkRecords,
+    GetFrameworkLookupTable,
+    UpdateFrameworkLookupRecord
 } from '../wailsjs/go/main/App'

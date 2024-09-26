@@ -117,21 +117,36 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 		}
 
 		for _, record := range airtableResp.Records {
-			evidenceID, ok := record.Fields["EvidenceID"].(int)
+			evidenceID, ok := record.Fields["EvidenceID"].(float64)
 			if !ok {
 				runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping record due to missing or invalid EvidenceID: %v", err))
 				log.Printf("skipping record due to missing or invalid EvidenceID")
+				continue
 			}
+			var anecdotesEvidenceIds string
+			switch v := record.Fields["AnecdotesEvidenceIds"].(type) {
+			case []interface{}:
+				if len(v) > 0 {
+					anecdotesEvidenceIds, _ = v[0].(string)
+				}
+			case string:
+				anecdotesEvidenceIds = v
+			case nil:
+				anecdotesEvidenceIds = ""
+			default:
+				log.Printf("unknown type for AnecdotesEvidenceIds: %T", v)
+			}
+
 			evidenceRecord := structs.EvidenceRecord{
-				EvidenceID:           evidenceID,
+				EvidenceID:           int(evidenceID),
 				EvidenceTitle:        record.Fields["Evidence Title"].(string),
 				Description:          record.Fields["Description_FromEvidence"].(string),
-				AnecdotesEvidenceIds: record.Fields["AnecdotesEvidenceIds"].(string),
+				AnecdotesEvidenceIds: anecdotesEvidenceIds,
 				Priority:             record.Fields["Priority"].(string),
 				EvidenceType:         record.Fields["Evidence Type"].(string),
 			}
 
-			message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", evidenceID, evidenceRecord.EvidenceTitle)
+			message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", evidenceRecord.EvidenceID, evidenceRecord.EvidenceTitle)
 			runtime.EventsEmit(ctx, "progress", message)
 
 			// Insert records

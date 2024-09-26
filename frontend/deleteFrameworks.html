@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Delete Frameworks</title>
+  <link rel="stylesheet" href="src/style.css" />
+  <script src="/wails/ipc.js"></script>
+  <script src="/wails/runtime.js"></script>
+</head>
+<body>
+
+<script type="module" src="./src/main.js"></script>
+
+<div id="app">
+  <h1>Delete Framework</h1>
+  <p><strong>NOTE:</strong> Deleting a framework will remove it from all tables!</p>
+  <p><strong>Ensure no other frameworks have the same Mapped Name before deleting, or you will have to run Add/Update Framework again.</strong></p>
+<!--  <div class="button-container"><button id="getFrameworkLookupButton">Open Framework Lookup Table</button></div>-->
+  <button id="backButton">Back to Main Page</button>
+  <div id="frameworkTableContainer">
+    <!-- This is where the table will be dynamically rendered -->
+  </div>
+<script>
+  document.getElementById('backButton').addEventListener('click', function() {
+    window.location.href = 'index.html'
+  })
+</script>
+<script src="./src/frameworkDelete.js"></script>
+</body>
+</html>

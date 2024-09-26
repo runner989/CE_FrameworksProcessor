@@ -1,5 +1,7 @@
 package structs
 
+import "database/sql"
+
 type AirtableResponse struct {
 	Records []Evidence `json:"records"`
 	Offset  string     `json:"offset,omitempty"`
@@ -81,12 +83,16 @@ type FrameworksResponse struct {
 }
 
 type FrameworkLookup struct {
-	MappedName  string `json:"mappedName"`
-	CeName      string `json:"ceName"`
-	UatStage    string `json:"uatStage"`
-	StageNumber string `json:"stageNumber"`
-	ProdNumber  string `json:"prodNumber"`
-	TableID     string `json:"tableID"`
-	TableName   string `json:"tableName"`
-	TableView   string `json:"tableView"`
+	MappedName  sql.NullString `json:"mappedName"`
+	CeName      sql.NullString `json:"ceName"`
+	UatStage    sql.NullString `json:"uatStage"`
+	StageNumber sql.NullString `json:"stageNumber"`
+	ProdNumber  sql.NullString `json:"prodNumber"`
+	TableBase   sql.NullString `json:"tableBase"`
+	TableID     sql.NullString `json:"tableID"`
+	TableName   sql.NullString `json:"tableName"`
+	TableView   sql.NullString `json:"tableView"`
+	Version     sql.NullString `json:"version"`
+	Description sql.NullString `json:"description"`
+	Comments    sql.NullString `json:"comments"`
 }

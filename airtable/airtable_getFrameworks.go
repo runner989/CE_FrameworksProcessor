@@ -70,7 +70,7 @@ func GetFrameworksLookup(apiKey string) ([]structs.Framework, error) {
 	return allRecords, nil
 }
 
-func GetFrameworkData(db *sql.DB, apiKey, tableName, tableID, tableView string) error {
+func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) error {
 	if db == nil {
 		return fmt.Errorf("db is nil")
 	}
@@ -78,11 +78,11 @@ func GetFrameworkData(db *sql.DB, apiKey, tableName, tableID, tableView string) 
 		return fmt.Errorf("no apiKey provided")
 	}
 
-	reqURL := fmt.Sprintf("https://api.airtable.com/v0/%s/%s?view=%s&Rand=%s", devMasterBase, tableID, tableView, GenerateRandomString())
+	reqURL := fmt.Sprintf("https://api.airtable.com/v0/%s/%s?view=%s&Rand=%s", devMasterBase, lr.TableID.String, lr.TableView.String, GenerateRandomString())
 
 	done := false
 
-	delQry := fmt.Sprintf("DELETE FROM Framework WHERE Framework='%s';", tableName)
+	delQry := fmt.Sprintf("DELETE FROM Framework WHERE Framework='%s';", lr.TableName.String)
 	_, err := db.Exec(delQry)
 	if err != nil {
 		//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error deleting from Framework: %v", err))
@@ -132,7 +132,7 @@ func GetFrameworkData(db *sql.DB, apiKey, tableName, tableID, tableView string) 
 			tags, _ := record.Fields["Tags"].(string)
 			promptID, _ := record.Fields["Prompt ID"].(int)
 			controlNarrative, _ := record.Fields["ControlNarrativeAIPromptTemplateId"].(int)
-			frameworkName := tableName
+			frameworkName := lr.TableName.String
 			sortID += 1
 			switch v := record.Fields["TestType"].(type) {
 			case []interface{}:
@@ -173,7 +173,7 @@ func GetFrameworkData(db *sql.DB, apiKey, tableName, tableID, tableView string) 
 			if airtableFrameworksResp.Offset == "" {
 				done = true
 			} else {
-				reqURL = fmt.Sprintf("https://api.airtable.com/v0/%s/%s?offset=%s&view=%s&Rand=%s", devMasterBase, tableID, airtableFrameworksResp.Offset, tableView, GenerateRandomString())
+				reqURL = fmt.Sprintf("https://api.airtable.com/v0/%s/%s?offset=%s&view=%s&Rand=%s", devMasterBase, lr.TableID.String, airtableFrameworksResp.Offset, lr.TableView.String, GenerateRandomString())
 			}
 		}
 	}
