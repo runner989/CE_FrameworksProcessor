@@ -1,6 +1,7 @@
 package airtable
 
 import (
+	"cefp/structs"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -27,37 +28,6 @@ const (
 	baseURL          = "https://api.airtable.com/v0/applEdk0gS7gMZ9o7/tbl6gMhn2VNnl4cOA"
 	evidenceViewName = "Active+Break+Out+View"
 )
-
-type Evidence struct {
-	ID     string                 `json:"id"`
-	Fields map[string]interface{} `json:"fields"`
-}
-
-//struct {
-// 	EvidenceID           int    `json:"EvidenceID"`
-// 	EvidenceTitle        string `json:"Evidence Title"`
-// 	Description          string `json:"Description_FromEvidence"`
-// 	AnecdotesEvidenceIds string `json:"AnecdotesEvidenceIds"`
-// 	Priority             string `json:"Priority"`
-// 	EvidenceType         string `json:"Evidence Type"`
-// }
-
-// CardTitle       string `json:"Card Title"`
-// FrameworkID     string `json:"FrameworkdId"`
-// Requirement     string `json:"Requirement"`
-// RequirementType string `json:"RequirementType"`
-
-// "EvidenceID" integer NOT NULL PRIMARY KEY,
-// "Evidence" TEXT,
-// "Description" TEXT,
-// "AnecdotesEvidenceIds" TEXT,
-// "Priority" TEXT,
-// "EvidenceType" TEXT
-
-type AirtableResponse struct {
-	Records []Evidence `json:"records"`
-	Offset  string     `json:"offset,omitempty"`
-}
 
 func loadAdditionalSkipFields() (map[string]struct{}, error) {
 	data, err := os.ReadFile("config.yaml")
@@ -126,7 +96,7 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 			return err
 		}
 		// strResponses = strResponses + response
-		var airtableResp AirtableResponse
+		var airtableResp structs.AirtableResponse
 		err = json.Unmarshal([]byte(response), &airtableResp)
 		if err != nil {
 			log.Fatalf("Error parsing JSON: %v", err)
@@ -147,34 +117,33 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 		}
 
 		for _, record := range airtableResp.Records {
-			evidenceID, ok := record.Fields["EvidenceID"].(float64)
+			evidenceID, ok := record.Fields["EvidenceID"].(int)
 			if !ok {
 				runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping record due to missing or invalid EvidenceID: %v", err))
 				log.Printf("skipping record due to missing or invalid EvidenceID")
 			}
-			evidenceTitle, _ := record.Fields["Evidence Title"].(string)
-			description, _ := record.Fields["Description_FromEvidence"].(string)
-			anecdotesIds, _ := record.Fields["AnecdotesEvidenceIds"].(string)
-			priority, _ := record.Fields["Priority"].(string)
-			evidenceType, _ := record.Fields["Evidence Type"].(string)
+			evidenceRecord := structs.EvidenceRecord{
+				EvidenceID:           evidenceID,
+				EvidenceTitle:        record.Fields["Evidence Title"].(string),
+				Description:          record.Fields["Description_FromEvidence"].(string),
+				AnecdotesEvidenceIds: record.Fields["AnecdotesEvidenceIds"].(string),
+				Priority:             record.Fields["Priority"].(string),
+				EvidenceType:         record.Fields["Evidence Type"].(string),
+			}
 
-			message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", int(evidenceID), evidenceTitle)
+			message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", evidenceID, evidenceRecord.EvidenceTitle)
 			runtime.EventsEmit(ctx, "progress", message)
 
 			// Insert records
-			err := insertEvidenceRecord(db, int(evidenceID), evidenceTitle, description, anecdotesIds, priority, evidenceType)
+			err := insertEvidenceRecord(db, evidenceRecord) // int(evidenceID), evidenceTitle, description, anecdotesIds, priority, evidenceType)
 			if err != nil {
 				log.Printf("skipping EvidenceID %d due to error: %v", int(evidenceID), err)
 				runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping EvidenceID %d due to error: %v", int(evidenceID), err))
 				continue
 			}
 
-			// I need to split the value (requirements) and iterate through the list and save each to the db
 			for key, value := range record.Fields {
 				if _, skip := skipFields[key]; skip {
-					// if key == "EvidenceID" || key == "Evidence Title" || key == "Requirement" || key == "Description_FromEvidence" || key == "AnecdotesEvidenceIds" ||
-					// 	key == "Control Families CCM (from Card Title)" || key == "Card Title" || key == "Sync Source" || key == "Evidence Type" || key == "Priority" ||
-					// 	key == "Tags" {
 					continue
 				}
 
@@ -202,14 +171,14 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 	return nil
 }
 
-func insertEvidenceRecord(db *sql.DB, evidenceID int, evidenceTitle, description, anecdotesIds, priority, evidenceType string) error {
+func insertEvidenceRecord(db *sql.DB, er structs.EvidenceRecord) error { //evidenceID int, evidenceTitle, description, anecdotesIds, priority, evidenceType string) error {
 	_, err := db.Exec("INSERT INTO Evidence (EvidenceID, Evidence, Description, AnecdotesEvidenceIds, Priority, EvidenceType) VALUES (?, ?, ?, ?, ?, ?)",
-		evidenceID, evidenceTitle, description, anecdotesIds, priority, evidenceType)
+		er.EvidenceID, er.EvidenceTitle, er.Description, er.AnecdotesEvidenceIds, er.Priority, er.EvidenceType)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) && errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
 			// Handle UNIQUE constraint violation (duplicate EvidenceID)
-			return fmt.Errorf("duplicate EvidenceID: %d", evidenceID)
+			return fmt.Errorf("duplicate EvidenceID: %d", er.EvidenceID)
 		}
 		return fmt.Errorf("error inserting Evidence: %v", err)
 	}
@@ -224,37 +193,6 @@ func insertMappingRecord(db *sql.DB, evidenceID int, framework, requirement stri
 	}
 	return nil
 }
-
-// func saveStringResponsesToFile(responses string) error {
-// 	file, err := os.Create("raw_responses.json")
-// 	if err != nil {
-// 		return fmt.Errorf("error creating file: %v", err)
-// 	}
-// 	defer file.Close()
-// 	_, err = file.Write([]byte(responses))
-// 	if err != nil {
-// 		return fmt.Errorf("error writing text to file: %v", err)
-// 	}
-// 	return nil
-// }
-
-// func saveResponsesToFile(responses []AirtableResponse) error {
-// 	file, err := os.Create("responses.json")
-// 	if err != nil {
-// 		return fmt.Errorf("error creating file: %v", err)
-// 	}
-// 	defer file.Close()
-// 	data, err := json.MarshalIndent(responses, "", "  ")
-// 	if err != nil {
-// 		return fmt.Errorf("error marshalling responses to JSON: %v", err)
-// 	}
-
-// 	_, err = file.Write(data)
-// 	if err != nil {
-// 		return fmt.Errorf("error writing data to file: %v", err)
-// 	}
-// 	return nil
-// }
 
 func makeHTTPRequest(reqURL, apiKey string) (string, error) {
 	client := &http.Client{}

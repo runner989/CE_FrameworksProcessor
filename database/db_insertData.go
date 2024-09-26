@@ -1,46 +1,46 @@
 package database
 
 import (
+	"cefp/structs"
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/mattn/go-sqlite3"
 	"log"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/mattn/go-sqlite3"
 )
 
-func UpdateFrameworkLookupTable(db *sql.DB, missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableID, tableName, viewName string) error {
+func UpdateFrameworkLookupTable(db *sql.DB, lookupRecord structs.FrameworkLookup) error { //missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableID, tableName, viewName string) error {
 	if db == nil {
 		return fmt.Errorf("database connection is nil")
 	}
 
 	//log.Printf("missing framework %s, cename: %s, uatStage: %s, stageNumber: %s, prodNumber: %s, tableName: %s, viewName: %s", missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName)
-	query := `INSERT INTO Framework_Lookup (EvidenceLibraryMappedName, CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod, AirtableTableID ,AirtableFramework, AirtableView)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-		ON CONFLICT(CEFramework) DO UPDATE SET
-		  EvidenceLibraryMappedName = excluded.EvidenceLibraryMappedName,
-		  FrameworkId_UAT = excluded.FrameworkId_UAT,
-		  FrameworkId_Staging = excluded.FrameworkId_Staging,
-		  FrameworkId_Prod = excluded.FrameworkId_Prod,
-		  AirtableTableID = excluded.AirtableTableID,
-		  AirtableFramework = excluded.AirtableFramework,
-		  AirtableView = excluded.AirtableView;
+	query := `
+		INSERT INTO Framework_Lookup (EvidenceLibraryMappedName, CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod, AirtableTableID ,AirtableFramework, AirtableView)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			ON CONFLICT(CEFramework) DO UPDATE SET
+			EvidenceLibraryMappedName = excluded.EvidenceLibraryMappedName,
+			FrameworkId_UAT = excluded.FrameworkId_UAT,
+			FrameworkId_Staging = excluded.FrameworkId_Staging,
+			FrameworkId_Prod = excluded.FrameworkId_Prod,
+			AirtableTableID = excluded.AirtableTableID,
+			AirtableFramework = excluded.AirtableFramework,
+			AirtableView = excluded.AirtableView;
 		`
-	//UPDATE Framework_Lookup SET CEFramework = ?, FrameworkId_UAT = ?, FrameworkId_Staging = ?, FrameworkId_Prod = ? WHERE EvidenceLibraryMappedName = ?`
 
 	statement, err := db.Prepare(query)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	_, err = statement.Exec(missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableID, tableName, viewName)
+	_, err = statement.Exec(lookupRecord.MappedName, lookupRecord.CeName, lookupRecord.UatStage, lookupRecord.StageNumber, lookupRecord.ProdNumber, lookupRecord.TableID, lookupRecord.TableName, lookupRecord.TableView)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 	return err
 }
 
-func UpdateBuildFramework_LookupTable(db *sql.DB, CEFramework, FrameworkidUat, FrameworkidStaging, FrameworkidProd string) error {
+func UpdateBuildFramework_LookupTable(db *sql.DB, lr structs.FrameworkLookup) error { // CEFramework, FrameworkidUat, FrameworkidStaging, FrameworkidProd string) error {
 	if db == nil {
 		return fmt.Errorf("database connection is nil")
 	}
@@ -78,7 +78,7 @@ func UpdateBuildFramework_LookupTable(db *sql.DB, CEFramework, FrameworkidUat, F
 		}
 	}(stmt)
 
-	_, err = stmt.Exec(CEFramework, FrameworkidUat, FrameworkidStaging, FrameworkidProd)
+	_, err = stmt.Exec(lr.CeName, lr.UatStage, lr.StageNumber, lr.ProdNumber) //FrameworkidUat, FrameworkidStaging, FrameworkidProd)
 	if err != nil {
 
 		return fmt.Errorf("failed to update framework lookup table: %v", err)
@@ -86,14 +86,14 @@ func UpdateBuildFramework_LookupTable(db *sql.DB, CEFramework, FrameworkidUat, F
 	return nil
 }
 
-func InsertFrameworkRecord(db *sql.DB, sortID, policyID, controlNarrative int, frameworkName, identifier, parentID, displayName, description, guidance, tags, testType string) error {
+func InsertFrameworkRecord(db *sql.DB, fr structs.FrameworkRecord) error {
 	_, err := db.Exec("INSERT INTO Framework (Framework, sortID, Identifier, ParentIdentifier, DisplayName, Description, Guidance, TestType, Tags, PolicyAndProcedureAIPromptTemplateId, ControlNarrativeAllPromptTemplateId) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?,?)",
-		frameworkName, sortID, identifier, parentID, displayName, description, guidance, testType, tags, policyID, controlNarrative)
+		fr.FrameworkName, fr.SortID, fr.Identifier, fr.ParentID, fr.DisplayName, fr.Description, fr.Guidance, fr.TestType, fr.Tags, fr.PromptID, fr.ControlNarrative)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) && errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
-			// Handle UNIQUE constraint violation (duplicate EvidenceID)
-			return fmt.Errorf("duplicate record: %s", identifier)
+			// Handle UNIQUE constraint violation (e.g. duplicate record)
+			return fmt.Errorf("duplicate record: %s", fr.Identifier)
 		}
 		return fmt.Errorf("error inserting Framework: %v", err)
 	}

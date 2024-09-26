@@ -3,6 +3,7 @@ package main
 import (
 	"cefp/airtable"
 	"cefp/database"
+	"cefp/structs"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -58,7 +59,7 @@ func (a *App) GetMissingFramework() ([]string, error) {
 }
 
 // GetFrameworkLookup Expose to the frontend
-func (a *App) GetFrameworkLookup() ([]airtable.Framework, error) {
+func (a *App) GetFrameworkLookup() ([]structs.Framework, error) {
 	if a.apiKey == "" {
 		log.Fatal("API Key is missing")
 	}
@@ -76,11 +77,6 @@ func (a *App) UpdateFrameworkLookup(data map[string]interface{}) error {
 		return fmt.Errorf("invalid missing framework name")
 	}
 
-	//selectedFrameworkDetails, ok := data["selectedFrameworkDetails"].(map[string]interface{})
-	//if !ok {
-	//	return fmt.Errorf("invalid missing framework details")
-	//}
-
 	// Extract details
 	cename, _ := data["cename"].(string)
 	uatStage, _ := data["uatStage"].(string)
@@ -90,7 +86,18 @@ func (a *App) UpdateFrameworkLookup(data map[string]interface{}) error {
 	tableName, _ := data["tableName"].(string)
 	tableView, _ := data["tableView"].(string)
 
-	err := database.UpdateFrameworkLookupTable(a.db, missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableID, tableName, tableView)
+	lookupRecord := structs.FrameworkLookup{
+		MappedName:  missingFrameworkName,
+		CeName:      cename,
+		UatStage:    uatStage,
+		ProdNumber:  prodNumber,
+		StageNumber: stageNumber,
+		TableID:     tableID,
+		TableName:   tableName,
+		TableView:   tableView,
+	}
+
+	err := database.UpdateFrameworkLookupTable(a.db, lookupRecord) //missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableID, tableName, tableView)
 	if err != nil {
 		return fmt.Errorf("failed to update framework lookup: %v", err)
 	}
@@ -103,16 +110,17 @@ func (a *App) UpdateBuildFrameworkLookupTable(records []map[string]interface{}) 
 	}
 
 	for _, fields := range records {
-		ceFramework, _ := fields["Name"].(string)
-		frameworkIdUAT, _ := fields["UAT_Stage"].(string)
-		frameworkIdStaging, _ := fields["Stage Framework Number"].(string)
-		frameworkIdProd, _ := fields["Production Framework Number"].(string)
-
-		if ceFramework == "" {
-			continue // Skip records without a name
+		lookupRecord := structs.FrameworkLookup{
+			CeName:      fields["Name"].(string),
+			UatStage:    fields["UAT_Stage"].(string),
+			StageNumber: fields["Stage Framework Number"].(string),
+			ProdNumber:  fields["Production Framework Number"].(string),
 		}
 
-		err := database.UpdateBuildFramework_LookupTable(a.db, ceFramework, frameworkIdUAT, frameworkIdStaging, frameworkIdProd)
+		if lookupRecord.CeName == "" {
+			continue // Skip records without a name
+		}
+		err := database.UpdateBuildFramework_LookupTable(a.db, lookupRecord) //ceFramework, frameworkIdUAT, frameworkIdStaging, frameworkIdProd)
 		if err != nil {
 			return fmt.Errorf("failed to update framework lookup: %v", err)
 		}

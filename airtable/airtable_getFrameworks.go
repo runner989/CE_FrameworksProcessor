@@ -2,6 +2,7 @@ package airtable
 
 import (
 	"cefp/database"
+	"cefp/structs"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -21,79 +22,6 @@ const (
 	//getRecordURL = "https://api.airtable.com/v0/{baseId}/{tableIdOrName}/{recordId}"
 )
 
-type Record struct {
-	ID          string                 `json:"id"`
-	CreatedTime string                 `json:"createdTime"`
-	Fields      map[string]interface{} `json:"fields"`
-}
-
-type Table struct {
-	ID              string                 `json:"id"`
-	Name            string                 `json:"name"`
-	Description     string                 `json:"description"`
-	PrimaryFieldId  string                 `json:"primaryFieldId"`
-	Fields          map[string]interface{} `json:"fields"`
-	PermissionLevel string                 `json:"permissionLevel"`
-}
-
-type TablesResponse struct {
-	Tables []Table `json:"tables"`
-}
-
-type Framework struct {
-	ID          string                 `json:"id"`
-	CreatedTime string                 `json:"createdTime"`
-	Fields      map[string]interface{} `json:"fields"`
-}
-
-type FrameworksTable struct {
-}
-
-type ViewsRoot struct {
-	Views []View `json:"views"`
-}
-
-type View struct {
-	ID                string `json:"id"`
-	Name              string `json:"name"`
-	PersonalForUserId string `json:"personalForUserId,omitempty"`
-	Type              string `json:"type"`
-}
-
-type FrameworksResponse struct {
-	Records []Framework `json:"records"`
-	Offset  string      `json:"offset,omitempty"`
-}
-
-//func GetFrameworksTables(apiKey string) error {
-//	reqURL := frameworks_TablesURL //fmt.Sprintf("%s?view=%s&Rand=%s", frameworks_BaseURL, frameworksViewName, generateRandomString())
-//
-//	done := false
-//
-//	for {
-//		response, err := makeHTTPRequest(reqURL, apiKey)
-//		if err != nil {
-//			log.Fatalf("Error making request: %v", err)
-//			return err
-//		}
-//		fmt.Println(response)
-//		// strResponses = strResponses + response
-//		var airtableResp TablesResponse
-//		err = json.Unmarshal([]byte(response), &airtableResp)
-//		if err != nil {
-//			log.Fatalf("Error parsing JSON: %v", err)
-//			return err
-//		}
-//
-//		for _, table := range airtableResp.Tables {
-//			fmt.Printf("%s", table)
-//		}
-//
-//	}
-//
-//	return nil
-//}
-
 func GetAirtableTablesAndViews(apiKey string) (string, error) {
 	baseID := "app5fTueYfRM65SzX"
 	reqURL := fmt.Sprintf("https://api.airtable.com/v0/meta/bases/%s/tables", baseID)
@@ -106,11 +34,11 @@ func GetAirtableTablesAndViews(apiKey string) (string, error) {
 }
 
 // GetFrameworksLookup function to read the Frameworks Build table on Airtable
-func GetFrameworksLookup(apiKey string) ([]Framework, error) {
+func GetFrameworksLookup(apiKey string) ([]structs.Framework, error) {
 	reqURL := fmt.Sprintf("%s?view=%s&Rand=%s", frameworksBaseURL, frameworksViewName, GenerateRandomString())
 	done := false
 
-	var allRecords []Framework
+	var allRecords []structs.Framework
 
 	for !done {
 		response, err := makeHTTPRequest(reqURL, apiKey)
@@ -119,7 +47,7 @@ func GetFrameworksLookup(apiKey string) ([]Framework, error) {
 			return allRecords, err
 		}
 
-		var airtableFrameworksResp FrameworksResponse
+		var airtableFrameworksResp structs.FrameworksResponse
 		err = json.Unmarshal([]byte(response), &airtableFrameworksResp)
 		if err != nil {
 			log.Fatalf("Error parsing JSON: %v", err)
@@ -171,8 +99,11 @@ func GetFrameworkData(db *sql.DB, apiKey, tableName, tableID, tableView string) 
 
 		//log.Print(response)
 
-		var airtableFrameworksResp FrameworksResponse
+		var airtableFrameworksResp structs.FrameworksResponse
 		err = json.Unmarshal([]byte(response), &airtableFrameworksResp)
+		if err != nil {
+			return fmt.Errorf("unable to parse the framework data")
+		}
 
 		if strings.Contains(response, `"error":{`) {
 			errorType := airtableFrameworksResp.Records[0].ID
@@ -216,11 +147,22 @@ func GetFrameworkData(db *sql.DB, apiKey, tableName, tableID, tableView string) 
 				log.Printf("unknown type for TestType: %T", v)
 			}
 
-			//message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", int(evidenceID), evidenceTitle)
-			//runtime.EventsEmit(ctx, "progress", message)
-			//log.Printf("identifier: %s, parentID: %s, displayName: %s, testType: %s", identifier, parentID, displayName, testType)
+			frameworkRecord := structs.FrameworkRecord{
+				SortID:           sortID,
+				PromptID:         promptID,
+				ControlNarrative: controlNarrative,
+				FrameworkName:    frameworkName,
+				Identifier:       identifier,
+				ParentID:         parentID,
+				DisplayName:      displayName,
+				Description:      description,
+				Guidance:         guidance,
+				Tags:             tags,
+				TestType:         testType,
+			}
+
 			// Insert records
-			err := database.InsertFrameworkRecord(db, sortID, promptID, controlNarrative, frameworkName, identifier, parentID, displayName, description, guidance, tags, testType)
+			err := database.InsertFrameworkRecord(db, frameworkRecord) // sortID, promptID, controlNarrative, frameworkName, identifier, parentID, displayName, description, guidance, tags, testType)
 			// sortID int, frameworkName, identifier, parentID, displayName, description, guidance, tags, testType, policyID, controlNarrative
 			if err != nil {
 				log.Printf("skipping Framework %s Identifier %s due to error: %v", identifier, frameworkName, err)

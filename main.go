@@ -18,6 +18,17 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+type FrameworkLookup struct {
+	MissingFrameworkName string
+	CeName               string
+	UatStage             string
+	StageNumber          string
+	ProdNumber           string
+	TableID              string
+	TableName            string
+	TableView            string
+}
+
 func main() {
 
 	db, err := database.NewDB("cefp.db")
