@@ -1,15 +1,6 @@
-document.addEventListener("DOMContentLoaded", function(e) {
-    loadFrameworkLookupTable()
-})
-
-
-document.getElementById("getFrameworkLookupButton").addEventListener('click', function () {
-    // Step 1: Fetch Framework_Lookup table records from Go
-    loadFrameworkLookupTable();
-});
 
 // Function to load and display the table
-function loadFrameworkLookupTable() {
+window.loadDeleteFrameworkLookupTable = function() {
     window.go.main.App.GetFrameworkLookupTable()
         .then(function (records) {
             displayFrameworkTable(records);
@@ -19,10 +10,9 @@ function loadFrameworkLookupTable() {
         });
 }
 
-
 // Step 2: Display the table
 function displayFrameworkTable(records) {
-    const container = document.getElementById('frameworkTableContainer');
+    const container = document.getElementById('deleteFrameworkTableContainer');
     let tableHtml = '<table><thead><tr><th>CE Framework</th><th>Mapped Name</th><th>UAT #</th><th>Staging #</th><th>Prod #</th></tr></thead><tbody>';
 
     records.forEach((record, index) => {
@@ -70,7 +60,7 @@ function deleteRecord(record) {
     window.go.main.App.DeleteSelectedFramework(recordDetails)
         .then(function (result) {
             alert(`${recordDetails.ceFramework} deleted!`);
-            loadFrameworkLookupTable();
+            loadDeleteFrameworkLookupTable();
         })
         .catch(function (err) {
             console.log(err);

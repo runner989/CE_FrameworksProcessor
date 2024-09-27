@@ -309,7 +309,6 @@ func (a *App) GetFrameworkLookupTable() ([]map[string]interface{}, error) {
 
 		records = append(records, record)
 	}
-
 	return records, nil
 }
 
@@ -335,7 +334,7 @@ func stringToInt(s string) int {
 }
 
 func (a *App) UpdateFrameworkLookupRecord(updatedRecord map[string]interface{}) error {
-	log.Printf("Updating framework lookup record: %v", updatedRecord)
+	//log.Printf("Updating framework lookup record: %v", updatedRecord)
 
 	query := `
         UPDATE Framework_Lookup SET

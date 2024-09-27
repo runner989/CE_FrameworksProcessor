@@ -7,14 +7,19 @@
     <link rel="stylesheet" href="src/style.css" />
 </head>
 <body>
-<script type="module" src="./src/main.js"></script>      
+<script type="module" src="./src/main.js"></script>
+<script type="module" src="./src/frameworkDelete.js"></script>
+<script type="module" src="./src/frameworkLookupEdit.js"></script>
+<script type="module" src="./src/frameworkBuild.js"></script>
+<script type="module" src="./src/frameworksMissing.js"></script>
+<script type="module" src="./src/evidenceUpdate.js"></script>
+<script type="module" src="./src/frameworkUpdate.js"></script>
     <div id="app">
-        <div id="logo-title-container">
-            <img alt="CE logo" id="logo" src="./src/assets/images/CFLogo.png">
+        <div class="logo-title-container">
+            <img alt="CE logo" class="logo" src="./src/assets/images/CFLogo.png">
             <h1>Compliance Essentials Frameworks Processor</h1>
         </div>
-        <div class="appContainer">
-
+        <div id="homePage" style="display: block;">
             <div class="row">
                 <strong>Evidence List/Mapping</strong>
             </div>
@@ -95,17 +100,163 @@
                 <div></div>
             </div>
         </div>
+
+        <div id="processEvidencePage" style="display: none;">
+            <div class="appContainer">
+                <h2>Process Evidence Mappings</h2>
+                <div class="evidence-container">
+                    <div class="column">
+                        <h2>Staging</h2>
+                        <div class="row">
+                            <button>Import Evidence Map from CE Staging</button>
+                            <button>Create Staging Evidence Map Report</button>
+                            <button>Create CE UAT Evidence Map Report</button>
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <h2>Production</h2>
+                        <div class="row">
+                            <button>Import Evidence Map from CE Production</button>
+                            <button>Create Production Evidence Map Report</button>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="exit-button-container">
+                    <button id="exitButton">Back to Main Page</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="editFrameworkLookupPage" style="display: none;">
+            <h1>Edit Frameworks Lookup Table</h1>
+            <!--  <div class="button-container"><button id="getFrameworkLookupButton">Open Framework Lookup Table</button></div>-->
+            <button id="editBackToHome">Back to Main Page</button>
+            <div id="editFrameworkTableContainer">
+                <!-- This is where the table will be dynamically rendered -->
+            </div>
+
+            <div id="editFormContainer" style="display:none;">
+                <h2>Edit Record</h2>
+                <form id="editFrameworkForm" style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px;">
+                    <span id="rowID" style="display: none"></span>
+
+                    <!-- Left Column -->
+                    <div>
+                        <div class="row">
+                            <input type="text" id="airtableBase" name="airtableBase" />
+                            <label for="airtableBase">&lt;= Airtable Base</label>
+                        </div>
+                        <div class="row">
+                            <input type="text" id="airtableTableID" name="airtableTableID" />
+                            <label for="airtableTableID">&lt;= Airtable Table ID</label>
+                        </div>
+                        <div class="row">
+                            <input type="text" id="airtableFramework" name="airtableFramework" />
+                            <label for="airtableFramework">&lt;= Airtable Framework</label>
+                        </div>
+                        <div class="row">
+                            <input type="text" id="airtableView" name="airtableView" />
+                            <label for="airtableView">&lt;= Airtable View</label>
+                        </div>
+                        <div class="row">
+                            <input type="text" id="evidenceLibraryMappedName" name="evidenceLibraryMappedName" />
+                            <label for="evidenceLibraryMappedName">&lt;= Evidence Library Mapped Name</label>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div>
+                        <div class="row">
+                            <input type="text" id="ceFramework" name="ceFramework" />
+                            <label for="ceFramework">&lt;= CE Framework Name</label>
+                        </div>
+                        <div class="row">
+                            <input type="number" id="frameworkId_UAT" name="frameworkId_UAT" />
+                            <label for="frameworkId_UAT">&lt;= Framework ID UAT</label>
+                        </div>
+                        <div class="row">
+                            <input type="number" id="frameworkId_Staging" name="frameworkId_Staging" />
+                            <label for="frameworkId_Staging">&lt;= Framework ID Staging</label>
+                        </div>
+                        <div class="row">
+                            <input type="number" id="frameworkId_Prod" name="frameworkId_Prod" />
+                            <label for="frameworkId_Prod">&lt;= Framework ID Prod</label>
+                        </div>
+                        <div class="row">
+                            <input type="number" id="version" name="version" />
+                            <label for="version">&lt;= Version</label>
+                        </div>
+                    </div>
+
+                    <!-- Full Width Fields -->
+                    <div style="grid-column: span 2;">
+                        <label for="description">Description:</label>
+                        <textarea id="description" name="description"></textarea>
+
+                        <label for="comments">Comments:</label>
+                        <textarea id="comments" name="comments"></textarea>
+                    </div>
+
+                    <div class="buttons" style="grid-column: span 2;">
+                        <button type="button" id="saveButton">Save Changes</button>
+                        <button type="button" id="cancelButton">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="deleteFrameworkPage" style="display: none;">
+            <h1>Delete Framework</h1>
+            <p><strong>NOTE:</strong> Deleting a framework will remove it from all tables!</p>
+            <p><strong>Ensure no other frameworks have the same Mapped Name before deleting, or you will have to run Add/Update Framework again.</strong></p>
+            <button id="backToHome">Back to Main Page</button>
+            <div id="deleteFrameworkTableContainer">
+                <!-- This is where the table will be dynamically rendered -->
+            </div>
+        </div>
     </div>
     <script>
         document.getElementById('processEvidenceMappingsButton').addEventListener('click', function() {
-            window.location.href = './processEvidence.html'
-        })
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('processEvidencePage').style.display = 'block';
+        });
+
         document.getElementById('editFrameworkLookupButton').addEventListener('click', function() {
-            window.location.href = './editFrameworks.html'
-        })
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('editFrameworkLookupPage').style.display = 'block';
+            loadEditFrameworkLookupTable()
+        });
+
         document.getElementById('deleteFrameworkButton').addEventListener('click', function() {
-            window.location.href = './deleteFrameworks.html'
-        })
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('deleteFrameworkPage').style.display = 'block';
+            loadDeleteFrameworkLookupTable()
+        });
+
+        document.getElementById('backToHome').addEventListener('click', function() {
+            document.getElementById('processEvidencePage').style.display = 'none';
+            document.getElementById('editFrameworkLookupPage').style.display = 'none';
+            document.getElementById('deleteFrameworkPage').style.display = 'none';
+            document.getElementById('homePage').style.display = 'block';
+        });
+        document.getElementById('editBackToHome').addEventListener('click', function() {
+            document.getElementById('processEvidencePage').style.display = 'none';
+            document.getElementById('editFrameworkLookupPage').style.display = 'none';
+            document.getElementById('deleteFrameworkPage').style.display = 'none';
+            document.getElementById('homePage').style.display = 'block';
+        });
+        document.getElementById('exitButton').addEventListener('click', function() {
+            document.getElementById('processEvidencePage').style.display = 'none';
+            document.getElementById('editFrameworkLookupPage').style.display = 'none';
+            document.getElementById('deleteFrameworkPage').style.display = 'none';
+            document.getElementById('homePage').style.display = 'block';
+        });
+
+        document.getElementById('quitApp').addEventListener('click', function() {
+            Quit(); // Assuming Quit() is implemented on the backend
+        });
     </script>
     <script type="module">
         import { Quit } from './wailsjs/runtime'
@@ -113,9 +264,7 @@
             Quit()
         })
     </script>
-    <script type="module" src="./src/frameworkBuild.js"></script>
-    <script type="module" src="./src/frameworksMissing.js"></script>
-    <script type="module" src="./src/evidenceUpdate.js"></script>
-    <script type="module" src="./src/frameworkUpdate.js"></script>
+
+    
 </body>
 </html>

@@ -1,14 +1,6 @@
-document.addEventListener("DOMContentLoaded", function() {
-    loadFrameworkLookupTable()
-})
-
-// document.getElementById("getFrameworkLookupButton").addEventListener('click', function () {
-//     // Step 1: Fetch Framework_Lookup table records from Go
-//     loadFrameworkLookupTable();
-// });
-
 // Function to load and display the table
-function loadFrameworkLookupTable() {
+ window.loadEditFrameworkLookupTable = function() {
+// function  loadEditFrameworkLookupTable() {
     window.go.main.App.GetFrameworkLookupTable()
         .then(function (records) {
             displayFrameworkTable(records);
@@ -20,7 +12,7 @@ function loadFrameworkLookupTable() {
 
 // Step 2: Display the table
 function displayFrameworkTable(records) {
-    const container = document.getElementById('frameworkTableContainer');
+    const container = document.getElementById('editFrameworkTableContainer');
     let tableHtml = '<table><thead><tr><th>CE Framework</th><th>UAT #</th><th>Staging #</th><th>Prod #</th></tr></thead><tbody>';
 
     records.forEach((record, index) => {
@@ -94,11 +86,11 @@ document.getElementById('saveButton').addEventListener('click', function () {
             // Scroll back to the top after saving
             window.scrollTo({ top: 0, behavior: 'smooth' });
             // Reload the table to reflect updated data
-            loadFrameworkLookupTable();
+            loadEditFrameworkLookupTable();
         })
         .catch(function (err) {
             console.error('Error updating record:', err);
-            alert('Failed to update the record.');
+            alert('Failed to update the record.' + err.message);
         });
 });
 
@@ -107,10 +99,5 @@ document.getElementById('cancelButton').addEventListener('click', function () {
     document.getElementById('editFormContainer').style.display = 'none';
     // Scroll back to the top after saving
     window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-// Step 6: Navigate back to the main page
-document.getElementById('backButton').addEventListener('click', function () {
-    window.location.href = 'index.html'; // Assuming 'index.html' is the main page
 });
 
