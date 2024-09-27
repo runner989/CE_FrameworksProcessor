@@ -53,12 +53,10 @@ func GetFrameworksLookup(apiKey string) ([]structs.Framework, error) {
 			log.Fatalf("Error parsing JSON: %v", err)
 			return allRecords, err
 		}
+		//log.Printf("airtableFrameworksResp: %v", airtableFrameworksResp)
 
 		// Append the records to the slice of all records
 		allRecords = append(allRecords, airtableFrameworksResp.Records...)
-		// for _, record := range airtableResp.Records {
-		// 	fmt.Printf("%s", record)
-		// }
 
 		if airtableFrameworksResp.Offset == "" {
 			done = true

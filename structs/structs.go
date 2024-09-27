@@ -83,16 +83,17 @@ type FrameworksResponse struct {
 }
 
 type FrameworkLookup struct {
-	MappedName  sql.NullString `json:"mappedName"`
-	CeName      sql.NullString `json:"ceName"`
-	UatStage    sql.NullString `json:"uatStage"`
-	StageNumber sql.NullString `json:"stageNumber"`
-	ProdNumber  sql.NullString `json:"prodNumber"`
-	TableBase   sql.NullString `json:"tableBase"`
-	TableID     sql.NullString `json:"tableID"`
-	TableName   sql.NullString `json:"tableName"`
-	TableView   sql.NullString `json:"tableView"`
-	Version     sql.NullString `json:"version"`
-	Description sql.NullString `json:"description"`
-	Comments    sql.NullString `json:"comments"`
+	RowID       sql.NullFloat64 `json:"rowId"`
+	MappedName  sql.NullString  `json:"mappedName"`
+	CeName      sql.NullString  `json:"ceName"`
+	UatStage    sql.NullFloat64 `json:"uatStage"`
+	StageNumber sql.NullFloat64 `json:"stageNumber"`
+	ProdNumber  sql.NullFloat64 `json:"prodNumber"`
+	TableBase   sql.NullString  `json:"tableBase"`
+	TableID     sql.NullString  `json:"tableID"`
+	TableName   sql.NullString  `json:"tableName"`
+	TableView   sql.NullString  `json:"tableView"`
+	Version     sql.NullString  `json:"version"`
+	Description sql.NullString  `json:"description"`
+	Comments    sql.NullString  `json:"comments"`
 }

@@ -67,6 +67,13 @@ function deleteRecord(record) {
         description: record.Description,
         comments: record.Comments
     }
-
-    alert(`The ${recordDetails.ceFramework} framework will be deleted as soon as the code is finished!`)
+    window.go.main.App.DeleteSelectedFramework(recordDetails)
+        .then(function (result) {
+            alert(`${recordDetails.ceFramework} deleted!`);
+            loadFrameworkLookupTable();
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
+    // alert(`The ${recordDetails.ceFramework} framework will be deleted as soon as the code is finished!`)
 }

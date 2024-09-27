@@ -1,3 +1,13 @@
+// Define the specific fields to display in the desired order
+var orderedFields = [
+    'Name',
+    'UAT_Stage',
+    'Stage Framework Number',
+    'Production Framework Number',
+    'Notes',
+    'Category',
+    'Status',
+];
 
 document.getElementById('addFrameworkButton').addEventListener('click',function() {
     window.go.main.App.GetUniqueFrameworks()
@@ -169,6 +179,11 @@ function openFrameworkBuildListSelectionModal() {
             console.error('Error fetching framework build list:', err);
             alert('Failed to retrieve framework build list.');
         });
+}
+
+function closeFrameworkBuildListModal() {
+    let modal = document.getElementById('frameworkBuildModal');
+    modal.style.display = 'none';
 }
 
 function displayFrameworkBuildListSelection(records, onFrameworkSelected) {

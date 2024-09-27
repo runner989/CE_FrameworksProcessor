@@ -72,27 +72,36 @@ func (a *App) GetFrameworkLookup() ([]structs.Framework, error) {
 	return records, nil
 }
 
+// Helper function to convert an interface{} to float64
+func toFloat64(value interface{}) float64 {
+	switch v := value.(type) {
+	case float64:
+		return v
+	case string:
+		f, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			//fmt.Printf("Error converting string to float64: %v\n", err)
+			return 0 // Fallback value if conversion fails
+		}
+		return f
+	default:
+		//fmt.Printf("Unexpected type: %T\n", v)
+		return 0 // Fallback value for unexpected types
+	}
+}
+
 func (a *App) UpdateFrameworkLookup(data map[string]interface{}) error {
 	missingFrameworkName, ok := data["missingFrameworkName"].(string)
 	if !ok {
 		return fmt.Errorf("invalid missing framework name")
 	}
 
-	// Extract details
-	//cename, _ := data["cename"].(string)
-	//uatStage, _ := data["uatStage"].(int64)
-	//prodNumber, _ := data["prodNumber"].(int64)
-	//stageNumber, _ := data["stageNumber"].(int64)
-	//tableID, _ := data["tableID"].(string)
-	//tableName, _ := data["tableName"].(string)
-	//tableView, _ := data["tableView"].(string)
-
 	lookupRecord := structs.FrameworkLookup{
 		MappedName:  sql.NullString{String: missingFrameworkName, Valid: true},
 		CeName:      sql.NullString{String: data["cename"].(string), Valid: true},
-		UatStage:    sql.NullString{String: data["uatStage"].(string), Valid: true},
-		ProdNumber:  sql.NullString{String: data["prodNumber"].(string), Valid: true},
-		StageNumber: sql.NullString{String: data["stageNumber"].(string), Valid: true},
+		UatStage:    sql.NullFloat64{Float64: toFloat64(data["uatStage"]), Valid: true},
+		ProdNumber:  sql.NullFloat64{Float64: toFloat64(data["prodNumber"]), Valid: true},
+		StageNumber: sql.NullFloat64{Float64: toFloat64(data["stageNumber"]), Valid: true},
 		TableID:     sql.NullString{String: data["tableID"].(string), Valid: true},
 		TableName:   sql.NullString{String: data["tableName"].(string), Valid: true},
 		TableView:   sql.NullString{String: data["tableView"].(string), Valid: true},
@@ -110,19 +119,12 @@ func (a *App) UpdateBuildFrameworkLookupTable(records []map[string]interface{}) 
 		return fmt.Errorf("database connection is nil")
 	}
 
-	//var ceName, uatStage, stageNumber, prodNumber string
-
 	for _, fields := range records {
-		//ceName = fields["Name"].(string)
-		//uatStage = fields["UAT_Stage"].(string)
-		//stageNumber = fields["Stage Framework Number"].(string)
-		//prodNumber = fields["Production Framework Number"].(string)
-
 		lookupRecord := structs.FrameworkLookup{
 			CeName:      safeString(fields["Name"]),
-			UatStage:    safeString(fields["UAT_Stage"]),
-			StageNumber: safeString(fields["Stage Framework Number"]),
-			ProdNumber:  safeString(fields["Production Framework Number"]),
+			UatStage:    safeFloat(toFloat64(fields["UAT_Stage"])),
+			StageNumber: safeFloat(toFloat64(fields["Stage Framework Number"])),
+			ProdNumber:  safeFloat(toFloat64(fields["Production Framework Number"])),
 		}
 
 		if !lookupRecord.CeName.Valid || lookupRecord.CeName.String == "" {
@@ -147,6 +149,17 @@ func safeString(value interface{}) sql.NullString {
 	}
 
 	return sql.NullString{String: str, Valid: true}
+}
+
+func safeFloat(value interface{}) sql.NullFloat64 {
+	if value == nil {
+		return sql.NullFloat64{Float64: 0, Valid: false}
+	}
+	valFloat, ok := value.(float64)
+	if !ok {
+		return sql.NullFloat64{Float64: valFloat, Valid: true}
+	}
+	return sql.NullFloat64{Float64: valFloat, Valid: true}
 }
 
 func (a *App) GetAirtableBaseTables() (map[string]interface{}, error) {
@@ -216,7 +229,7 @@ func (a *App) GetFrameworkDetails(framework string) (map[string]interface{}, err
 	if a.db == nil {
 		log.Fatal("Database is missing")
 	}
-	//log.Printf("Getting framework details for %s", framework)
+
 	frameworkInfo, err := database.GetFrameworkInfoBackend(a.db, framework)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching framework details: %v", err)
@@ -247,6 +260,7 @@ func (a *App) GetFrameworkLookupTable() ([]map[string]interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error querying framework lookup table: %v", err)
 	}
+
 	defer rows.Close()
 
 	var records []map[string]interface{}
@@ -361,4 +375,43 @@ func (a *App) UpdateFrameworkLookupRecord(updatedRecord map[string]interface{}) 
 	}
 
 	return nil
+}
+
+func (a *App) DeleteSelectedFramework(selectedRecord map[string]interface{}) error {
+	//log.Println(selectedRecord)
+	//// Iterate through the map and print the key, value, and type
+	//for key, value := range selectedRecord {
+	//	fmt.Printf("Key: %s, Value: %v, Type: %s\n", key, value, reflect.TypeOf(value))
+	//}
+
+	framework := structs.FrameworkLookup{
+		RowID:       safeFloat(selectedRecord["rowID"]),
+		MappedName:  safeString(selectedRecord["mappedName"]),
+		CeName:      safeString(selectedRecord["ceFramework"]),
+		UatStage:    safeFloat(selectedRecord["frameworkId_UAT"]),
+		StageNumber: safeFloat(selectedRecord["frameworkId_Staging"]),
+		ProdNumber:  safeFloat(selectedRecord["frameworkId_Prod"]),
+		TableBase:   safeString(selectedRecord["airtableBase"]),
+		TableID:     safeString(selectedRecord["airtableTableID"]),
+		TableName:   safeString(selectedRecord["airtableFramework"]),
+		TableView:   safeString(selectedRecord["airtableView"]),
+		Version:     safeString(selectedRecord["version"]),
+		Description: safeString(selectedRecord["description"]),
+		Comments:    safeString(selectedRecord["comments"]),
+	}
+
+	// Delete framework from Framework_Lookup
+	err := database.DeleteFromFrameworkLookup(a.db, framework)
+	if err != nil {
+		log.Printf("Error deleting selected framework lookup record: %v", err)
+		return fmt.Errorf("error deleting selected framework lookup record: %v", err)
+	}
+
+	// Delete framework from Framework
+	err = database.DeleteFromFramework(a.db, framework)
+	if err != nil {
+		log.Printf("Error deleting selected framework record: %v", err)
+	}
+	return nil
+
 }

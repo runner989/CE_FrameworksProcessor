@@ -1,3 +1,13 @@
+// Define the specific fields to display in the desired order
+var orderedFields = [
+    'Name',
+    'UAT_Stage',
+    'Stage Framework Number',
+    'Production Framework Number',
+    'Notes',
+    'Category',
+    'Status',
+];
 
 document.getElementById('getMissingFrameworksButton').addEventListener('click',function() {
     window.go.main.App.GetMissingFramework()
@@ -16,7 +26,7 @@ function displayMissingRecords(records) {
 
 
     let content = '<h3>Frameworks Missing From Lookup Table</h3>';
-    content += '<p>Frameworks listed are from the Mapped table that are not in the Framework Lookup table</P';
+    content += '<p>Frameworks listed are from the Mapped table that are not in the Framework Lookup table</p>';
     content += '<div id="selectedRecordLabel"></div>';
     content += '<div id="tableContainer"><table><thead><tr>';
 

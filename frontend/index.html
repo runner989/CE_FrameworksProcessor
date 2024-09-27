@@ -87,23 +87,35 @@
                     <button id="deleteFrameworkButton">Remove/Delete Framework</button>
                 </div>
             </div>
-
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; grid-gap:10px;">
+                <div></div><div></div>
+                <div class="button-container">
+                    <button id="quitApp">Quit</button>
+                </div>
+                <div></div>
+            </div>
         </div>
     </div>
     <script>
         document.getElementById('processEvidenceMappingsButton').addEventListener('click', function() {
-            window.location.href = 'processEvidence.html'
+            window.location.href = './processEvidence.html'
         })
         document.getElementById('editFrameworkLookupButton').addEventListener('click', function() {
-            window.location.href = 'editFrameworks.html'
+            window.location.href = './editFrameworks.html'
         })
         document.getElementById('deleteFrameworkButton').addEventListener('click', function() {
-            window.location.href = 'deleteFrameworks.html'
+            window.location.href = './deleteFrameworks.html'
         })
     </script>
-    <script src="./src/frameworkBuild.js"></script>
-    <script src="./src/frameworksMissing.js"></script>
-    <script src="./src/evidenceUpdate.js"></script>
-    <script src="./src/frameworkUpdate.js"></script>
+    <script type="module">
+        import { Quit } from './wailsjs/runtime'
+        document.getElementById('quitApp').addEventListener('click', function() {
+            Quit()
+        })
+    </script>
+    <script type="module" src="./src/frameworkBuild.js"></script>
+    <script type="module" src="./src/frameworksMissing.js"></script>
+    <script type="module" src="./src/evidenceUpdate.js"></script>
+    <script type="module" src="./src/frameworkUpdate.js"></script>
 </body>
 </html>

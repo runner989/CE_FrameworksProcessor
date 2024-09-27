@@ -117,6 +117,8 @@ function updateFrameworkLookupTable(records) {
     window.go.main.App.UpdateBuildFrameworkLookupTable(data)
         .then(function (response) {
             alert('Framework Lookup table updated successfully.');
+            let modal = document.getElementById('recordsModal');
+            modal.style.display = 'none';
         })
         .catch(function(err) {
             console.error('Error updating Framework Lookup table:', err);

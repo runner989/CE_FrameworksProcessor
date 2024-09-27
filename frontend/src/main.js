@@ -11,5 +11,6 @@ import {
     UpdateFrameworkLookup,
     GetFrameworkRecords,
     GetFrameworkLookupTable,
-    UpdateFrameworkLookupRecord
+    UpdateFrameworkLookupRecord,
+    DeleteSelectedFramework
 } from '../wailsjs/go/main/App'
