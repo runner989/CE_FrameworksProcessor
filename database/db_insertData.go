@@ -113,13 +113,13 @@ func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, table
 	}
 	defer f.Close()
 
-	runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Opening CE Mapping %s file: %v", table, err))
+	runtime.EventsEmit(ctx, "mappingprogress", fmt.Sprintf("Opening CE Mapping %s file: %v", table, err))
 
 	qry := fmt.Sprintf("DELETE FROM CEMapping_%s", table)
 
 	_, err = db.Exec(qry)
 	if err != nil {
-		runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error deleting from CEMapping_%s: %v", table, err))
+		runtime.EventsEmit(ctx, "mappingprogress", fmt.Sprintf("Error deleting from CEMapping_%s: %v", table, err))
 		return fmt.Errorf("error deleting from CEMapping_%s: %v", table, err)
 	}
 
@@ -145,7 +145,7 @@ func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, table
 		}
 
 		message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", evidenceMapRecord.EvidenceID, evidenceMapRecord.Framework)
-		runtime.EventsEmit(ctx, "progress", message)
+		runtime.EventsEmit(ctx, "mappingprogress", message)
 
 		err = saveEvidenceRecordToDB(db, evidenceMapRecord, table)
 		if err != nil {
@@ -154,7 +154,7 @@ func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, table
 	}
 
 	message := fmt.Sprintf("Done updating CEMapping_%s table!", table)
-	runtime.EventsEmit(ctx, "progress", message)
+	runtime.EventsEmit(ctx, "mappingprogress", message)
 	return nil
 }
 

@@ -1,8 +1,8 @@
-window.runtime.EventsOn("progress", (message) => {
-    updateProgressModal(message)
+window.runtime.EventsOn("mappingprogress", (message) => {
+    updateMappingProgressModal(message)
 });
 
-function updateProgressModal(message) {
+function updateMappingProgressModal(message) {
     var modal = document.getElementById('recordsModal');
     var recordsContainer = document.getElementById('recordsContainer');
 

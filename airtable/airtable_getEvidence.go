@@ -86,7 +86,7 @@ func ReadAPIEvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error 
 	}
 
 	reqURL := fmt.Sprintf("%s?view=%s&Rand=%s", baseURL, evidenceViewName, GenerateRandomString())
-	log.Printf("Fetching Evidence Table from %s", reqURL)
+	//log.Printf("Fetching Evidence Table from %s", reqURL)
 
 	done := false
 
@@ -107,8 +107,8 @@ func ReadAPIEvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error 
 	for !done {
 		response, err := makeHTTPRequest(reqURL, apiKey)
 		if err != nil {
-			log.Fatalf("Error making request: %v", err)
 			runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error making request: %v", err))
+			log.Fatalf("Error making request: %v", err)
 			return err
 		}
 
@@ -117,8 +117,8 @@ func ReadAPIEvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error 
 		var airtableResp structs.AirtableResponse
 		err = json.Unmarshal([]byte(response), &airtableResp)
 		if err != nil {
-			log.Fatalf("Error parsing JSON: %v", err)
 			runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error parsing JSON: %v", err))
+			log.Fatalf("Error parsing JSON: %v", err)
 			return err
 		}
 
