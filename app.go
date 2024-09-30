@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -40,7 +41,7 @@ func (a *App) startup(ctx context.Context) {
 
 // ReadAPIEvidenceTable get all records from the Evidence table in Airtable
 func (a *App) ReadAPIEvidenceTable() (string, error) {
-	err := airtable.ReadAPI_EvidenceTable(a.ctx, a.db, a.apiKey)
+	err := airtable.ReadAPIEvidenceTable(a.ctx, a.db, a.apiKey)
 	if err != nil {
 		log.Printf("Error updating evidence table: %v", err)
 		return "", fmt.Errorf("failed to read/update evidence table")
@@ -121,7 +122,7 @@ func (a *App) UpdateBuildFrameworkLookupTable(records []map[string]interface{}) 
 
 	for _, fields := range records {
 		lookupRecord := structs.FrameworkLookup{
-			CeName:      safeString(fields["Name"]),
+			CeName:      SafeString(fields["Name"]),
 			UatStage:    safeFloat(toFloat64(fields["UAT_Stage"])),
 			StageNumber: safeFloat(toFloat64(fields["Stage Framework Number"])),
 			ProdNumber:  safeFloat(toFloat64(fields["Production Framework Number"])),
@@ -138,7 +139,7 @@ func (a *App) UpdateBuildFrameworkLookupTable(records []map[string]interface{}) 
 	return nil
 }
 
-func safeString(value interface{}) sql.NullString {
+func SafeString(value interface{}) sql.NullString {
 	if value == nil {
 		return sql.NullString{String: "", Valid: false}
 	}
@@ -385,18 +386,18 @@ func (a *App) DeleteSelectedFramework(selectedRecord map[string]interface{}) err
 
 	framework := structs.FrameworkLookup{
 		RowID:       safeFloat(selectedRecord["rowID"]),
-		MappedName:  safeString(selectedRecord["mappedName"]),
-		CeName:      safeString(selectedRecord["ceFramework"]),
+		MappedName:  SafeString(selectedRecord["mappedName"]),
+		CeName:      SafeString(selectedRecord["ceFramework"]),
 		UatStage:    safeFloat(selectedRecord["frameworkId_UAT"]),
 		StageNumber: safeFloat(selectedRecord["frameworkId_Staging"]),
 		ProdNumber:  safeFloat(selectedRecord["frameworkId_Prod"]),
-		TableBase:   safeString(selectedRecord["airtableBase"]),
-		TableID:     safeString(selectedRecord["airtableTableID"]),
-		TableName:   safeString(selectedRecord["airtableFramework"]),
-		TableView:   safeString(selectedRecord["airtableView"]),
-		Version:     safeString(selectedRecord["version"]),
-		Description: safeString(selectedRecord["description"]),
-		Comments:    safeString(selectedRecord["comments"]),
+		TableBase:   SafeString(selectedRecord["airtableBase"]),
+		TableID:     SafeString(selectedRecord["airtableTableID"]),
+		TableName:   SafeString(selectedRecord["airtableFramework"]),
+		TableView:   SafeString(selectedRecord["airtableView"]),
+		Version:     SafeString(selectedRecord["version"]),
+		Description: SafeString(selectedRecord["description"]),
+		Comments:    SafeString(selectedRecord["comments"]),
 	}
 
 	// Delete framework from Framework_Lookup
@@ -413,4 +414,48 @@ func (a *App) DeleteSelectedFramework(selectedRecord map[string]interface{}) err
 	}
 	return nil
 
+}
+
+func (a *App) ProcessEvidenceStagingFile(filePath string) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("error opening file: %v", err)
+	}
+	defer file.Close()
+
+	err = database.ReadExcelAndSaveToDB(a.ctx, a.db, file, "Staging")
+	if err != nil {
+		return fmt.Errorf("error processing evidence staging file: %v", err)
+	}
+	return nil
+}
+
+func (a *App) ProcessEvidenceProdFile(filePath string) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("error opening file: %v", err)
+	}
+	defer file.Close()
+
+	err = database.ReadExcelAndSaveToDB(a.ctx, a.db, file, "Prod")
+	if err != nil {
+		return fmt.Errorf("error processing evidence prod file: %v", err)
+	}
+	return nil
+}
+
+func (a *App) OpenFileDialog() (string, error) {
+	// Open the file dialog and allow the user to select a file
+	filePath, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: "Select Excel File",
+		Filters: []runtime.FileFilter{
+			{DisplayName: "Excel Files", Pattern: "*.xlsx"},
+		},
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("error opening file dialog: %v", err)
+	}
+
+	return filePath, nil
 }

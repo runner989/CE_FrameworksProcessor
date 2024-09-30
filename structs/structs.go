@@ -32,12 +32,24 @@ type Evidence struct {
 }
 
 type EvidenceRecord struct {
-	EvidenceID           int    `json:"EvidenceID"`
-	EvidenceTitle        string `json:"Evidence Title"`
-	Description          string `json:"Description_FromEvidence"`
-	AnecdotesEvidenceIds string `json:"AnecdotesEvidenceIds"`
-	Priority             string `json:"Priority"`
-	EvidenceType         string `json:"Evidence Type"`
+	EvidenceID           int            `json:"EvidenceID"`
+	EvidenceTitle        sql.NullString `json:"Evidence Title"`
+	Description          sql.NullString `json:"Description_FromEvidence"`
+	Requirement          sql.NullString `json:"Requirement"`
+	AnecdotesEvidenceIds sql.NullString `json:"AnecdotesEvidenceIds"`
+	Priority             sql.NullString `json:"Priority"`
+	EvidenceType         sql.NullString `json:"Evidence Type"`
+}
+
+type EvidenceMapRecord struct {
+	EvidenceID      int // Assuming EvidenceID should be an int
+	Framework       string
+	FrameworkID     int // Assuming FrameworkID should be an int
+	Requirement     string
+	Description     string
+	Guidance        string
+	RequirementType string
+	Delete          string
 }
 
 type FrameworkTable struct {
@@ -96,4 +108,9 @@ type FrameworkLookup struct {
 	Version     sql.NullString  `json:"version"`
 	Description sql.NullString  `json:"description"`
 	Comments    sql.NullString  `json:"comments"`
+}
+
+type FileMetadata struct {
+	Filename string `json:"filename"`
+	Content  []byte `json:"content"`
 }

@@ -14,6 +14,7 @@
 <script type="module" src="./src/frameworksMissing.js"></script>
 <script type="module" src="./src/evidenceUpdate.js"></script>
 <script type="module" src="./src/frameworkUpdate.js"></script>
+<script type="module" src="./src/mappingFileImport.js"></script>
     <div id="app">
         <div class="logo-title-container">
             <img alt="CE logo" class="logo" src="./src/assets/images/CFLogo.png">
@@ -46,31 +47,6 @@
             <div class="row">
                 <div class="button-container">
                     <button id="getMissingFrameworksButton">Missing from Framework Lookup Table</button>
-                </div>
-                <div id="recordsModal" class="modal">
-                    <div class="modal-content">
-                        <span id="closeModal">&times;</span>
-                        <div id="recordsContainer"></div>
-                    </div>
-                </div>
-                <div id="frameworkBuildModal" class="modal">
-                    <div class="modal-content">
-                        <span id="closeFrameworkBuildModal">&times;</span>
-                        <div id="frameworkBuildContainer"></div>
-                    </div>
-                </div>
-                <div id="frameworkTablesModal" class="modal">
-                    <div class="modal-content">
-                        <span id="closeFrameworkTablesModal">&times;</span>
-                        <div id="frameworkTablesContainer"></div>
-                    </div>
-                </div>
-                <!-- Update Framework Modal -->
-                <div id="updateFrameworkModal" class="modal">
-                    <div class="modal-content">
-                        <span id="frameworkName"></span>
-                        <p>Working on updating the framework. Please wait...</p>
-                    </div>
                 </div>
             </div>
             <div class="row">
@@ -108,7 +84,8 @@
                     <div class="column">
                         <h2>Staging</h2>
                         <div class="row">
-                            <button>Import Evidence Map from CE Staging</button>
+<!--                            <input type="file" id="stagingFileInput" accept=".xlsx" style="display: none;" />-->
+                            <button id="importStagingButton">Import Evidence Map from CE Staging</button>
                             <button>Create Staging Evidence Map Report</button>
                             <button>Create CE UAT Evidence Map Report</button>
                         </div>
@@ -117,7 +94,8 @@
                     <div class="column">
                         <h2>Production</h2>
                         <div class="row">
-                            <button>Import Evidence Map from CE Production</button>
+<!--                            <input type="file" id="prodFileInput" accept=".xlsx" style="display: none;" />-->
+                            <button id="importProdButton">Import Evidence Map from CE Production</button>
                             <button>Create Production Evidence Map Report</button>
                         </div>
                     </div>
@@ -214,6 +192,33 @@
             <button id="backToHome">Back to Main Page</button>
             <div id="deleteFrameworkTableContainer">
                 <!-- This is where the table will be dynamically rendered -->
+            </div>
+        </div>
+        <div id="modals">
+            <div id="recordsModal" class="modal">
+                <div class="modal-content">
+                    <span id="closeModal">&times;</span>
+                    <div id="recordsContainer"></div>
+                </div>
+            </div>
+            <div id="frameworkBuildModal" class="modal">
+                <div class="modal-content">
+                    <span id="closeFrameworkBuildModal">&times;</span>
+                    <div id="frameworkBuildContainer"></div>
+                </div>
+            </div>
+            <div id="frameworkTablesModal" class="modal">
+                <div class="modal-content">
+                    <span id="closeFrameworkTablesModal">&times;</span>
+                    <div id="frameworkTablesContainer"></div>
+                </div>
+            </div>
+            <!-- Update Framework Modal -->
+            <div id="updateFrameworkModal" class="modal">
+                <div class="modal-content">
+                    <span id="frameworkName"></span>
+                    <p>Working on updating the framework. Please wait...</p>
+                </div>
             </div>
         </div>
     </div>

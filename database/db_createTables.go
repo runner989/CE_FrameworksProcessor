@@ -151,7 +151,7 @@ func CreateCEMappingProdTable(db *sql.DB) error {
 	}
 
 	createTableSQL := `CREATE TABLE CEMapping_Prod (
-		"EvidenceID" integer NOT NULL PRIMARY KEY,
+		"EvidenceID" INTEGER,
 		"Framework" TEXT,
 		"FrameworkId" INTEGER,
 		"Requirement" TEXT,
@@ -191,7 +191,7 @@ func CreateCEMappingStagingTable(db *sql.DB) error {
 	}
 
 	createTableSQL := `CREATE TABLE CEMapping_Staging (
-		"EvidenceID" integer NOT NULL PRIMARY KEY,
+		"EvidenceID" INTEGER,
 		"Framework" TEXT,
 		"FrameworkId" INTEGER,
 		"Requirement" TEXT,
@@ -231,7 +231,7 @@ func CreateEvidenceTable(db *sql.DB) error {
 	}
 
 	createTableSQL := `CREATE TABLE Evidence (
-		"EvidenceID" integer NOT NULL PRIMARY KEY,
+		"EvidenceID" INTEGER NOT NULL PRIMARY KEY,
 		"Evidence" TEXT,
 		"Description" TEXT,
 		"AnecdotesEvidenceIds" TEXT,

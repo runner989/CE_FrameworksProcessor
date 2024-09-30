@@ -25,8 +25,10 @@ type Config struct {
 }
 
 const (
-	baseURL          = "https://api.airtable.com/v0/applEdk0gS7gMZ9o7/tbl6gMhn2VNnl4cOA"
+	baseURL = "https://api.airtable.com/v0/applEdk0gS7gMZ9o7/tbl6gMhn2VNnl4cOA"
+	//baseURL = "https://api.airtable.com/v0/app5fTueYfRM65SzX/tblYaPqsXmknYtwIx"
 	evidenceViewName = "Active+Break+Out+View"
+	//evidenceViewName = "View%20For%20Export"
 )
 
 func loadAdditionalSkipFields() (map[string]struct{}, error) {
@@ -47,7 +49,20 @@ func loadAdditionalSkipFields() (map[string]struct{}, error) {
 	return additionalSkipFields, nil
 }
 
-func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error {
+func safeString(value interface{}) sql.NullString {
+	if value == nil {
+		return sql.NullString{String: "", Valid: false}
+	}
+
+	str, ok := value.(string)
+	if !ok {
+		return sql.NullString{String: "", Valid: false}
+	}
+
+	return sql.NullString{String: str, Valid: true}
+}
+
+func ReadAPIEvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error {
 	skipFields := map[string]struct{}{
 		"EvidenceID":                             {},
 		"Evidence Title":                         {},
@@ -71,6 +86,7 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 	}
 
 	reqURL := fmt.Sprintf("%s?view=%s&Rand=%s", baseURL, evidenceViewName, GenerateRandomString())
+	log.Printf("Fetching Evidence Table from %s", reqURL)
 
 	done := false
 
@@ -95,6 +111,8 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 			runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error making request: %v", err))
 			return err
 		}
+
+		//log.Printf("response: %s", response)
 		// strResponses = strResponses + response
 		var airtableResp structs.AirtableResponse
 		err = json.Unmarshal([]byte(response), &airtableResp)
@@ -123,6 +141,7 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 				log.Printf("skipping record due to missing or invalid EvidenceID")
 				continue
 			}
+
 			var anecdotesEvidenceIds string
 			switch v := record.Fields["AnecdotesEvidenceIds"].(type) {
 			case []interface{}:
@@ -139,15 +158,23 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 
 			evidenceRecord := structs.EvidenceRecord{
 				EvidenceID:           int(evidenceID),
-				EvidenceTitle:        record.Fields["Evidence Title"].(string),
-				Description:          record.Fields["Description_FromEvidence"].(string),
-				AnecdotesEvidenceIds: anecdotesEvidenceIds,
-				Priority:             record.Fields["Priority"].(string),
-				EvidenceType:         record.Fields["Evidence Type"].(string),
+				EvidenceTitle:        safeString(record.Fields["Evidence Title"]),
+				Description:          safeString(record.Fields["Description_FromEvidence"]),
+				Requirement:          safeString(record.Fields["Requirement"]),
+				AnecdotesEvidenceIds: safeString(anecdotesEvidenceIds),
+				Priority:             safeString(record.Fields["Priority"]),
+				EvidenceType:         safeString(record.Fields["Evidence Type"]),
 			}
 
-			message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", evidenceRecord.EvidenceID, evidenceRecord.EvidenceTitle)
+			message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", evidenceRecord.EvidenceID, evidenceRecord.EvidenceTitle.String)
 			runtime.EventsEmit(ctx, "progress", message)
+
+			// Insert CE Framework mapping
+			err = insertMappingRecord(db, int(evidenceID), "CE Framework", strings.Trim(evidenceRecord.Requirement.String, " "))
+			if err != nil {
+				log.Printf("skipping CE Framework mapping due to error: %v", err)
+				runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping CE Framework mapping Evidence ID: %d due to error: %v", int(evidenceID), err))
+			}
 
 			// Insert records
 			err := insertEvidenceRecord(db, evidenceRecord) // int(evidenceID), evidenceTitle, description, anecdotesIds, priority, evidenceType)
@@ -188,7 +215,7 @@ func ReadAPI_EvidenceTable(ctx context.Context, db *sql.DB, apiKey string) error
 
 func insertEvidenceRecord(db *sql.DB, er structs.EvidenceRecord) error { //evidenceID int, evidenceTitle, description, anecdotesIds, priority, evidenceType string) error {
 	_, err := db.Exec("INSERT INTO Evidence (EvidenceID, Evidence, Description, AnecdotesEvidenceIds, Priority, EvidenceType) VALUES (?, ?, ?, ?, ?, ?)",
-		er.EvidenceID, er.EvidenceTitle, er.Description, er.AnecdotesEvidenceIds, er.Priority, er.EvidenceType)
+		er.EvidenceID, er.EvidenceTitle.String, er.Description.String, er.AnecdotesEvidenceIds.String, er.Priority.String, er.EvidenceType.String)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) && errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {

@@ -38,6 +38,18 @@ export function GetUniqueFrameworks() {
   return window['go']['main']['App']['GetUniqueFrameworks']();
 }
 
+export function OpenFileDialog() {
+  return window['go']['main']['App']['OpenFileDialog']();
+}
+
+export function ProcessEvidenceProdFile(arg1) {
+  return window['go']['main']['App']['ProcessEvidenceProdFile'](arg1);
+}
+
+export function ProcessEvidenceStagingFile(arg1) {
+  return window['go']['main']['App']['ProcessEvidenceStagingFile'](arg1);
+}
+
 export function ReadAPIEvidenceTable() {
   return window['go']['main']['App']['ReadAPIEvidenceTable']();
 }

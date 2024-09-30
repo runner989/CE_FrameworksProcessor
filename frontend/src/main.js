@@ -12,5 +12,8 @@ import {
     GetFrameworkRecords,
     GetFrameworkLookupTable,
     UpdateFrameworkLookupRecord,
-    DeleteSelectedFramework
+    DeleteSelectedFramework,
+    ProcessEvidenceStagingFile,
+    ProcessEvidenceProdFile,
+    OpenFileDialog
 } from '../wailsjs/go/main/App'

@@ -20,6 +20,12 @@ export function GetMissingFramework():Promise<Array<string>>;
 
 export function GetUniqueFrameworks():Promise<Array<string>>;
 
+export function OpenFileDialog():Promise<string>;
+
+export function ProcessEvidenceProdFile(arg1:string):Promise<void>;
+
+export function ProcessEvidenceStagingFile(arg1:string):Promise<void>;
+
 export function ReadAPIEvidenceTable():Promise<string>;
 
 export function UpdateBuildFrameworkLookupTable(arg1:Array<{[key: string]: any}>):Promise<void>;

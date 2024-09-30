@@ -2,12 +2,17 @@ package database
 
 import (
 	"cefp/structs"
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"io"
 	"log"
+	"strconv"
 
 	"github.com/mattn/go-sqlite3"
+	"github.com/xuri/excelize/v2"
 )
 
 func UpdateFrameworkLookupTable(db *sql.DB, lookupRecord structs.FrameworkLookup) error { //missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableID, tableName, viewName string) error {
@@ -99,4 +104,85 @@ func InsertFrameworkRecord(db *sql.DB, fr structs.FrameworkRecord) error {
 	}
 	return nil
 
+}
+
+func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, table string) error {
+	f, err := excelize.OpenReader(file)
+	if err != nil {
+		return fmt.Errorf("error opening Excel file: %v", err)
+	}
+	defer f.Close()
+
+	runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Opening CE Mapping %s file: %v", table, err))
+
+	qry := fmt.Sprintf("DELETE FROM CEMapping_%s", table)
+
+	_, err = db.Exec(qry)
+	if err != nil {
+		runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error deleting from CEMapping_%s: %v", table, err))
+		return fmt.Errorf("error deleting from CEMapping_%s: %v", table, err)
+	}
+
+	rows, err := f.GetRows("Mapping")
+	if err != nil {
+		return fmt.Errorf("error reading Mapping sheet: %v", err)
+	}
+
+	for i, row := range rows {
+		if i == 0 && row[0] == "EvidenceID" {
+			continue
+		}
+
+		evidenceMapRecord := structs.EvidenceMapRecord{
+			EvidenceID:      getIntOrZero(getStringOrEmpty(row, 0)),
+			Framework:       getStringOrEmpty(row, 1),
+			FrameworkID:     getIntOrZero(getStringOrEmpty(row, 2)),
+			Requirement:     getStringOrEmpty(row, 3),
+			Description:     getStringOrEmpty(row, 4),
+			Guidance:        getStringOrEmpty(row, 5),
+			RequirementType: getStringOrEmpty(row, 6),
+			Delete:          getStringOrEmpty(row, 7),
+		}
+
+		message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", evidenceMapRecord.EvidenceID, evidenceMapRecord.Framework)
+		runtime.EventsEmit(ctx, "progress", message)
+
+		err = saveEvidenceRecordToDB(db, evidenceMapRecord, table)
+		if err != nil {
+			log.Printf("error saving evidence record: %v", err)
+		}
+	}
+
+	message := fmt.Sprintf("Done updating CEMapping_%s table!", table)
+	runtime.EventsEmit(ctx, "progress", message)
+	return nil
+}
+
+// Function to save the record to the database
+func saveEvidenceRecordToDB(db *sql.DB, record structs.EvidenceMapRecord, table string) error {
+
+	query := fmt.Sprintf("INSERT INTO CEMapping_%s ("+
+		"EvidenceID, Framework, FrameworkID, Requirement, Description, Guidance, RequirementType, \"Delete\" "+
+		") VALUES (?, ?, ?, ?, ?, ?, ?, ?)", table)
+
+	_, err := db.Exec(query,
+		record.EvidenceID, record.Framework, record.FrameworkID,
+		record.Requirement, record.Description, record.Guidance,
+		record.RequirementType, record.Delete)
+	return err
+}
+
+// Helper function to get int from string or return 0 if conversion fails
+func getIntOrZero(value string) int {
+	intValue, err := strconv.Atoi(value)
+	if err != nil {
+		return 0 // or handle it as needed
+	}
+	return intValue
+}
+func getStringOrEmpty(row []string, idx int) string {
+	if len(row) > idx {
+		return row[idx]
+	}
+	return ""
 }
