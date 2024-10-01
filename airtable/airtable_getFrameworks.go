@@ -22,8 +22,7 @@ const (
 	//getRecordURL = "https://api.airtable.com/v0/{baseId}/{tableIdOrName}/{recordId}"
 )
 
-func GetAirtableTablesAndViews(apiKey string) (string, error) {
-	baseID := "app5fTueYfRM65SzX"
+func GetAirtableTablesAndViews(apiKey, baseID string) (string, error) {
 	reqURL := fmt.Sprintf("https://api.airtable.com/v0/meta/bases/%s/tables", baseID)
 
 	response, err := makeHTTPRequest(reqURL, apiKey)

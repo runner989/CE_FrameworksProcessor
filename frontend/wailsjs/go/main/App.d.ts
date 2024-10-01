@@ -6,6 +6,8 @@ export function DeleteSelectedFramework(arg1:{[key: string]: any}):Promise<void>
 
 export function GetAirtableBaseTables():Promise<{[key: string]: any}>;
 
+export function GetAirtableTables(arg1:string):Promise<{[key: string]: any}>;
+
 export function GetAvailableAirtableBases():Promise<Array<structs.Base>>;
 
 export function GetFrameworkDetails(arg1:string):Promise<{[key: string]: any}>;
