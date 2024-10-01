@@ -70,7 +70,7 @@ function fetchFrameworkDetails(selectedFramework) {
     window.go.main.App.GetFrameworkDetails(selectedFramework)
         .then(function(frameworkDetails) {
             if(!frameworkDetails.EvidenceLibraryMappedName) {
-                console.log("Missing EvidenceLibraryMappedName")
+                // console.log("Missing EvidenceLibraryMappedName")
                 window.go.main.App.GetMappedFrameworks()
                     .then(function(records) {
                         displayMappedFrameworkRecords(records);
@@ -81,7 +81,7 @@ function fetchFrameworkDetails(selectedFramework) {
                         alert('Failed to retrieve records.');
                     });
             } else if (!frameworkDetails.AirtableFramework || !frameworkDetails.AirtableView) {
-                console.log("Missing AirtableFramework and/or AirtableView")
+                // console.log("Missing AirtableFramework and/or AirtableView")
                 let name = frameworkDetails.CEName || 'N/A';
                 let mappedName = frameworkDetails.EvidenceLibraryMappedName || 'N/A';
                 let uatStage = frameworkDetails.FrameworkId_UAT || 'N/A';
@@ -423,3 +423,20 @@ function fetchFrameworkFromAirtable(data) {
         })
 
 }
+
+document.getElementById('updateAllFrameworksButton').addEventListener('click',function() {
+    var modal = document.getElementById('recordsModal');
+    let recordsContainer = document.getElementById('recordsContainer');
+    window.go.main.App.UpdateAllFrameworks()
+        .then(function(message) {
+            alert(message);
+            recordsContainer.innerHTML = "";
+            modal.style.display = 'none';
+        })
+        .catch(function(err) {
+            console.error('Error fetching records:', err);
+            alert('Failed to retrieve records.');
+            recordsContainer.innerHTML = "";
+            modal.style.display = 'none';
+        });
+});

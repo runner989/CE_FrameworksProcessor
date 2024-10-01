@@ -34,6 +34,8 @@ export function ReadAPIEvidenceTable():Promise<string>;
 
 export function UpdateAirtableBasesTable(arg1:Array<{[key: string]: any}>):Promise<void>;
 
+export function UpdateAllFrameworks():Promise<string>;
+
 export function UpdateBuildFrameworkLookupTable(arg1:Array<{[key: string]: any}>):Promise<void>;
 
 export function UpdateFrameworkLookup(arg1:{[key: string]: any}):Promise<void>;

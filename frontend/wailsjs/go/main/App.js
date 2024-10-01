@@ -66,6 +66,10 @@ export function UpdateAirtableBasesTable(arg1) {
   return window['go']['main']['App']['UpdateAirtableBasesTable'](arg1);
 }
 
+export function UpdateAllFrameworks() {
+  return window['go']['main']['App']['UpdateAllFrameworks']();
+}
+
 export function UpdateBuildFrameworkLookupTable(arg1) {
   return window['go']['main']['App']['UpdateBuildFrameworkLookupTable'](arg1);
 }

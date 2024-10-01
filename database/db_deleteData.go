@@ -31,8 +31,8 @@ func DeleteFromFramework(db *sql.DB, framework structs.FrameworkLookup) error {
 	}
 	defer stmt.Close()
 
-	//log.Printf("Deleting MappedName: %v", framework.MappedName)
-	_, err = stmt.Exec(framework.MappedName)
+	log.Printf("Deleting MappedName: %v", framework.TableName.String)
+	_, err = stmt.Exec(framework.TableName.String)
 	if err != nil {
 		log.Printf("failed to delete from framework query: %v", err)
 		return fmt.Errorf("unable to delete from framework query: %v", err)

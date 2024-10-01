@@ -34,12 +34,6 @@ function displayBasesRecords(records) {
         content += '<tr data-index="' + index + '">';
         orderedFields.forEach(function(field) {
             var value = record[field];
-            // Handle different data types
-            // if (Array.isArray(value)) {
-            //     value = value.join(', ');
-            // } else if (typeof value == 'object' && value !== null) {
-            //     value = JSON.stringify(value);
-            // } else
             if (value === undefined || value === null) {
                 value = '';
             }
@@ -54,8 +48,6 @@ function displayBasesRecords(records) {
     document.getElementById('updateAirtableBaseTableButton').addEventListener('click', function(){
         updateAirtableBaseTable(records);
     });
-
-    // addBaseRowEventListeners(records);
 }
 
 // Close modal when the 'x' is clicked

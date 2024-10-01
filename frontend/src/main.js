@@ -17,5 +17,6 @@ import {
     ProcessEvidenceProdFile,
     OpenFileDialog,
     GetAvailableAirtableBases,
-    UpdateAirtableBasesTable
+    UpdateAirtableBasesTable,
+    UpdateAllFrameworks
 } from '../wailsjs/go/main/App'

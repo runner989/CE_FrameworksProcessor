@@ -239,14 +239,14 @@ function fetchTablesForBase(baseID) {
             document.getElementById('loadingNotification').style.display = 'none';
             let tablesList = document.getElementById('tablesList');
             let content = '';
-            console.log(response.tables)
+
             response.tables.forEach(function (table, index) {
                 content += `<li class="table-item" data-index="${index}">
                     <span class="table-name">${table.name}</span>
                     <ul class="views-list" id="views-${index}" style="display: none;">`;
 
                 table.views.forEach(function (view) {
-                    content += `<li class="view-item" data-table-id="${table.id}" data-table-name="${table.name}" data-view-name="${view.name}">
+                    content += `<li class="view-item" data-base-id="${baseID}" data-table-id="${table.id}" data-table-name="${table.name}" data-view-name="${view.name}">
                         ${view.name}
                     </li>`;
                 });
@@ -273,7 +273,7 @@ function fetchTablesForBase(baseID) {
                     let tableName = item.getAttribute('data-table-name');
                     let viewName = item.getAttribute('data-view-name');
                     let tableID = item.getAttribute('data-table-id');
-                    handleTableViewSelector(tableID, tableName, viewName);
+                    handleTableViewSelector(baseID, tableID, tableName, viewName);
                 });
             });
         })
@@ -328,10 +328,11 @@ function displayBuildList() {
     });
 }
 
-function handleTableViewSelector(tableID, tableName, viewName) {
+function handleTableViewSelector(baseID, tableID, tableName, viewName) {
     window.selectedFrameworkTableID = tableID;
     window.selectedFrameworkTable = tableName;
     window.selectedFrameworkView = viewName;
+    window.selectedFrameworkBase = baseID;
 
     let modal = document.getElementById('frameworkTablesModal');
     modal.style.display = 'none';
@@ -376,12 +377,15 @@ function updateFrameworkLookup() {
         tableID: window.selectedFrameworkTableID,
         tableName: window.selectedFrameworkTable,
         tableView: window.selectedFrameworkView,
+        baseID: window.selectedFrameworkBase,
     };
     window.go.main.App.UpdateFrameworkLookup(data)
         .then(function (response) {
             alert('Framework Lookup updated successfully.');
             // Close the Missing Frameworks modal
             let modal = document.getElementById('recordsModal');
+            let recordsContainer = document.getElementById('recordsContainer');
+            recordsContainer.innerHTML = "";
             modal.style.display = 'none';
         })
         .catch(function(err) {

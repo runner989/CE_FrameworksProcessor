@@ -22,8 +22,8 @@ func UpdateFrameworkLookupTable(db *sql.DB, lookupRecord structs.FrameworkLookup
 
 	//log.Printf("missing framework %s, cename: %s, uatStage: %s, stageNumber: %s, prodNumber: %s, tableName: %s, viewName: %s", missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName)
 	query := `
-		INSERT INTO Framework_Lookup (EvidenceLibraryMappedName, CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod, AirtableTableID ,AirtableFramework, AirtableView)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO Framework_Lookup (EvidenceLibraryMappedName, CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod, AirtableTableID ,AirtableFramework, AirtableView, AirtableBase)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 			ON CONFLICT(CEFramework) DO UPDATE SET
 			EvidenceLibraryMappedName = excluded.EvidenceLibraryMappedName,
 			FrameworkId_UAT = excluded.FrameworkId_UAT,
@@ -31,14 +31,15 @@ func UpdateFrameworkLookupTable(db *sql.DB, lookupRecord structs.FrameworkLookup
 			FrameworkId_Prod = excluded.FrameworkId_Prod,
 			AirtableTableID = excluded.AirtableTableID,
 			AirtableFramework = excluded.AirtableFramework,
-			AirtableView = excluded.AirtableView;
+			AirtableView = excluded.AirtableView,
+			AirtableBase = excluded.AirtableBase;
 		`
 
 	statement, err := db.Prepare(query)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	_, err = statement.Exec(lookupRecord.MappedName, lookupRecord.CeName, lookupRecord.UatStage, lookupRecord.StageNumber, lookupRecord.ProdNumber, lookupRecord.TableID, lookupRecord.TableName, lookupRecord.TableView)
+	_, err = statement.Exec(lookupRecord.MappedName, lookupRecord.CeName, lookupRecord.UatStage, lookupRecord.StageNumber, lookupRecord.ProdNumber, lookupRecord.TableID, lookupRecord.TableName, lookupRecord.TableView, lookupRecord.TableBase)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

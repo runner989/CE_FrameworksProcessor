@@ -1,6 +1,7 @@
 package database
 
 import (
+	"cefp/structs"
 	"database/sql"
 	"fmt"
 	"log"
@@ -125,5 +126,40 @@ func GetMappedFrameworkRecords(db *sql.DB) ([]string, error) {
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating over rows: %w", err)
 	}
+	return frameworks, nil
+}
+
+func GetReadyFrameworks(db *sql.DB) ([]structs.FrameworkLookup, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+	query := "SELECT DISTINCT AirtableBase, AirtableTableID, AirtableFramework, AirtableView, CEFramework FROM Framework_Lookup WHERE CEFramework IS NOT NULL AND AirtableFramework IS NOT NULL AND AirtableBase IS NOT NULL AND AirtableView IS NOT NULL AND AirtableTableID IS NOT NULL"
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying framework_lookup: %w", err)
+	}
+	defer rows.Close()
+
+	var frameworks []structs.FrameworkLookup
+
+	for rows.Next() {
+		var framework structs.FrameworkLookup
+
+		if err := rows.Scan(
+			&framework.TableBase,
+			&framework.TableID,
+			&framework.TableName,
+			&framework.TableView,
+			&framework.CeName,
+		); err != nil {
+			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+
+		frameworks = append(frameworks, framework)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over rows: %w", err)
+	}
+
 	return frameworks, nil
 }

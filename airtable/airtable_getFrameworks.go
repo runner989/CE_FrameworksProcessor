@@ -75,7 +75,9 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 		return fmt.Errorf("no apiKey provided")
 	}
 
-	reqURL := fmt.Sprintf("https://api.airtable.com/v0/%s/%s?view=%s&Rand=%s", devMasterBase, lr.TableID.String, lr.TableView.String, GenerateRandomString())
+	tableView := strings.ReplaceAll(lr.TableView.String, " ", "+")
+	reqURL := fmt.Sprintf("https://api.airtable.com/v0/%s/%s?view=%s&Rand=%s", devMasterBase, lr.TableID.String, tableView, GenerateRandomString())
+	//log.Printf("Getting framework data for %s", reqURL)
 
 	done := false
 
@@ -93,8 +95,6 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 			log.Fatalf("Error making request: %v", err)
 			return err
 		}
-
-		//log.Print(response)
 
 		var airtableFrameworksResp structs.FrameworksResponse
 		err = json.Unmarshal([]byte(response), &airtableFrameworksResp)
@@ -115,7 +115,6 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 		}
 		sortID := 0
 		for _, record := range airtableFrameworksResp.Records {
-			//log.Println(record)
 			var testType string
 			identifier, ok := record.Fields["Identifier"].(string)
 			if !ok {
@@ -159,8 +158,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 			}
 
 			// Insert records
-			err := database.InsertFrameworkRecord(db, frameworkRecord) // sortID, promptID, controlNarrative, frameworkName, identifier, parentID, displayName, description, guidance, tags, testType)
-			// sortID int, frameworkName, identifier, parentID, displayName, description, guidance, tags, testType, policyID, controlNarrative
+			err := database.InsertFrameworkRecord(db, frameworkRecord)
 			if err != nil {
 				log.Printf("skipping Framework %s Identifier %s due to error: %v", identifier, frameworkName, err)
 				//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping EvidenceID %d due to error: %v", int(evidenceID), err))
@@ -170,7 +168,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 			if airtableFrameworksResp.Offset == "" {
 				done = true
 			} else {
-				reqURL = fmt.Sprintf("https://api.airtable.com/v0/%s/%s?offset=%s&view=%s&Rand=%s", devMasterBase, lr.TableID.String, airtableFrameworksResp.Offset, lr.TableView.String, GenerateRandomString())
+				reqURL = fmt.Sprintf("https://api.airtable.com/v0/%s/%s?offset=%s&view=%s&Rand=%s", devMasterBase, lr.TableID.String, airtableFrameworksResp.Offset, tableView, GenerateRandomString())
 			}
 		}
 	}

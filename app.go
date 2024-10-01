@@ -120,6 +120,7 @@ func (a *App) UpdateFrameworkLookup(data map[string]interface{}) error {
 		UatStage:    sql.NullFloat64{Float64: toFloat64(data["uatStage"]), Valid: true},
 		ProdNumber:  sql.NullFloat64{Float64: toFloat64(data["prodNumber"]), Valid: true},
 		StageNumber: sql.NullFloat64{Float64: toFloat64(data["stageNumber"]), Valid: true},
+		TableBase:   sql.NullString{String: data["baseID"].(string), Valid: true},
 		TableID:     sql.NullString{String: data["tableID"].(string), Valid: true},
 		TableName:   sql.NullString{String: data["tableName"].(string), Valid: true},
 		TableView:   sql.NullString{String: data["tableView"].(string), Valid: true},
@@ -550,4 +551,22 @@ func (a *App) GetAirtableTables(baseID string) (map[string]interface{}, error) {
 	result["tables"] = tablesArray
 
 	return result, err
+}
+
+func (a *App) UpdateAllFrameworks() (string, error) {
+	frameworks, err := database.GetReadyFrameworks(a.db)
+	if err != nil {
+		return "", fmt.Errorf("error fetching ready frameworks: %v", err)
+	}
+
+	for _, framework := range frameworks {
+		//log.Printf("Updating framework: %v", framework.TableName.String)
+		runtime.EventsEmit(a.ctx, "progress", fmt.Sprintf("Updating framework: %v", framework.CeName.String))
+		err := airtable.GetFrameworkData(a.db, a.apiKey, framework)
+		if err != nil {
+			return "", fmt.Errorf("error getting framework from airtable: %v", err)
+		}
+	}
+
+	return "All frameworks updated successfully!", nil
 }
