@@ -70,6 +70,23 @@ func (a *App) GetFrameworkLookup() ([]structs.Framework, error) {
 		log.Printf("Error fetching frameworks lookup: %v", err)
 		return nil, fmt.Errorf("failed to retrieve frameworks lookup")
 	}
+
+	sort.SliceStable(records, func(i, j int) bool {
+		nameI, okI := records[i].Fields["Name"].(string)
+		nameJ, okJ := records[j].Fields["Name"].(string)
+
+		if !okI && !okJ {
+			return false
+		}
+		if !okI {
+			return false
+		}
+		if !okJ {
+			return true
+		}
+		return nameI < nameJ
+	})
+
 	return records, nil
 }
 
@@ -201,7 +218,8 @@ func (a *App) GetAirtableBaseTables() (map[string]interface{}, error) {
 	if a.apiKey == "" {
 		log.Fatal("API Key is missing")
 	}
-	tables, err := airtable.GetAirtableTablesAndViews(a.apiKey)
+	baseID := "app5fTueYfRM65SzX"
+	tables, err := airtable.GetAirtableTablesAndViews(a.apiKey, baseID)
 	if err != nil {
 		log.Printf("Error fetching Airtable tables: %v", err)
 	}
@@ -492,4 +510,44 @@ func (a *App) OpenFileDialog() (string, error) {
 	}
 
 	return filePath, nil
+}
+
+func (a *App) GetAirtableTables(baseID string) (map[string]interface{}, error) {
+	if a.apiKey == "" {
+		log.Fatal("API Key is missing")
+	}
+
+	tables, err := airtable.GetAirtableTablesAndViews(a.apiKey, baseID)
+	if err != nil {
+		log.Printf("Error fetching Airtable tables: %v", err)
+	}
+
+	var result map[string]interface{}
+	err = json.Unmarshal([]byte(tables), &result)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing tables JSON: %v", err)
+	}
+
+	tablesArray, ok := result["tables"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("error extracting tables array")
+	}
+
+	sort.SliceStable(tablesArray, func(i, j int) bool {
+		tableI := tablesArray[i].(map[string]interface{})
+		tableJ := tablesArray[j].(map[string]interface{})
+
+		nameI, okI := tableI["name"].(string)
+		nameJ, okJ := tableJ["name"].(string)
+
+		if !okI || !okJ {
+			return false
+		}
+
+		return nameI < nameJ
+	})
+
+	result["tables"] = tablesArray
+
+	return result, err
 }

@@ -168,14 +168,19 @@ function displaySelectedFrameworkFromBuildList(selectedFramework) {
     }
 
     document.getElementById('selectTableViewButton').addEventListener('click', function() {
+        document.getElementById('loadingNotification').style.display = 'block';
         fetchAirtableTablesandViews();
     });
 }
 
 function fetchAirtableTablesandViews() {
-    window.go.main.App.GetAirtableBaseTables()
-        .then(function(response) {
-            displayFrameworkTablesModal(response.tables);
+    Promise.all([
+        window.go.main.App.GetAirtableBaseTables(),
+        window.go.main.App.GetAvailableAirtableBases()
+    ])
+        .then(function([tablesResponse, basesResponse]) {
+            document.getElementById('loadingNotification').style.display = 'none';
+            displayFrameworkTablesModal(tablesResponse.tables, basesResponse);
         })
         .catch(function(err) {
             console.error('Error fetching Airtable tables and views.', err);
@@ -190,8 +195,8 @@ function closeFrameworkTablesModalX() {
     modal.style.display = 'none';
 }
 
-function displayFrameworkTablesModal(tables) {
-    document.getElementById('closeFrameworkTablesModal').addEventListener('click',function() {
+function displayFrameworkTablesModal(tables, bases) {
+    document.getElementById('closeFrameworkTablesModal').addEventListener('click', function () {
         closeFrameworkTablesModalX();
     });
 
@@ -201,6 +206,84 @@ function displayFrameworkTablesModal(tables) {
     let content = '<h4>Select a Framework Table and View</h4><ul>';
     content += '<div id="selectedFramework"><p>Looking for Framework: ' + window.selectedMissingFramework + '</p></div>';
 
+    content += '<label for="baseSelect">Select Base: </label> ';
+    content += '<select id="baseSelect">';
+
+    bases.forEach(function (base) {
+        content += `<option value="${base.id}">${base.name}</option>`;
+    });
+    content += '</select><hr>';
+    content += '<ul id="tablesList"></ul>';
+
+    container.innerHTML = content
+    modal.style.display = 'block';
+
+    let initialBase = bases.find(base => base.id === 'app5fTueYfRM65SzX') || bases[0];
+    let initialBaseID = initialBase.id;
+
+    document.getElementById('baseSelect').value = initialBaseID;
+
+    fetchTablesForBase(initialBaseID)
+
+    document.getElementById('baseSelect').addEventListener('change', function () {
+        let selectedBaseID = this.value;
+        document.getElementById('loadingNotification').style.display = 'block';
+        fetchTablesForBase(selectedBaseID);
+    });
+}
+
+// Function to fetch tables for the selected base and display them
+function fetchTablesForBase(baseID) {
+    window.go.main.App.GetAirtableTables(baseID)
+        .then(function (response) {
+            document.getElementById('loadingNotification').style.display = 'none';
+            let tablesList = document.getElementById('tablesList');
+            let content = '';
+            console.log(response.tables)
+            response.tables.forEach(function (table, index) {
+                content += `<li class="table-item" data-index="${index}">
+                    <span class="table-name">${table.name}</span>
+                    <ul class="views-list" id="views-${index}" style="display: none;">`;
+
+                table.views.forEach(function (view) {
+                    content += `<li class="view-item" data-table-id="${table.id}" data-table-name="${table.name}" data-view-name="${view.name}">
+                        ${view.name}
+                    </li>`;
+                });
+                content += `</ul></li>`;
+            });
+
+            tablesList.innerHTML = content;
+
+            // Handle the accordion style for views (expanding/collapsing)
+            let tableItems = document.querySelectorAll('.table-item');
+            tableItems.forEach(function (item) {
+                let index = item.getAttribute('data-index');
+                let viewsList = document.getElementById(`views-${index}`);
+
+                item.querySelector('.table-name').addEventListener('click', function () {
+                    viewsList.style.display = viewsList.style.display === 'none' ? 'block' : 'none';
+                });
+            });
+
+            // Add event listeners to each view item
+            let viewItems = document.querySelectorAll('.view-item');
+            viewItems.forEach(function (item) {
+                item.addEventListener('click', function () {
+                    let tableName = item.getAttribute('data-table-name');
+                    let viewName = item.getAttribute('data-view-name');
+                    let tableID = item.getAttribute('data-table-id');
+                    handleTableViewSelector(tableID, tableName, viewName);
+                });
+            });
+        })
+        .catch(function (err) {
+            console.error('Error fetching Airtable tables:', err);
+            alert('Failed to fetch tables for the selected base.');
+        });
+}
+
+function displayBuildList() {
     tables.forEach(function (table, index) {
         content += `<li class="table-item" data-index="${index}">
             <span class="table-name">${table.name}</span>

@@ -10,6 +10,10 @@ export function GetAirtableBaseTables() {
   return window['go']['main']['App']['GetAirtableBaseTables']();
 }
 
+export function GetAirtableTables(arg1) {
+  return window['go']['main']['App']['GetAirtableTables'](arg1);
+}
+
 export function GetAvailableAirtableBases() {
   return window['go']['main']['App']['GetAvailableAirtableBases']();
 }
