@@ -15,5 +15,7 @@ import {
     DeleteSelectedFramework,
     ProcessEvidenceStagingFile,
     ProcessEvidenceProdFile,
-    OpenFileDialog
+    OpenFileDialog,
+    GetAvailableAirtableBases,
+    UpdateAirtableBasesTable
 } from '../wailsjs/go/main/App'

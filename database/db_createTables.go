@@ -116,7 +116,7 @@ func CreateAirTableBaseTable(db *sql.DB) error {
 	}
 
 	createTableSQL := `CREATE TABLE Airtable_Base (
-		"ID" INTEGER,
+		"ID" INTEGER PRIMARY KEY,
 		"BaseName" TEXT,
 		"BaseID" TEXT
 	);`

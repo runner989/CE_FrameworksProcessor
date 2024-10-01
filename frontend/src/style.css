@@ -190,3 +190,21 @@ button:hover {
 .view-item:hover {
     color: #007bff;
 }
+
+#settingsIconContainer {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    cursor: pointer;
+    z-index: 999; /* Ensure it stays above other elements */
+}
+
+#settingsIcon {
+    font-size: 36px; /* Adjust size as needed */
+    color: #333;     /* Adjust color as needed */
+    transition: transform 0.3s;
+}
+
+#settingsIcon:hover {
+    transform: rotate(90deg); /* Rotate the cog on hover */
+}

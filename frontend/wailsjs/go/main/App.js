@@ -10,6 +10,10 @@ export function GetAirtableBaseTables() {
   return window['go']['main']['App']['GetAirtableBaseTables']();
 }
 
+export function GetAvailableAirtableBases() {
+  return window['go']['main']['App']['GetAvailableAirtableBases']();
+}
+
 export function GetFrameworkDetails(arg1) {
   return window['go']['main']['App']['GetFrameworkDetails'](arg1);
 }
@@ -52,6 +56,10 @@ export function ProcessEvidenceStagingFile(arg1) {
 
 export function ReadAPIEvidenceTable() {
   return window['go']['main']['App']['ReadAPIEvidenceTable']();
+}
+
+export function UpdateAirtableBasesTable(arg1) {
+  return window['go']['main']['App']['UpdateAirtableBasesTable'](arg1);
 }
 
 export function UpdateBuildFrameworkLookupTable(arg1) {

@@ -163,6 +163,40 @@ func safeFloat(value interface{}) sql.NullFloat64 {
 	return sql.NullFloat64{Float64: valFloat, Valid: true}
 }
 
+func (a *App) GetAvailableAirtableBases() ([]structs.Base, error) {
+	if a.apiKey == "" {
+		log.Fatal("API Key is missing")
+	}
+	bases, err := airtable.GetAirtableBases(a.apiKey)
+	if err != nil {
+		log.Printf("Error fetching available airtable bases: %v", err)
+	}
+	return bases, err
+}
+
+func (a *App) UpdateAirtableBasesTable(records []map[string]interface{}) error {
+	_, err := a.db.Exec("DELETE FROM Airtable_Base")
+	if err != nil {
+		return fmt.Errorf("failed to clear airtable bases table: %v", err)
+	}
+
+	query := `INSERT INTO Airtable_Base (BaseID, BaseName) VALUES (?, ?)`
+
+	for _, record := range records {
+		_, err = a.db.Exec(
+			query,
+			record["id"].(string),
+			record["name"].(string),
+		)
+		if err != nil {
+			log.Printf("Error updating airtable bases: %v", err)
+			return fmt.Errorf("failed to update airtable bases: %v", err)
+		}
+	}
+
+	return nil
+}
+
 func (a *App) GetAirtableBaseTables() (map[string]interface{}, error) {
 	if a.apiKey == "" {
 		log.Fatal("API Key is missing")

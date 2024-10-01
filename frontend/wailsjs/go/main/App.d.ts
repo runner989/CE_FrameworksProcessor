@@ -6,6 +6,8 @@ export function DeleteSelectedFramework(arg1:{[key: string]: any}):Promise<void>
 
 export function GetAirtableBaseTables():Promise<{[key: string]: any}>;
 
+export function GetAvailableAirtableBases():Promise<Array<structs.Base>>;
+
 export function GetFrameworkDetails(arg1:string):Promise<{[key: string]: any}>;
 
 export function GetFrameworkLookup():Promise<Array<structs.Framework>>;
@@ -27,6 +29,8 @@ export function ProcessEvidenceProdFile(arg1:string):Promise<void>;
 export function ProcessEvidenceStagingFile(arg1:string):Promise<void>;
 
 export function ReadAPIEvidenceTable():Promise<string>;
+
+export function UpdateAirtableBasesTable(arg1:Array<{[key: string]: any}>):Promise<void>;
 
 export function UpdateBuildFrameworkLookupTable(arg1:Array<{[key: string]: any}>):Promise<void>;
 

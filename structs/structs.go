@@ -2,6 +2,17 @@ package structs
 
 import "database/sql"
 
+type AirtableBases struct {
+	Bases  []Base `json:"bases"`
+	Offset string `json:"offset,omitempty"`
+}
+
+type Base struct {
+	Id              string `json:"id"`
+	Name            string `json:"name"`
+	PermissionLevel string `json:"permissionLevel"`
+}
+
 type AirtableResponse struct {
 	Records []Evidence `json:"records"`
 	Offset  string     `json:"offset,omitempty"`

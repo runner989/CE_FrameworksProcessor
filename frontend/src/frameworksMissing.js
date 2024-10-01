@@ -49,6 +49,7 @@ function addMissingRowEventListeners(records) {
     let tableRows = document.querySelectorAll('#recordsContainer tbody tr');
     tableRows.forEach(function(row, index) {
         row.addEventListener('click', function() {
+            document.getElementById('loadingNotification').style.display = 'block';
             tableRows.forEach(function(r) {
                 r.classList.remove('selected');
             });
@@ -74,6 +75,7 @@ function displaySelectedFrameworkDetails(record) {
 function openFrameworkBuildListModal() {
     window.go.main.App.GetFrameworkLookup()
         .then(function(records) {
+            document.getElementById('loadingNotification').style.display = 'none';
             displayFrameworkBuildList(records, function(selectedFramework) {
                 closeFrameworkBuildListModal();
                 displaySelectedFrameworkFromBuildList(selectedFramework);
