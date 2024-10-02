@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/xuri/excelize/v2"
 	"log"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -17,7 +19,6 @@ func ExportFrameworkToExcel(db *sql.DB, selectedFramework string) error {
 		}
 	}()
 
-	log.Println(selectedFramework)
 	// Sheet 1: Frameworks
 	f.NewSheet("Frameworks")
 	f.DeleteSheet("Sheet1")
@@ -36,14 +37,18 @@ func ExportFrameworkToExcel(db *sql.DB, selectedFramework string) error {
 
 	rowIndex := 2
 	for rows.Next() {
-		var name, version, description, comments sql.NullString
+		var version sql.NullInt64
+		var name, description, comments sql.NullString
 		err := rows.Scan(&name, &version, &description, &comments)
 		if err != nil {
 			return fmt.Errorf("error scanning Framework_Lookup row: %v", err)
 		}
-
 		f.SetCellValue("Frameworks", fmt.Sprintf("A%d", rowIndex), safeString(name))
-		f.SetCellValue("Frameworks", fmt.Sprintf("B%d", rowIndex), safeString(version))
+		if version.Valid {
+			f.SetCellValue("Frameworks", fmt.Sprintf("B%d", rowIndex), safeInt(version))
+		} else {
+			f.SetCellValue("Frameworks", fmt.Sprintf("B%d", rowIndex), 1)
+		}
 		f.SetCellValue("Frameworks", fmt.Sprintf("C%d", rowIndex), safeString(description))
 		f.SetCellValue("Frameworks", fmt.Sprintf("D%d", rowIndex), safeString(comments))
 		rowIndex++
@@ -75,13 +80,14 @@ func ExportFrameworkToExcel(db *sql.DB, selectedFramework string) error {
 	rowIndex = 2
 	for reqRows.Next() {
 		var identifier, displayName, description sql.NullString
-		var parentIdentifier, guidance, recommendations, observations, notes, tags, testType, policyAndProcedureTemplateId, controlNarrativeAIPromptTemplateId sql.NullString
+		var policyAndProcedureTemplateId, controlNarrativeAIPromptTemplateId int
+		var parentIdentifier, guidance, recommendations, observations, notes, tags, testType sql.NullString
 		err := reqRows.Scan(&identifier, &parentIdentifier, &displayName, &description, &guidance, &recommendations, &observations, &notes, &tags, &testType, &policyAndProcedureTemplateId, &controlNarrativeAIPromptTemplateId)
 		if err != nil {
 			return fmt.Errorf("error scanning Framework row for requirements: %v", err)
 		}
-		log.Printf("displayName: %v, Valid: %v", displayName.String, displayName.Valid)
-		log.Printf("description: %v, Valid: %v", description.String, description.Valid)
+		//log.Printf("displayName: %v, Valid: %v", displayName.String, displayName.Valid)
+		//log.Printf("description: %v, Valid: %v", description.String, description.Valid)
 
 		f.SetCellValue("Requirements", fmt.Sprintf("A%d", rowIndex), safeString(identifier))
 		f.SetCellValue("Requirements", fmt.Sprintf("B%d", rowIndex), safeString(parentIdentifier))
@@ -93,8 +99,16 @@ func ExportFrameworkToExcel(db *sql.DB, selectedFramework string) error {
 		f.SetCellValue("Requirements", fmt.Sprintf("H%d", rowIndex), safeString(notes))
 		f.SetCellValue("Requirements", fmt.Sprintf("I%d", rowIndex), safeString(tags))
 		f.SetCellValue("Requirements", fmt.Sprintf("J%d", rowIndex), safeString(testType))
-		f.SetCellValue("Requirements", fmt.Sprintf("K%d", rowIndex), safeString(policyAndProcedureTemplateId))
-		f.SetCellValue("Requirements", fmt.Sprintf("L%d", rowIndex), safeString(controlNarrativeAIPromptTemplateId))
+		if policyAndProcedureTemplateId == 0 {
+			f.SetCellValue("Requirements", fmt.Sprintf("K%d", rowIndex), "")
+		} else {
+			f.SetCellValue("Requirements", fmt.Sprintf("K%d", rowIndex), policyAndProcedureTemplateId)
+		}
+		if controlNarrativeAIPromptTemplateId == 0 {
+			f.SetCellValue("Requirements", fmt.Sprintf("L%d", rowIndex), "")
+		} else {
+			f.SetCellValue("Requirements", fmt.Sprintf("L%d", rowIndex), controlNarrativeAIPromptTemplateId)
+		}
 		rowIndex++
 	}
 
@@ -121,12 +135,26 @@ func ExportFrameworkToExcel(db *sql.DB, selectedFramework string) error {
 	f.SetCellValue("Mappings", "G1", "ToIdentifierType")
 	f.SetCellValue("Mappings", "H1", "ToDescription")
 
+	// Define the "Frameworks" folder path
+	folderPath := "Frameworks"
+
+	// Check if the "Frameworks" folder exists
+	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+		// Create the "Frameworks" folder if it doesn't exist
+		err := os.MkdirAll(folderPath, os.ModePerm)
+		if err != nil {
+			return fmt.Errorf("failed to create Frameworks folder: %v", err)
+		}
+	}
 	// Save the file to disk
 	// Get the current date in MMDDYYYY format
 	currentDate := time.Now().Format("01022006")
 	fixedFramework := strings.ReplaceAll(selectedFramework, ":", "-")
 	fileName := fmt.Sprintf("%s-Framework-%s.xlsx", fixedFramework, currentDate)
-	err = f.SaveAs(fileName)
+	// Full path to the file
+	filePath := filepath.Join(folderPath, fileName)
+
+	err = f.SaveAs(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to save Excel file: %v", err)
 	}
@@ -139,4 +167,11 @@ func safeString(ns sql.NullString) string {
 		return ns.String
 	}
 	return ""
+}
+
+func safeInt(ns sql.NullInt64) int64 {
+	if ns.Valid {
+		return ns.Int64
+	}
+	return 0
 }

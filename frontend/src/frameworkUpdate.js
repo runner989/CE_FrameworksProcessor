@@ -65,16 +65,18 @@ function fetchFrameworkDetails(selectedFramework) {
         <br><strong>Name:</strong> ${selectedFramework}
         <div id="selectedFrameworkDetails"></div>
     `;
+    document.getElementById('loadingNotification').style.display = 'block';
     window.go.main.App.GetFrameworkDetails(selectedFramework)
         .then(function(frameworkDetails) {
             if(!frameworkDetails.EvidenceLibraryMappedName) {
                 console.log("Missing EvidenceLibraryMappedName")
                 window.go.main.App.GetMappedFrameworks()
                     .then(function(records) {
+                        document.getElementById('loadingNotification').style.display = 'none';
                         displayMappedFrameworkRecords(records);
-                       // fetchFrameworkDetails(selectedFramework);
                     })
                     .catch(function(err) {
+                        document.getElementById('loadingNotification').style.display = 'none';
                         console.error('Error fetching records:', err);
                         alert('Failed to retrieve records.');
                     });
@@ -111,6 +113,7 @@ function fetchFrameworkDetails(selectedFramework) {
             }
         })
         .catch(function(err) {
+            document.getElementById('loadingNotification').style.display = 'none';
             console.error('Error fetching framework details:', err);
             alert('Failed to retrieve framework details.');
         });
@@ -167,14 +170,17 @@ function displaySelectedFrameworkInfo(record) {
 }
 
 function openFrameworkBuildListSelectionModal() {
+    document.getElementById('loadingNotification').style.display = 'block';
     window.go.main.App.GetFrameworkLookup()
         .then(function(records) {
             displayFrameworkBuildListSelection(records, function(selectedFramework) {
+                document.getElementById('loadingNotification').style.display = 'none';
                 closeFrameworkBuildListModal();
                 displaySelectedFrameworkFromBuildListSelection(selectedFramework);
             });
         })
         .catch(function(err) {
+            document.getElementById('loadingNotification').style.display = 'none';
             console.error('Error fetching framework build list:', err);
             alert('Failed to retrieve framework build list.');
         });
@@ -186,6 +192,7 @@ function closeFrameworkBuildListModal() {
 }
 
 function displayFrameworkBuildListSelection(records, onFrameworkSelected) {
+    document.getElementById('loadingNotification').style.display = 'none';
     let modal = document.getElementById('frameworkBuildModal');
     let recordsContainer = document.getElementById('frameworkBuildContainer');
     let selectedFramework = window.selectedFramework
@@ -278,6 +285,7 @@ function fetchAirtableTablesandViewsUpdate() {
             displayUpdateFrameworkTablesModal(tablesResponse.tables, basesResponse);
         })
         .catch(function(err) {
+            document.getElementById('loadingNotification').style.display = 'none';
             console.error('Error fetching Airtable tables and views.', err);
             alert('Failed to fetch Airtable tables and views.');
         })
@@ -328,7 +336,6 @@ function displayUpdateFrameworkTablesModal(tables, bases) {
 }
 
 function fetchTablesForBase(baseID) {
-    console.log(baseID)
     window.go.main.App.GetAirtableTables(baseID)
         .then(function (response) {
             document.getElementById('loadingNotification').style.display = 'none';
@@ -462,16 +469,17 @@ function fetchFrameworkFromAirtable(data) {
 
     window.go.main.App.GetFrameworkRecords(data)
         .then(function (result) {
+            document.getElementById('loadingNotification').style.display = 'none';
             alert('Framework updated successfully.');
             let modal2 = document.getElementById('updateFrameworkModal')
             modal2.style.display = 'none';
             let modal = document.getElementById('recordsModal');
             let recordsContainer = document.getElementById('recordsContainer');
             recordsContainer.innerHTML = '';
-
             modal.style.display = 'none';
         })
         .catch(function(err) {
+            document.getElementById('loadingNotification').style.display = 'none';
             console.error('Error updating Framework table', err);
             alert('Failed to update Framework table.');
         })
@@ -479,15 +487,17 @@ function fetchFrameworkFromAirtable(data) {
 }
 
 document.getElementById('updateAllFrameworksButton').addEventListener('click',function() {
-    var modal = document.getElementById('recordsModal');
+    let modal = document.getElementById('recordsModal');
     let recordsContainer = document.getElementById('recordsContainer');
     window.go.main.App.UpdateAllFrameworks()
         .then(function(message) {
+            document.getElementById('loadingNotification').style.display = 'none';
             alert(message);
             recordsContainer.innerHTML = "";
             modal.style.display = 'none';
         })
         .catch(function(err) {
+            document.getElementById('loadingNotification').style.display = 'none';
             console.error('Error fetching records:', err);
             alert('Failed to retrieve records.');
             recordsContainer.innerHTML = "";

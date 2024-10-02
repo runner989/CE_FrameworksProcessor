@@ -52,6 +52,7 @@ function editRecord(record) {
     document.getElementById('airtableView').value = record.AirtableView;
     document.getElementById('evidenceLibraryMappedName').value = record.EvidenceLibraryMappedName;
     document.getElementById('ceFramework').value = record.CEFramework;
+    // document.getElementById('originalCeFramework').value = record.CEFramework;
     document.getElementById('frameworkId_UAT').value = record.FrameworkId_UAT;
     document.getElementById('frameworkId_Staging').value = record.FrameworkId_Staging;
     document.getElementById('frameworkId_Prod').value = record.FrameworkId_Prod;
@@ -77,7 +78,23 @@ document.getElementById('saveButton').addEventListener('click', function () {
         description: document.getElementById('description').value,
         comments: document.getElementById('comments').value,
     };
-
+    // let originalCeFramework = document.getElementById('originalCeFramework').value;
+    // let currentFramework = document.getElementById('ceFramework').value;
+    // if (currentFramework !== originalCeFramework) {
+    //     let data = {
+    //         oldFramework: originalCeFramework,
+    //         newFramework: currentFramework
+    //     };
+    //
+    //     window.go.main.App.UpdateFrameworkName(data)
+    //     .then(function (result) {
+    //         alert('Framework records updated successfully with new CE Framework Name.');
+    //     })
+    //     .catch(function (err) {
+    //         console.error('Error updating Framework records:', err);
+    //         alert('Failed to update the Framework records.');
+    //     });
+    // }
     window.go.main.App.UpdateFrameworkLookupRecord(updatedRecord)
         .then(function () {
             alert('Record updated successfully!');

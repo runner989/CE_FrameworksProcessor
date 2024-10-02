@@ -10,6 +10,10 @@ export function ExportAFramework(arg1) {
   return window['go']['main']['App']['ExportAFramework'](arg1);
 }
 
+export function ExportAllFrameworks() {
+  return window['go']['main']['App']['ExportAllFrameworks']();
+}
+
 export function GetAirtableBaseTables() {
   return window['go']['main']['App']['GetAirtableBaseTables']();
 }

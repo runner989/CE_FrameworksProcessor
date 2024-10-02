@@ -56,3 +56,14 @@ function exportFrameworkToExcel(framework) {
 
 // // On page load, fetch frameworks
 // document.addEventListener('DOMContentLoaded', fetchFrameworks);
+
+document.getElementById('exportAllButton').addEventListener('click', function() {
+    window.go.main.App.ExportAllFrameworks()
+    .then(function() {
+        alert('All Frameworks exported!');
+    })
+    .catch(function(err) {
+        console.error('Error exporting all Frameworks.');
+        alert('Failed to export all Frameworks');
+    })
+})

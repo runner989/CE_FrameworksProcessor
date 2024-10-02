@@ -113,7 +113,7 @@ func (a *App) UpdateFrameworkLookup(data map[string]interface{}) error {
 	if !ok {
 		return fmt.Errorf("invalid missing framework name")
 	}
-	log.Println(data)
+
 	lookupRecord := structs.FrameworkLookup{
 		MappedName:  sql.NullString{String: missingFrameworkName, Valid: true},
 		CeName:      sql.NullString{String: data["ceName"].(string), Valid: true},
@@ -295,7 +295,7 @@ func (a *App) GetFrameworkDetails(framework string) (map[string]interface{}, err
 func (a *App) GetFrameworkRecords(data map[string]interface{}) error {
 	tableView, _ := data["tableView"].(string)
 	tableView = strings.ReplaceAll(tableView, " ", "%20")
-	//log.Println(data)
+
 	lookupRecord := structs.FrameworkLookup{
 		CeName:    sql.NullString{String: data["ceName"].(string), Valid: true},
 		TableName: sql.NullString{String: data["tableName"].(string), Valid: true},
@@ -389,7 +389,6 @@ func stringToInt(s string) int {
 }
 
 func (a *App) UpdateFrameworkLookupRecord(updatedRecord map[string]interface{}) error {
-	//log.Printf("Updating framework lookup record: %v", updatedRecord)
 
 	query := `
         UPDATE Framework_Lookup SET
@@ -432,12 +431,6 @@ func (a *App) UpdateFrameworkLookupRecord(updatedRecord map[string]interface{}) 
 }
 
 func (a *App) DeleteSelectedFramework(selectedRecord map[string]interface{}) error {
-	//log.Println(selectedRecord)
-	//// Iterate through the map and print the key, value, and type
-	//for key, value := range selectedRecord {
-	//	fmt.Printf("Key: %s, Value: %v, Type: %s\n", key, value, reflect.TypeOf(value))
-	//}
-
 	framework := structs.FrameworkLookup{
 		RowID:       safeFloat(selectedRecord["rowID"]),
 		MappedName:  SafeString(selectedRecord["mappedName"]),
@@ -561,7 +554,6 @@ func (a *App) UpdateAllFrameworks() (string, error) {
 	}
 
 	for _, framework := range frameworks {
-		//log.Printf("Updating framework: %v", framework.TableName.String)
 		runtime.EventsEmit(a.ctx, "progress", fmt.Sprintf("Updating framework: %v", framework.CeName.String))
 		err := airtable.GetFrameworkData(a.db, a.apiKey, framework)
 		if err != nil {
@@ -577,7 +569,6 @@ func (a *App) GetAllFrameworks() ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error fetching ready frameworks: %v", err)
 	}
-	log.Printf("All frameworks: %v", frameworks)
 	return frameworks, nil
 }
 
@@ -588,3 +579,29 @@ func (a *App) ExportAFramework(framework string) error {
 	}
 	return nil
 }
+
+func (a *App) ExportAllFrameworks() error {
+	frameworks, err := database.GetDistinctFrameworks(a.db)
+	if err != nil {
+		return fmt.Errorf("error fetching ready frameworks: %v", err)
+	}
+	for _, framework := range frameworks {
+		err := database.ExportFrameworkToExcel(a.db, framework)
+		if err != nil {
+			return fmt.Errorf("error exporting framework: %v", err)
+		}
+	}
+	return nil
+}
+
+//func (a *App) UpdateFrameworkName(data map[string]string) error {
+//	oldFramework := data["oldFramework"]
+//	newFramework := data["newFramework"]
+//
+//	query := `UPDATE Framework SET Framework = ? WHERE Framework = ?`
+//	_, err := a.db.Exec(query, newFramework, oldFramework)
+//	if err != nil {
+//		return fmt.Errorf("error updating framework name: %v", err)
+//	}
+//	return nil
+//}
