@@ -113,10 +113,10 @@ func (a *App) UpdateFrameworkLookup(data map[string]interface{}) error {
 	if !ok {
 		return fmt.Errorf("invalid missing framework name")
 	}
-
+	log.Println(data)
 	lookupRecord := structs.FrameworkLookup{
 		MappedName:  sql.NullString{String: missingFrameworkName, Valid: true},
-		CeName:      sql.NullString{String: data["cename"].(string), Valid: true},
+		CeName:      sql.NullString{String: data["ceName"].(string), Valid: true},
 		UatStage:    sql.NullFloat64{Float64: toFloat64(data["uatStage"]), Valid: true},
 		ProdNumber:  sql.NullFloat64{Float64: toFloat64(data["prodNumber"]), Valid: true},
 		StageNumber: sql.NullFloat64{Float64: toFloat64(data["stageNumber"]), Valid: true},
@@ -295,8 +295,9 @@ func (a *App) GetFrameworkDetails(framework string) (map[string]interface{}, err
 func (a *App) GetFrameworkRecords(data map[string]interface{}) error {
 	tableView, _ := data["tableView"].(string)
 	tableView = strings.ReplaceAll(tableView, " ", "%20")
-
+	//log.Println(data)
 	lookupRecord := structs.FrameworkLookup{
+		CeName:    sql.NullString{String: data["ceName"].(string), Valid: true},
 		TableName: sql.NullString{String: data["tableName"].(string), Valid: true},
 		TableID:   sql.NullString{String: data["tableID"].(string), Valid: true},
 		TableView: sql.NullString{String: tableView, Valid: true},
@@ -569,4 +570,21 @@ func (a *App) UpdateAllFrameworks() (string, error) {
 	}
 
 	return "All frameworks updated successfully!", nil
+}
+
+func (a *App) GetAllFrameworks() ([]string, error) {
+	frameworks, err := database.GetDistinctFrameworks(a.db)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching ready frameworks: %v", err)
+	}
+	log.Printf("All frameworks: %v", frameworks)
+	return frameworks, nil
+}
+
+func (a *App) ExportAFramework(framework string) error {
+	err := database.ExportFrameworkToExcel(a.db, framework)
+	if err != nil {
+		return fmt.Errorf("error exporting framework: %v", err)
+	}
+	return nil
 }

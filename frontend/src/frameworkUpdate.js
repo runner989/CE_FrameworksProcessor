@@ -10,6 +10,7 @@ var orderedFields = [
 ];
 
 document.getElementById('addFrameworkButton').addEventListener('click',function() {
+    // Get all frameworks from Framework_Lookup table - if Framework Build list has been imported, it will be every framework from that
     window.go.main.App.GetUniqueFrameworks()
         .then(function(records) {
             displayUniqueFrameworks(records);
@@ -26,7 +27,7 @@ function displayUniqueFrameworks(frameworks) {
 
 
     let content = '<h3>Frameworks from Lookup Table</h3>';
-    content += '<p>This list is the Framework Build list that was imported.</p>';
+    content += '<p>This list is the Framework Build list if it was imported.</p>';
     content += '<strong>NOTE: </strong>Not all frameworks in this list exist in Airtable. If you do not see it in the next selection, it is not yet ready.</p>';
     content += '<div id="selectedRecordLabel"></div>';
     content += '<div id="tableContainer"><table><thead><tr>';
@@ -40,9 +41,6 @@ function displayUniqueFrameworks(frameworks) {
         content += '</tr>';
     });
     content += '</tbody></table></div>';
-    recordsContainer.innerHTML = content;
-    modal.style.display = 'block';
-
     recordsContainer.innerHTML = content;
     modal.style.display = 'block';
 
@@ -70,7 +68,7 @@ function fetchFrameworkDetails(selectedFramework) {
     window.go.main.App.GetFrameworkDetails(selectedFramework)
         .then(function(frameworkDetails) {
             if(!frameworkDetails.EvidenceLibraryMappedName) {
-                // console.log("Missing EvidenceLibraryMappedName")
+                console.log("Missing EvidenceLibraryMappedName")
                 window.go.main.App.GetMappedFrameworks()
                     .then(function(records) {
                         displayMappedFrameworkRecords(records);
@@ -81,7 +79,7 @@ function fetchFrameworkDetails(selectedFramework) {
                         alert('Failed to retrieve records.');
                     });
             } else if (!frameworkDetails.AirtableFramework || !frameworkDetails.AirtableView) {
-                // console.log("Missing AirtableFramework and/or AirtableView")
+                console.log("Missing AirtableFramework and/or AirtableView")
                 let name = frameworkDetails.CEName || 'N/A';
                 let mappedName = frameworkDetails.EvidenceLibraryMappedName || 'N/A';
                 let uatStage = frameworkDetails.FrameworkId_UAT || 'N/A';
@@ -89,6 +87,7 @@ function fetchFrameworkDetails(selectedFramework) {
                 let stageNumber = frameworkDetails.FrameworkId_Staging || 'N/A';
                 window.selectedFrameworkDetails = {
                     name: name,
+                    ceName: name,
                     mappedName: mappedName,
                     uatStage: uatStage,
                     stageNumber: stageNumber,
@@ -99,6 +98,7 @@ function fetchFrameworkDetails(selectedFramework) {
             } else {
                 let data = {
                     name: frameworkDetails.CEName,
+                    ceName: frameworkDetails.CEName,
                     mappedName: frameworkDetails.EvidenceLibraryMappedName,
                     tableID: frameworkDetails.AirtableTableID,
                     tableName: frameworkDetails.AirtableFramework,
@@ -119,10 +119,10 @@ function fetchFrameworkDetails(selectedFramework) {
 function displayMappedFrameworkRecords(records) {
     let modal = document.getElementById('recordsModal');
     let recordsContainer = document.getElementById('recordsContainer');
-
-
+    let selectedFramework = window.selectedFramework
     let content = '<h3>Frameworks From Mapping Table</h3>';
     content += '<p>Framework is missing the Framework name from the Mapping table.</p>'
+    content += `<div id="selectedFrameworkLabel"><br><strong>Selected Framework From Framework_Lookup:</strong> ${selectedFramework}\n</div>`;
     content += '<div id="selectedRecordLabel"></div>';
     content += '<div id="tableContainer"><table><thead><tr>';
 
@@ -157,7 +157,6 @@ function addFrameworkRowEventListeners(records) {
 
 function displaySelectedFrameworkInfo(record) {
     window.selectedMissingFramework = record;
-    // openFrameworkBuildListModal();
     let label = document.getElementById('selectedRecordLabel');
     label.innerHTML = `
         <strong>Selected Framework</strong>
@@ -189,8 +188,10 @@ function closeFrameworkBuildListModal() {
 function displayFrameworkBuildListSelection(records, onFrameworkSelected) {
     let modal = document.getElementById('frameworkBuildModal');
     let recordsContainer = document.getElementById('frameworkBuildContainer');
+    let selectedFramework = window.selectedFramework
 
     let content = '<h3>Frameworks Build List</h3>';
+    content += `<div id="selectedFrameworkLabel"><br><strong>Selected Framework from Mapping:</strong> ${selectedFramework}\n</div>`;
     content += '<div id="tableContainer"><table><thead><tr>';
 
     orderedFields.forEach(function(field){
@@ -261,14 +262,20 @@ function displaySelectedFrameworkFromBuildListSelection(selectedFramework) {
     }
 
     document.getElementById('selectTableViewButton').addEventListener('click', function() {
+        document.getElementById('loadingNotification').style.display = 'block';
         fetchAirtableTablesandViewsUpdate();
     });
 }
 
 function fetchAirtableTablesandViewsUpdate() {
-    window.go.main.App.GetAirtableBaseTables()
-        .then(function(response) {
-            displayUpdateFrameworkTablesModal(response.tables);
+    Promise.all([
+        window.go.main.App.GetAirtableBaseTables(),
+        window.go.main.App.GetAvailableAirtableBases()
+    ])
+    // window.go.main.App.GetAirtableBaseTables()
+        .then(function([tablesResponse, basesResponse]) {
+            document.getElementById('loadingNotification').style.display = 'none';
+            displayUpdateFrameworkTablesModal(tablesResponse.tables, basesResponse);
         })
         .catch(function(err) {
             console.error('Error fetching Airtable tables and views.', err);
@@ -278,68 +285,105 @@ function fetchAirtableTablesandViewsUpdate() {
 
 function closeFrameworkTablesModalX() {
     let modal = document.getElementById('frameworkTablesModal');
+    let container = document.getElementById('frameworkTablesContainer');
     modal.style.display = 'none';
+    container.innerHTML = '';
 }
 
-function displayUpdateFrameworkTablesModal(tables) {
-    document.getElementById('closeFrameworkTablesModal').addEventListener('click',function() {
+function displayUpdateFrameworkTablesModal(tables, bases) {
+    document.getElementById('closeFrameworkTablesModal').addEventListener('click', function () {
         closeFrameworkTablesModalX();
     });
 
     let modal = document.getElementById('frameworkTablesModal');
     let container = document.getElementById('frameworkTablesContainer');
 
-    let content = '<h4>Select a Framework Table and View</h4><ul>';
+    let content = '<h4>Select a Framework Table and View</h4>';
+    content += '<div id="selectedFramework"><p>Looking for Framework: ' + window.selectedMissingFramework + '</p></div>';
 
-    tables.forEach(function (table, index) {
-        content += `<li class="table-item" data-index="${index}">
-            <span class="table-name">${table.name}</span>
-            <span class="table-id" style="display: none;">${table.id}</span>
-            <ul class="views-list" id="views-${index}" style="display: none;">`;
+    content += '<label for="baseSelect">Select Base: </label> ';
+    content += '<select id="baseSelect">';
 
-        table.views.forEach(function(view) {
-            content += `<li class="view-item" data-table-id="${table.id}" data-table-name="${table.name}" data-view-name="${view.name}">
-                ${view.name}
-            </li>`;
-        });
-        content += `</ul></li>`;
+    bases.forEach(function (base) {
+        content += `<option value="${base.id}">${base.name}</option>`;
     });
+    content += '</select><hr>';
+    content += '<ul id="tablesList"></ul>';
 
-    content += '</ul>';
-
-    container.innerHTML = content;
+    container.innerHTML = content
     modal.style.display = 'block';
 
-    let tableItems = container.querySelectorAll('.table-item');
-    tableItems.forEach(function(item) {
-        let index = item.getAttribute('data-index');
-        let viewsList = document.getElementById(`views-${index}`);
+    let initialBase = bases.find(base => base.id === 'app5fTueYfRM65SzX') || bases[0];
+    let initialBaseID = initialBase.id;
 
-        item.querySelector('.table-name').addEventListener('click', function() {
-            if (viewsList.style.display === 'none') {
-                viewsList.style.display = 'block';
-            } else {
-                viewsList.style.display = 'none';
-            }
-        });
-    });
+    document.getElementById('baseSelect').value = initialBaseID;
 
-    let viewItems = container.querySelectorAll('.view-item');
-    viewItems.forEach(function(item) {
-        item.addEventListener('click', function() {
-            let tableName = item.getAttribute('data-table-name');
-            let viewName = item.getAttribute('data-view-name');
-            let tableID = item.getAttribute('data-table-id');
-            handleUpdateTableViewSelector(tableName, viewName, tableID);
-        });
+    fetchTablesForBase(initialBaseID)
+
+    document.getElementById('baseSelect').addEventListener('change', function () {
+        let selectedBaseID = this.value;
+        document.getElementById('loadingNotification').style.display = 'block';
+        fetchTablesForBase(selectedBaseID);
     });
 }
 
+function fetchTablesForBase(baseID) {
+    console.log(baseID)
+    window.go.main.App.GetAirtableTables(baseID)
+        .then(function (response) {
+            document.getElementById('loadingNotification').style.display = 'none';
+            let tablesList = document.getElementById('tablesList');
+            let content = '';
 
-function handleUpdateTableViewSelector(tableName, viewName, tableID) {
+            response.tables.forEach(function (table, index) {
+                content += `<li class="table-item" data-index="${index}">
+                <span class="table-name">${table.name}</span>
+                <span class="table-id" style="display: none;">${table.id}</span>
+                <ul class="views-list" id="views-${index}" style="display: none;">`;
+
+                table.views.forEach(function (view) {
+                    content += `<li class="view-item" data-base-id="${baseID}" data-table-id="${table.id}" data-table-name="${table.name}" data-view-name="${view.name}">
+                    ${view.name}</li>`;
+                });
+                content += `</ul></li>`;
+            });
+
+            // content += '</ul>';
+
+            tablesList.innerHTML = content;
+
+            let tableItems = document.querySelectorAll('.table-item');
+            tableItems.forEach(function (item) {
+                let index = item.getAttribute('data-index');
+                let viewsList = document.getElementById(`views-${index}`);
+
+                item.querySelector('.table-name').addEventListener('click', function () {
+                    if (viewsList.style.display === 'none') {
+                        viewsList.style.display = 'block';
+                    } else {
+                        viewsList.style.display = 'none';
+                    }
+                });
+            });
+
+            let viewItems = document.querySelectorAll('.view-item');
+            viewItems.forEach(function (item) {
+                item.addEventListener('click', function () {
+                    let tableName = item.getAttribute('data-table-name');
+                    let viewName = item.getAttribute('data-view-name');
+                    let tableID = item.getAttribute('data-table-id');
+                    handleUpdateTableViewSelector(baseID, tableName, viewName, tableID);
+                });
+            });
+        });
+}
+
+
+function handleUpdateTableViewSelector(baseID, tableName, viewName, tableID) {
     window.selectedFrameworkTable = tableName;
     window.selectedFrameworkView = viewName;
     window.selectedFrameworkTableID = tableID;
+    window.selectedFrameworkBase = baseID;
 
     let modal = document.getElementById('frameworkTablesModal');
     modal.style.display = 'none';
@@ -378,18 +422,25 @@ function updateSelectFrameworkModalWithTableView() {
 function updateSelectedFrameworkLookup() {
     let data = {
         missingFrameworkName: window.selectedMissingFramework,
-        cename: window.selectedFrameworkDetails.name,
+        ceName: window.selectedFrameworkDetails.name,
         uatStage: window.selectedFrameworkDetails.uatStage,
         prodNumber: window.selectedFrameworkDetails.prodNumber,
         stageNumber: window.selectedFrameworkDetails.stageNumber,
         tableID: window.selectedFrameworkTableID,
         tableName: window.selectedFrameworkTable,
         tableView: window.selectedFrameworkView,
+        baseID: window.selectedFrameworkBase,
     };
     window.go.main.App.UpdateFrameworkLookup(data)
         .then(function (result) {
             alert('Framework Lookup updated successfully.');
+            // Close the Missing Frameworks modal
+            let modal = document.getElementById('recordsModal');
+            let recordsContainer = document.getElementById('recordsContainer');
+            recordsContainer.innerHTML = "";
+            modal.style.display = 'none';
             if (window.selectedFrameworkDetails.name !== "N/A" && window.selectedFrameworkTable !== "" && window.selectedFrameworkView !== "") {
+                console.log("running fetchFrameworkFromAirtable")
                 fetchFrameworkFromAirtable(data)
             }
             // // Close the Missing Frameworks modal
@@ -415,6 +466,9 @@ function fetchFrameworkFromAirtable(data) {
             let modal2 = document.getElementById('updateFrameworkModal')
             modal2.style.display = 'none';
             let modal = document.getElementById('recordsModal');
+            let recordsContainer = document.getElementById('recordsContainer');
+            recordsContainer.innerHTML = '';
+
             modal.style.display = 'none';
         })
         .catch(function(err) {

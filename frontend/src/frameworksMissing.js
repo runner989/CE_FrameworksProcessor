@@ -203,7 +203,7 @@ function displayFrameworkTablesModal(tables, bases) {
     let modal = document.getElementById('frameworkTablesModal');
     let container = document.getElementById('frameworkTablesContainer');
 
-    let content = '<h4>Select a Framework Table and View</h4><ul>';
+    let content = '<h4>Select a Framework Table and View</h4>';
     content += '<div id="selectedFramework"><p>Looking for Framework: ' + window.selectedMissingFramework + '</p></div>';
 
     content += '<label for="baseSelect">Select Base: </label> ';
@@ -370,7 +370,7 @@ function updateMissingFrameworkModalWithTableView() {
 function updateFrameworkLookup() {
     let data = {
         missingFrameworkName: window.selectedMissingFramework,
-        cename: window.selectedFrameworkDetails.name,
+        ceName: window.selectedFrameworkDetails.name,
         uatStage: window.selectedFrameworkDetails.uatStage,
         prodNumber: window.selectedFrameworkDetails.prodNumber,
         stageNumber: window.selectedFrameworkDetails.stageNumber,

@@ -93,7 +93,7 @@ func UpdateBuildFramework_LookupTable(db *sql.DB, lr structs.FrameworkLookup) er
 }
 
 func InsertFrameworkRecord(db *sql.DB, fr structs.FrameworkRecord) error {
-	_, err := db.Exec("INSERT INTO Framework (Framework, sortID, Identifier, ParentIdentifier, DisplayName, Description, Guidance, TestType, Tags, PolicyAndProcedureAIPromptTemplateId, ControlNarrativeAllPromptTemplateId) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?,?)",
+	_, err := db.Exec("INSERT INTO Framework (Framework, sortID, Identifier, ParentIdentifier, DisplayName, Description, Guidance, TestType, Tags, PolicyAndProcedureAIPromptTemplateId, ControlNarrativeAIPromptTemplateId) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?,?)",
 		fr.FrameworkName, fr.SortID, fr.Identifier, fr.ParentID, fr.DisplayName, fr.Description, fr.Guidance, fr.TestType, fr.Tags, fr.PromptID, fr.ControlNarrative)
 	if err != nil {
 		var sqliteErr sqlite3.Error

@@ -17,6 +17,7 @@
 <script type="module" src="./src/frameworkUpdate.js"></script>
 <script type="module" src="./src/mappingFileImport.js"></script>
 <script type="module" src="./src/settings.js"></script>
+<script type="module" src="./src/frameworkExport.js"></script>
     <div id="app">
         <div class="logo-title-container">
             <img alt="CE logo" class="logo" src="./src/assets/images/CFLogo.png">
@@ -64,7 +65,7 @@
             </div>
             <div class="row">
                 <div class="button-container">
-                    <button>Export Framework(s)</button>
+                    <button id="exportFrameworksButton">Export Framework(s)</button>
                 </div>
                 <div class="button-container">
                     <button id="deleteFrameworkButton">Remove/Delete Framework</button>
@@ -109,6 +110,27 @@
             </div>
         </div>
 
+        <div id="exportFrameworksPage" style="display: none;">
+            <h2>Export Framework(s)</h2>
+            <div class="container">
+                <div class="row">
+                    <select id="frameworkSelect">
+                        <option value="" disabled selected>Select a Framework</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <button id="exportFrameworkButton">Export A Framework</button>
+                </div>
+                <div class="row">
+                    <button id="exportAllButton">Export All Frameworks</button>
+                </div>
+            </div>
+            <hr>
+            <div class="exit-button-container">
+                <button id="exitFrameworksButton">Back to Main Page</button>
+            </div>
+        </div>
+
         <div id="editFrameworkLookupPage" style="display: none;">
             <h1>Edit Frameworks Lookup Table</h1>
             <!--  <div class="button-container"><button id="getFrameworkLookupButton">Open Framework Lookup Table</button></div>-->
@@ -149,7 +171,7 @@
                     <!-- Right Column -->
                     <div>
                         <div class="row">
-                            <input type="text" id="ceFramework" name="ceFramework" />
+                            <input type="text" id="ceFramework" name="ceFramework" readonly/>
                             <label for="ceFramework">&lt;= CE Framework Name</label>
                         </div>
                         <div class="row">
@@ -241,6 +263,12 @@
             document.getElementById('processEvidencePage').style.display = 'block';
         });
 
+        document.getElementById('exportFrameworksButton').addEventListener('click', function() {
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('exportFrameworksPage').style.display='block'
+            fetchFrameworks()
+        })
+
         document.getElementById('editFrameworkLookupButton').addEventListener('click', function() {
             document.getElementById('homePage').style.display = 'none';
             document.getElementById('editFrameworkLookupPage').style.display = 'block';
@@ -285,6 +313,13 @@
             document.getElementById('deleteFrameworkPage').style.display = 'none';
             document.getElementById('homePage').style.display = 'block';
         });
+        document.getElementById('exitFrameworksButton').addEventListener('click', function() {
+            document.getElementById('exportFrameworksPage').style.display = 'none';
+            document.getElementById('processEvidencePage').style.display = 'none';
+            document.getElementById('editFrameworkLookupPage').style.display = 'none';
+            document.getElementById('deleteFrameworkPage').style.display = 'none';
+            document.getElementById('homePage').style.display = 'block';
+        })
 
         document.getElementById('quitApp').addEventListener('click', function() {
             Quit(); // Assuming Quit() is implemented on the backend

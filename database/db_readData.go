@@ -163,3 +163,34 @@ func GetReadyFrameworks(db *sql.DB) ([]structs.FrameworkLookup, error) {
 
 	return frameworks, nil
 }
+
+func GetDistinctFrameworks(db *sql.DB) ([]string, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+	query := ` 
+		SELECT DISTINCT Framework.Framework 
+		FROM Framework_Lookup 
+		INNER JOIN Framework ON Framework_Lookup.CEFramework = Framework.Framework
+		WHERE Framework IS NOT NULL AND CEFramework IS NOT NULL;
+	`
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying frameworks: %w", err)
+	}
+	defer rows.Close()
+
+	var frameworks []string
+	for rows.Next() {
+		var framework string
+		err := rows.Scan(&framework)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+		frameworks = append(frameworks, framework)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over rows: %w", err)
+	}
+	return frameworks, nil
+}

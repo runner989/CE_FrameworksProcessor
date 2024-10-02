@@ -6,12 +6,20 @@ export function DeleteSelectedFramework(arg1) {
   return window['go']['main']['App']['DeleteSelectedFramework'](arg1);
 }
 
+export function ExportAFramework(arg1) {
+  return window['go']['main']['App']['ExportAFramework'](arg1);
+}
+
 export function GetAirtableBaseTables() {
   return window['go']['main']['App']['GetAirtableBaseTables']();
 }
 
 export function GetAirtableTables(arg1) {
   return window['go']['main']['App']['GetAirtableTables'](arg1);
+}
+
+export function GetAllFrameworks() {
+  return window['go']['main']['App']['GetAllFrameworks']();
 }
 
 export function GetAvailableAirtableBases() {

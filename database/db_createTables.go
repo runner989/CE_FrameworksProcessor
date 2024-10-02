@@ -31,15 +31,17 @@ func CreateFrameworkTable(db *sql.DB) error {
 		"FrameworkID" TEXT,
 		"Identifier" TEXT,
 		"ParentIdentifier" TEXT,
+		"DisplayName" TEXT,
 		"Description" TEXT,
 		"Guidance" TEXT,
-		"DisplayName" TEXT,
+		"Observations" TEXT,
 		"Recommendations" TEXT,
+		"Notes" TEXT, 
+		"Tags" TEXT,
 		"TestType" TEXT,
 		"RequirementType" TEXT,
-		"Tags" TEXT,
 		"PolicyAndProcedureAIPromptTemplateId" integer,
-		"ControlNarrativeAllPromptTemplateId" integer
+		"ControlNarrativeAIPromptTemplateId" integer
 	);`
 
 	log.Println("Create Framework table...")

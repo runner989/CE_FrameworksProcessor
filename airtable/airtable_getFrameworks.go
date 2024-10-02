@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 )
 
@@ -81,7 +82,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 
 	done := false
 
-	delQry := fmt.Sprintf("DELETE FROM Framework WHERE Framework='%s';", lr.TableName.String)
+	delQry := fmt.Sprintf("DELETE FROM Framework WHERE Framework='%s';", lr.CeName.String)
 	_, err := db.Exec(delQry)
 	if err != nil {
 		//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error deleting from Framework: %v", err))
@@ -121,14 +122,87 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 				//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping record due to missing or invalid EvidenceID: %v", err))
 				log.Printf("skipping record due to missing or invalid Identifier")
 			}
-			parentID, _ := record.Fields["ParentIdentifier"].(string)
-			displayName, _ := record.Fields["DisplayName"].(string)
-			description, _ := record.Fields["Description"].(string)
-			guidance, _ := record.Fields["Guidance"].(string)
+			var parentID string
+			switch v := record.Fields["ParentIdentifier"].(type) {
+			case []interface{}:
+				if len(v) > 0 {
+					parentID, _ = v[0].(string)
+				}
+			case string:
+				parentID = v
+			case nil:
+				parentID = ""
+			default:
+				log.Printf("unknown type for ParentIdentifier: %T", v)
+			}
+			//parentID, _ := record.Fields["ParentIdentifier"].(string)
+			var displayName string
+			switch v := record.Fields["DisplayName"].(type) {
+			case []interface{}:
+				if len(v) > 0 {
+					displayName, _ = v[0].(string)
+				}
+			case string:
+				displayName = v
+			case nil:
+				displayName = ""
+			default:
+				log.Printf("unknown type for DisplayName: %T", v)
+			}
+			var description string
+			switch v := record.Fields["Description"].(type) {
+			case []interface{}:
+				if len(v) > 0 {
+					description, _ = v[0].(string)
+				}
+			case string:
+				description = v
+			case nil:
+				description = ""
+			default:
+				log.Printf("unknown type for Description: %T", v)
+			}
+			//guidance, _ := record.Fields["Guidance"].(string)
+			var guidance string
+			switch v := record.Fields["Guidance"].(type) {
+			case []interface{}:
+				if len(v) > 0 {
+					guidance, _ = v[0].(string)
+				}
+			case string:
+				guidance = v
+			case nil:
+				guidance = ""
+			default:
+				log.Printf("unknown type for Guidance: %T", v)
+			}
 			tags, _ := record.Fields["Tags"].(string)
-			promptID, _ := record.Fields["Prompt ID"].(int)
+			//promptID, _ := record.Fields["Prompt ID"].(int)
+			var promptIDStr string
+			switch v := record.Fields["Prompt ID"].(type) {
+			case []interface{}:
+				if len(v) > 0 {
+					promptIDStr = fmt.Sprintf("%v", v[0])
+				} else {
+					promptIDStr = ""
+				}
+			case int:
+				promptIDStr = fmt.Sprintf("%v", v)
+			case string:
+				promptIDStr = v
+			case nil:
+				promptIDStr = ""
+			default:
+				log.Printf("unknown type for PromptID: %T", v)
+				promptIDStr = ""
+			}
+			promptID, err := strconv.Atoi(promptIDStr)
+			if err != nil {
+				promptID = 0
+			}
+
 			controlNarrative, _ := record.Fields["ControlNarrativeAIPromptTemplateId"].(int)
-			frameworkName := lr.TableName.String
+			frameworkName := lr.CeName.String
 			sortID += 1
 			switch v := record.Fields["TestType"].(type) {
 			case []interface{}:
@@ -158,7 +232,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 			}
 
 			// Insert records
-			err := database.InsertFrameworkRecord(db, frameworkRecord)
+			err = database.InsertFrameworkRecord(db, frameworkRecord)
 			if err != nil {
 				log.Printf("skipping Framework %s Identifier %s due to error: %v", identifier, frameworkName, err)
 				//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping EvidenceID %d due to error: %v", int(evidenceID), err))
