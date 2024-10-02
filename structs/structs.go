@@ -125,3 +125,16 @@ type FileMetadata struct {
 	Filename string `json:"filename"`
 	Content  []byte `json:"content"`
 }
+
+type CEMappingRecord struct {
+	EvidenceID  int64  `json:"EvidenceID"`
+	Framework   string `json:"framework"`
+	Requirement string `json:"requirement"`
+}
+
+type NonCEFrameworkRecord struct {
+	CE_EvidenceID     int64  `json:"ce_evidence_id"`      // From CE Framework Mapping
+	MappingEvidenceID int64  `json:"mapping_evidence_id"` // From tblMapping
+	Framework         string `json:"framework"`
+	Requirement       string `json:"requirement"`
+}

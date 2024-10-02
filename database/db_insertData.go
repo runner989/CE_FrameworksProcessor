@@ -107,6 +107,17 @@ func InsertFrameworkRecord(db *sql.DB, fr structs.FrameworkRecord) error {
 
 }
 
+func AddPlaceholders(db *sql.DB, id int) error {
+	evidenceTitle := "Place holder"
+	evidenceDesc := "Deleted mappings..."
+	query := fmt.Sprintf("INSERT INTO Evidence (EvidenceID, Evidence, Description) VALUES (?, ?,?)")
+	_, err := db.Exec(query, id, evidenceTitle, evidenceDesc)
+	if err != nil {
+		return fmt.Errorf("error preparing statement: %v", err)
+	}
+	return nil
+}
+
 func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, table string) error {
 	f, err := excelize.OpenReader(file)
 	if err != nil {

@@ -198,3 +198,66 @@ func GetDistinctFrameworks(db *sql.DB) ([]string, error) {
 	}
 	return frameworks, nil
 }
+
+func CheckForMissing(db *sql.DB, table string) ([]int, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+	query := fmt.Sprintf("SELECT DISTINCT [CEMapping-%s].EvidenceID FROM [CEMapping-%s] LEFT JOIN Evidence ON [CEMapping-%s].EvidenceID = Evidence.EvidenceID WHERE (((Evidence.EvidenceID) Is Null));")
+	rows, err := db.Query(query, table)
+	if err != nil {
+		return nil, fmt.Errorf("failed checking for missing evidence: %v", err)
+	}
+	defer rows.Close()
+	evidenceIDs := []int{}
+	for rows.Next() {
+		var evidenceID int
+		if err := rows.Scan(&evidenceID); err != nil {
+			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+		evidenceIDs = append(evidenceIDs, evidenceID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over rows: %w", err)
+	}
+	return evidenceIDs, nil
+}
+
+func getEvidenceMapping(db *sql.DB) ([]structs.EvidenceRecord, error) {
+	query := `
+		WITH CEFrameworkMapping AS (
+		-- First Query: Select CE Framework mappings
+		SELECT Mapping.EvidenceID, Mapping.Framework, Mapping.Requirement
+		FROM Mapping
+		WHERE Mapping.Framework = 'CE Framework'
+		),
+		NonCEFrameworkMapping AS (
+			-- Second Query: Select Non-CE Framework mappings
+			SELECT DISTINCT CEFrameworkMapping.EvidenceID AS CEEvidenceID, Mapping.EvidenceID, Mapping.Framework, CEFrameworkMapping.Requirement
+			FROM CEFrameworkMapping
+			LEFT JOIN Mapping ON CEFrameworkMapping.EvidenceID = Mapping.EvidenceID
+			WHERE Mapping.Framework <> 'CE Framework' OR CEFrameworkMapping.Requirement = ''
+		)
+		-- Final Query: Join CE and Non-CE mappings with the Evidence table
+		SELECT DISTINCT Evidence.*
+		FROM CEFrameworkMapping
+		INNER JOIN NonCEFrameworkMapping ON CEFrameworkMapping.EvidenceID = NonCEFrameworkMapping.CEEvidenceID
+		INNER JOIN Evidence ON CEFrameworkMapping.EvidenceID = Evidence.EvidenceID;
+	`
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying CE Framework Mapping: %v", err)
+	}
+	defer rows.Close()
+	var evidenceList []structs.EvidenceRecord
+	for rows.Next() {
+		var evidence structs.EvidenceRecord
+		err := rows.Scan(&evidence.EvidenceID, &evidence.EvidenceTitle, &evidence.Description, &evidence.AnecdotesEvidenceIds, &evidence.Priority, &evidence.EvidenceType)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+		evidenceList = append(evidenceList, evidence)
+	}
+
+	return evidenceList, nil
+}

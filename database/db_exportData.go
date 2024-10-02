@@ -11,6 +11,45 @@ import (
 	"time"
 )
 
+func ExportEvidenceMapReportToExcel(db *sql.DB, table string) error {
+	evidenceList, err := getEvidenceMapping(db)
+	if err != nil {
+		return fmt.Errorf("error getting mapped evidence list: %v", err)
+	}
+
+	f := excelize.NewFile()
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Println("excel close err:", err)
+		}
+	}()
+
+	f.NewSheet("Evidence")
+	f.DeleteSheet("Sheet1")
+
+	// Define the "Mappings" folder path
+	folderPath := "Mappings"
+
+	// Check if the "Frameworks" folder exists
+	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+		// Create the "Frameworks" folder if it doesn't exist
+		err := os.MkdirAll(folderPath, os.ModePerm)
+		if err != nil {
+			return fmt.Errorf("failed to create Mappings folder: %v", err)
+		}
+	}
+	// Save the file to disk
+	// Get the current date in MMDDYYYY format
+	currentDate := time.Now().Format("01022006")
+	fileName := fmt.Sprintf("Evidence_Mapping_%s_%s.xlsx", table, currentDate)
+	filePath := filepath.Join(folderPath, fileName)
+	err := f.SaveAs(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to save mappings: %v", err)
+	}
+	return nil
+}
+
 func ExportFrameworkToExcel(db *sql.DB, selectedFramework string) error {
 	f := excelize.NewFile()
 	defer func() {

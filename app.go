@@ -474,6 +474,20 @@ func (a *App) ProcessEvidenceStagingFile(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("error processing evidence staging file: %v", err)
 	}
+
+	ids, err := database.CheckForMissing(a.db, "Staging")
+	if err != nil {
+		return fmt.Errorf("error checking for missing evidence IDs in staging: %v", err)
+	}
+	if len(ids) > 0 {
+		for id := range ids {
+			err = database.AddPlaceholders(a.db, id)
+			if err != nil {
+				return fmt.Errorf("error adding placeholders: %v", err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -488,6 +502,20 @@ func (a *App) ProcessEvidenceProdFile(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("error processing evidence prod file: %v", err)
 	}
+
+	ids, err := database.CheckForMissing(a.db, "Prod")
+	if err != nil {
+		return fmt.Errorf("error checking for missing evidence IDs in prod: %v", err)
+	}
+	if len(ids) > 0 {
+		for id := range ids {
+			err = database.AddPlaceholders(a.db, id)
+			if err != nil {
+				return fmt.Errorf("error adding placeholders: %v", err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -590,6 +618,14 @@ func (a *App) ExportAllFrameworks() error {
 		if err != nil {
 			return fmt.Errorf("error exporting framework: %v", err)
 		}
+	}
+	return nil
+}
+
+func (a *App) ExportEvidenceMapReport(table string) error {
+	err := database.ExportEvidenceMapReportToExcel(a.db, table)
+	if err != nil {
+		return fmt.Errorf("error exporting evidence map report: %v", err)
 	}
 	return nil
 }

@@ -20,5 +20,7 @@ import {
     UpdateAirtableBasesTable,
     UpdateAllFrameworks,
     GetAllFrameworks,
-    ExportAFramework
+    ExportAFramework,
+    ExportAllFrameworks,
+    ExportEvidenceMapReport
 } from '../wailsjs/go/main/App'

@@ -18,6 +18,7 @@
 <script type="module" src="./src/mappingFileImport.js"></script>
 <script type="module" src="./src/settings.js"></script>
 <script type="module" src="./src/frameworkExport.js"></script>
+<script type="module" src="./src/mappingExports.js"></script>
     <div id="app">
         <div class="logo-title-container">
             <img alt="CE logo" class="logo" src="./src/assets/images/CFLogo.png">
@@ -89,7 +90,7 @@
                         <div class="row">
 <!--                            <input type="file" id="stagingFileInput" accept=".xlsx" style="display: none;" />-->
                             <button id="importStagingButton">Import Evidence Map from CE Staging</button>
-                            <button>Create Staging Evidence Map Report</button>
+                            <button id="exportStagingEvidenceMapButton">Create Staging Evidence Map Report</button>
                             <button>Create CE UAT Evidence Map Report</button>
                         </div>
                     </div>
@@ -99,7 +100,7 @@
                         <div class="row">
 <!--                            <input type="file" id="prodFileInput" accept=".xlsx" style="display: none;" />-->
                             <button id="importProdButton">Import Evidence Map from CE Production</button>
-                            <button>Create Production Evidence Map Report</button>
+                            <button id="exportProdEvidenceMapButton">Create Production Evidence Map Report</button>
                         </div>
                     </div>
                 </div>

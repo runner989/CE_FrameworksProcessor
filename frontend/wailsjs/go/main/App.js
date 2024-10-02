@@ -14,6 +14,10 @@ export function ExportAllFrameworks() {
   return window['go']['main']['App']['ExportAllFrameworks']();
 }
 
+export function ExportEvidenceMapReport(arg1) {
+  return window['go']['main']['App']['ExportEvidenceMapReport'](arg1);
+}
+
 export function GetAirtableBaseTables() {
   return window['go']['main']['App']['GetAirtableBaseTables']();
 }
