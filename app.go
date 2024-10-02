@@ -520,6 +520,10 @@ func (a *App) ProcessEvidenceProdFile(filePath string) error {
 }
 
 func (a *App) OpenFileDialog() (string, error) {
+	if a.ctx == nil {
+		log.Println("context is nil")
+		return "", fmt.Errorf("context is nil")
+	}
 	// Open the file dialog and allow the user to select a file
 	filePath, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
 		Title: "Select Excel File",

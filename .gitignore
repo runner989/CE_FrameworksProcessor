@@ -40,3 +40,4 @@ go.work.sum
 #app output files
 *.xlsx
 Frameworks/
+Mappings/

@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -27,12 +28,31 @@ func ExportEvidenceMapReportToExcel(db *sql.DB, table string) error {
 	f.NewSheet("Evidence")
 	f.DeleteSheet("Sheet1")
 
+	// Set headers for the Frameworks sheet
+	f.SetCellValue("Evidence", "A1", "EvidenceID")
+	f.SetCellValue("Evidence", "B1", "Evidence")
+	f.SetCellValue("Evidence", "C1", "Description")
+	f.SetCellValue("Evidence", "D1", "AnecdotesEvidenceIds")
+	f.SetCellValue("Evidence", "E1", "Priority")
+	f.SetCellValue("Evidence", "F1", "EvidenceType")
+
+	rowIndex := 2
+	for _, evidence := range evidenceList {
+		f.SetCellValue("Evidence", "A"+strconv.Itoa(rowIndex), evidence.EvidenceID)
+		f.SetCellValue("Evidence", "B"+strconv.Itoa(rowIndex), safeString(evidence.EvidenceTitle))
+		f.SetCellValue("Evidence", "C"+strconv.Itoa(rowIndex), safeString(evidence.Description))
+		f.SetCellValue("Evidence", "D"+strconv.Itoa(rowIndex), safeString(evidence.AnecdotesEvidenceIds))
+		f.SetCellValue("Evidence", "E"+strconv.Itoa(rowIndex), safeString(evidence.Priority))
+		f.SetCellValue("Evidence", "F"+strconv.Itoa(rowIndex), safeString(evidence.EvidenceType))
+		rowIndex++
+	}
+
 	// Define the "Mappings" folder path
 	folderPath := "Mappings"
 
-	// Check if the "Frameworks" folder exists
+	// Check if the "Mappings" folder exists
 	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
-		// Create the "Frameworks" folder if it doesn't exist
+		// Create the "Mappings" folder if it doesn't exist
 		err := os.MkdirAll(folderPath, os.ModePerm)
 		if err != nil {
 			return fmt.Errorf("failed to create Mappings folder: %v", err)
@@ -43,7 +63,7 @@ func ExportEvidenceMapReportToExcel(db *sql.DB, table string) error {
 	currentDate := time.Now().Format("01022006")
 	fileName := fmt.Sprintf("Evidence_Mapping_%s_%s.xlsx", table, currentDate)
 	filePath := filepath.Join(folderPath, fileName)
-	err := f.SaveAs(filePath)
+	err = f.SaveAs(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to save mappings: %v", err)
 	}
