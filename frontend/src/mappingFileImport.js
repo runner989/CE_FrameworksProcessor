@@ -3,10 +3,10 @@ window.runtime.EventsOn("mappingprogress", (message) => {
 });
 
 function updateMappingProgressModal(message) {
-    var modal = document.getElementById('recordsModal');
-    var recordsContainer = document.getElementById('recordsContainer');
+    let modal = document.getElementById('recordsModal');
+    let recordsContainer = document.getElementById('recordsContainer');
 
-    var p = document.createElement('p');
+    let p = document.createElement('p');
     p.textContent = message;
 
     recordsContainer.appendChild(p);
@@ -33,13 +33,14 @@ document.getElementById('importStagingButton').addEventListener('click', functio
 
             // Send the file path to the Go backend
             window.go.main.App.ProcessEvidenceStagingFile(filePath)
-                .then(() => {
+                .then(function()  {
                     modal.style.display = 'none';
                     alert("File processed successfully.");
                 })
                 .catch(err => {
                     console.error("Error processing file:", err);
                     alert("Failed to process the file.");
+                    modal.style.display = 'none';
                 });
         })
         .catch(err => {
@@ -67,6 +68,7 @@ document.getElementById('importProdButton').addEventListener('click', function()
                 .catch(err => {
                     console.error("Error processing file:", err);
                     alert("Failed to process the file.");
+                    modal.style.display = 'none';
                 });
         })
         .catch(err => {

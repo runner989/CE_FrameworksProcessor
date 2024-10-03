@@ -81,7 +81,7 @@ func ExportFrameworkToExcel(db *sql.DB, selectedFramework string) error {
 	// Sheet 1: Frameworks
 	f.NewSheet("Frameworks")
 	f.DeleteSheet("Sheet1")
-	frameworkQuery := `SELECT CEFramework, Version, Description, Comments FROM Framework_Lookup WHERE CEFramework = ?`
+	frameworkQuery := `SELECT CEFramework, Version, Description, Comments FROM Framework_Lookup WHERE EvidenceLibraryMappedName = ?`
 	rows, err := db.Query(frameworkQuery, selectedFramework)
 	if err != nil {
 		return fmt.Errorf("error querying Framework_Lookup for export: %v", err)
@@ -104,7 +104,11 @@ func ExportFrameworkToExcel(db *sql.DB, selectedFramework string) error {
 		}
 		f.SetCellValue("Frameworks", fmt.Sprintf("A%d", rowIndex), safeString(name))
 		if version.Valid {
-			f.SetCellValue("Frameworks", fmt.Sprintf("B%d", rowIndex), safeInt(version))
+			if safeInt(version) == 0 {
+				f.SetCellValue("Frameworks", fmt.Sprintf("B%d", rowIndex), 1)
+			} else {
+				f.SetCellValue("Frameworks", fmt.Sprintf("B%d", rowIndex), safeInt(version))
+			}
 		} else {
 			f.SetCellValue("Frameworks", fmt.Sprintf("B%d", rowIndex), 1)
 		}

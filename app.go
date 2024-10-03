@@ -297,10 +297,11 @@ func (a *App) GetFrameworkRecords(data map[string]interface{}) error {
 	tableView = strings.ReplaceAll(tableView, " ", "%20")
 
 	lookupRecord := structs.FrameworkLookup{
-		CeName:    sql.NullString{String: data["ceName"].(string), Valid: true},
-		TableName: sql.NullString{String: data["tableName"].(string), Valid: true},
-		TableID:   sql.NullString{String: data["tableID"].(string), Valid: true},
-		TableView: sql.NullString{String: tableView, Valid: true},
+		MappedName: sql.NullString{String: data["mappedName"].(string), Valid: true},
+		CeName:     sql.NullString{String: data["ceName"].(string), Valid: true},
+		TableName:  sql.NullString{String: data["tableName"].(string), Valid: true},
+		TableID:    sql.NullString{String: data["tableID"].(string), Valid: true},
+		TableView:  sql.NullString{String: tableView, Valid: true},
 	}
 	err := airtable.GetFrameworkData(a.db, a.apiKey, lookupRecord)
 	if err != nil {
@@ -470,7 +471,7 @@ func (a *App) ProcessEvidenceStagingFile(filePath string) error {
 	}
 	defer file.Close()
 
-	err = database.ReadExcelAndSaveToDB(a.ctx, a.db, file, "Staging")
+	err = database.ReadExcelAndSaveToDB(a.ctx, a.db, file, filePath, "Staging")
 	if err != nil {
 		return fmt.Errorf("error processing evidence staging file: %v", err)
 	}
@@ -479,6 +480,7 @@ func (a *App) ProcessEvidenceStagingFile(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("error checking for missing evidence IDs in staging: %v", err)
 	}
+	log.Println("missing ids:", ids)
 	if len(ids) > 0 {
 		for id := range ids {
 			err = database.AddPlaceholders(a.db, id)
@@ -498,7 +500,7 @@ func (a *App) ProcessEvidenceProdFile(filePath string) error {
 	}
 	defer file.Close()
 
-	err = database.ReadExcelAndSaveToDB(a.ctx, a.db, file, "Prod")
+	err = database.ReadExcelAndSaveToDB(a.ctx, a.db, file, filePath, "Prod")
 	if err != nil {
 		return fmt.Errorf("error processing evidence prod file: %v", err)
 	}

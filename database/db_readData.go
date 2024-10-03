@@ -175,8 +175,8 @@ func GetDistinctFrameworks(db *sql.DB) ([]string, error) {
 	query := ` 
 		SELECT DISTINCT Framework.Framework 
 		FROM Framework_Lookup 
-		INNER JOIN Framework ON Framework_Lookup.CEFramework = Framework.Framework
-		WHERE Framework IS NOT NULL AND CEFramework IS NOT NULL;
+		INNER JOIN Framework ON Framework_Lookup.EvidenceLibraryMappedName = Framework.Framework
+		WHERE Framework IS NOT NULL AND EvidenceLibraryMappedName IS NOT NULL;
 	`
 	rows, err := db.Query(query)
 	if err != nil {
@@ -203,12 +203,14 @@ func CheckForMissing(db *sql.DB, table string) ([]int, error) {
 	if db == nil {
 		return nil, fmt.Errorf("database connection is nil")
 	}
-	query := fmt.Sprintf("SELECT DISTINCT [CEMapping-%s].EvidenceID FROM [CEMapping-%s] LEFT JOIN Evidence ON [CEMapping-%s].EvidenceID = Evidence.EvidenceID WHERE (((Evidence.EvidenceID) Is Null));")
-	rows, err := db.Query(query, table)
+	query := fmt.Sprintf("SELECT DISTINCT [CEMapping_%s].EvidenceID FROM [CEMapping_%s] LEFT JOIN Evidence ON [CEMapping_%s].EvidenceID = Evidence.EvidenceID WHERE (((Evidence.EvidenceID) Is Null));", table, table, table)
+	log.Println(query)
+	rows, err := db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed checking for missing evidence: %v", err)
 	}
 	defer rows.Close()
+
 	evidenceIDs := []int{}
 	for rows.Next() {
 		var evidenceID int

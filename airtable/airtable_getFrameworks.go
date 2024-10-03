@@ -81,8 +81,8 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 	//log.Printf("Getting framework data for %s", reqURL)
 
 	done := false
-
-	delQry := fmt.Sprintf("DELETE FROM Framework WHERE Framework='%s';", lr.CeName.String)
+	log.Printf("Mapped Name: %s", lr.MappedName.String)
+	delQry := fmt.Sprintf("DELETE FROM Framework WHERE Framework='%s';", lr.MappedName.String)
 	_, err := db.Exec(delQry)
 	if err != nil {
 		//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error deleting from Framework: %v", err))
@@ -202,7 +202,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 			}
 
 			controlNarrative, _ := record.Fields["ControlNarrativeAIPromptTemplateId"].(int)
-			frameworkName := lr.CeName.String
+			frameworkName := lr.MappedName.String
 			sortID += 1
 			switch v := record.Fields["TestType"].(type) {
 			case []interface{}:

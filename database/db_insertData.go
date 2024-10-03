@@ -9,6 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	"log"
+	"path/filepath"
 	"strconv"
 
 	"github.com/mattn/go-sqlite3"
@@ -118,14 +119,15 @@ func AddPlaceholders(db *sql.DB, id int) error {
 	return nil
 }
 
-func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, table string) error {
+func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, filePath, table string) error {
 	f, err := excelize.OpenReader(file)
 	if err != nil {
 		return fmt.Errorf("error opening Excel file: %v", err)
 	}
 	defer f.Close()
 
-	runtime.EventsEmit(ctx, "mappingprogress", fmt.Sprintf("Opening CE Mapping %s file: %v", table, err))
+	fileName := filepath.Base(filePath)
+	runtime.EventsEmit(ctx, "mappingprogress", fmt.Sprintf("Opening CE Mapping %s file: %s", table, fileName))
 
 	qry := fmt.Sprintf("DELETE FROM CEMapping_%s", table)
 

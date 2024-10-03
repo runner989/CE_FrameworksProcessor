@@ -283,51 +283,6 @@ function fetchTablesForBase(baseID) {
         });
 }
 
-function displayBuildList() {
-    tables.forEach(function (table, index) {
-        content += `<li class="table-item" data-index="${index}">
-            <span class="table-name">${table.name}</span>
-            <span class="table-view" style="display: none;">${table.view}</span>
-            <ul class="views-list" id="views-${index}" style="display: none;">`;
-
-        table.views.forEach(function(view) {
-            content += `<li class="view-item" data-table-id="${table.id}" data-table-name="${table.name}" data-view-name="${view.name}">
-                ${view.name}
-            </li>`;
-        });
-        content += `</ul></li>`;
-    });
-
-    content += '</ul>';
-
-    container.innerHTML = content;
-    modal.style.display = 'block';
-
-    let tableItems = container.querySelectorAll('.table-item');
-    tableItems.forEach(function(item) {
-        let index = item.getAttribute('data-index');
-        let viewsList = document.getElementById(`views-${index}`);
-
-        item.querySelector('.table-name').addEventListener('click', function() {
-            if (viewsList.style.display === 'none') {
-                viewsList.style.display = 'block';
-            } else {
-                viewsList.style.display = 'none';
-            }
-        });
-    });
-
-    let viewItems = container.querySelectorAll('.view-item');
-    viewItems.forEach(function(item) {
-        item.addEventListener('click', function() {
-            let tableName = item.getAttribute('data-table-name');
-            let viewName = item.getAttribute('data-view-name');
-            let tableID = item.getAttribute('data-table-id');
-            handleTableViewSelector(tableID, tableName, viewName);
-        });
-    });
-}
-
 function handleTableViewSelector(baseID, tableID, tableName, viewName) {
     window.selectedFrameworkTableID = tableID;
     window.selectedFrameworkTable = tableName;
