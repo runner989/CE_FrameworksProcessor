@@ -28,7 +28,7 @@ func CreateFrameworkTable(db *sql.DB) error {
 	createTableSQL := `CREATE TABLE Framework (
 		"sortID" INTEGER,
 		"Framework" TEXT,
-		"FrameworkID" TEXT,
+		"FrameworkID" INTEGER,
 		"Identifier" TEXT,
 		"ParentIdentifier" TEXT,
 		"DisplayName" TEXT,
@@ -274,7 +274,7 @@ func CreatePlaceholderMappingsTable(db *sql.DB) error {
 		"FromIdentifier" TEXT,
 		"FromDescription" TEXT,
 		"ToFrameworkName" TEXT,
-		"ToFrameworkID" TEXT,
+		"ToFrameworkID" INTEGER,
 		"ToFrameworkVersion" TEXT,
 		"ToIdentifier" TEXT,
 		"ToIdentifierType" TEXT,
@@ -313,7 +313,7 @@ func CreateMappingTable(db *sql.DB) error {
 	createTableSQL := `CREATE TABLE Mapping (
 		"EvidenceID" INTEGER,
 		"Framework" TEXT,
-		"FrameworkId" TEXT,
+		"FrameworkId" INTEGER,
 		"Requirement" TEXT,
 		"Description" TEXT,
 		"Guidance" TEXT,

@@ -119,6 +119,19 @@ func AddPlaceholders(db *sql.DB, id int) error {
 	return nil
 }
 
+func SafeString(value interface{}) sql.NullString {
+	if value == nil {
+		return sql.NullString{String: "", Valid: false}
+	}
+
+	str, ok := value.(string)
+	if !ok {
+		return sql.NullString{String: "", Valid: false}
+	}
+
+	return sql.NullString{String: str, Valid: true}
+}
+
 func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, filePath, table string) error {
 	f, err := excelize.OpenReader(file)
 	if err != nil {
@@ -148,14 +161,14 @@ func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, fileP
 		}
 
 		evidenceMapRecord := structs.EvidenceMapRecord{
-			EvidenceID:      getIntOrZero(getStringOrEmpty(row, 0)),
+			EvidenceID:      getIntOrZero(row[0]),
 			Framework:       getStringOrEmpty(row, 1),
 			FrameworkID:     getIntOrZero(getStringOrEmpty(row, 2)),
-			Requirement:     getStringOrEmpty(row, 3),
-			Description:     getStringOrEmpty(row, 4),
-			Guidance:        getStringOrEmpty(row, 5),
-			RequirementType: getStringOrEmpty(row, 6),
-			Delete:          getStringOrEmpty(row, 7),
+			Requirement:     SafeString(row[3]),
+			Description:     SafeString(row[4]),
+			Guidance:        SafeString(row[5]),
+			RequirementType: SafeString(row[6]),
+			Delete:          SafeString(row[7]),
 		}
 
 		message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", evidenceMapRecord.EvidenceID, evidenceMapRecord.Framework)
@@ -175,8 +188,8 @@ func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, fileP
 // Function to save the record to the database
 func saveEvidenceRecordToDB(db *sql.DB, record structs.EvidenceMapRecord, table string) error {
 
-	query := fmt.Sprintf("INSERT INTO CEMapping_%s ("+
-		"EvidenceID, Framework, FrameworkID, Requirement, Description, Guidance, RequirementType, \"Delete\" "+
+	query := fmt.Sprintf("INSERT INTO CEMapping_%s "+
+		"(EvidenceID, Framework, FrameworkID, Requirement, Description, Guidance, RequirementType, \"Delete\" "+
 		") VALUES (?, ?, ?, ?, ?, ?, ?, ?)", table)
 
 	_, err := db.Exec(query,

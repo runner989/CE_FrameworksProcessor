@@ -81,7 +81,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 	//log.Printf("Getting framework data for %s", reqURL)
 
 	done := false
-	log.Printf("Mapped Name: %s", lr.MappedName.String)
+	//log.Printf("Mapped Name: %s", lr.MappedName.String)
 	delQry := fmt.Sprintf("DELETE FROM Framework WHERE Framework='%s';", lr.MappedName.String)
 	_, err := db.Exec(delQry)
 	if err != nil {
@@ -116,6 +116,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 		}
 		sortID := 0
 		for _, record := range airtableFrameworksResp.Records {
+			//log.Println(record)
 			var testType string
 			identifier, ok := record.Fields["Identifier"].(string)
 			if !ok {

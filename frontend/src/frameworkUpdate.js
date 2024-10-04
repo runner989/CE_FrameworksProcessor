@@ -30,6 +30,8 @@ function displayUniqueFrameworks(frameworks) {
     content += '<p>This list is the Framework Build list if it was imported.</p>';
     content += '<strong>NOTE: </strong>Not all frameworks in this list exist in Airtable. If you do not see it in the next selection, it is not yet ready.</p>';
     content += '<div id="selectedRecordLabel"></div>';
+    // search input box
+    content += '<input type="text" id="frameworkSearch" placeholder="Search Framework..." style="margin-bottom: 10px; width: 100%;">';
     content += '<div id="tableContainer"><table><thead><tr>';
 
     content += '<th>Framework</th>';
@@ -54,6 +56,30 @@ function displayUniqueFrameworks(frameworks) {
             let selectedRecord = frameworks[index];
             fetchFrameworkDetails(selectedRecord);
         });
+    });
+
+    // event listener for search input
+    document.getElementById('frameworkSearch').addEventListener('input', function(e) {
+        let searchTerm = e.target.value.toLowerCase();
+        let firstMatchIndex = -1;
+
+        tableRows.forEach(function(row, index) {
+            let framework = frameworks[index].toLowerCase();
+            if (framework.startsWith(searchTerm)) {
+                if (firstMatchIndex === -1) {
+                    firstMatchIndex = index;
+                }
+                row.style.display = '';  // Show matching row
+            } else {
+                row.style.display = 'none'; // Hide non-matching row
+            }
+        });
+
+        // Scroll to the first matching row
+        if (firstMatchIndex !== -1) {
+            let firstMatchRow = tableRows[firstMatchIndex];
+            firstMatchRow.scrollIntoView({ behavior: 'smooth' , block: "center"});
+        }
     });
 }
 
@@ -127,6 +153,7 @@ function displayMappedFrameworkRecords(records) {
     content += '<p>Framework is missing the Framework name from the Mapping table.</p>'
     content += `<div id="selectedFrameworkLabel"><br><strong>Selected Framework From Framework_Lookup:</strong> ${selectedFramework}\n</div>`;
     content += '<div id="selectedRecordLabel"></div>';
+    content += '<input type="text" id="frameworkSearch" placeholder="Search for Framework Name..." style="margin-bottom: 10px; width: 100%;"/>';
     content += '<div id="tableContainer"><table><thead><tr>';
 
     content += '<th>Framework</th>';
@@ -141,10 +168,7 @@ function displayMappedFrameworkRecords(records) {
     recordsContainer.innerHTML = content;
     modal.style.display = 'block';
 
-    addFrameworkRowEventListeners(records);
-}
-
-function addFrameworkRowEventListeners(records) {
+    // addFrameworkRowEventListeners(records);
     let tableRows = document.querySelectorAll('#recordsContainer tbody tr');
     tableRows.forEach(function(row, index) {
         row.addEventListener('click', function() {
@@ -155,7 +179,30 @@ function addFrameworkRowEventListeners(records) {
             let selectedRecord = records[index];
             displaySelectedFrameworkInfo(selectedRecord);
         });
-    }); 
+    });
+    // event listener for search input
+    document.getElementById('frameworkSearch').addEventListener('input', function(e) {
+        let searchTerm = e.target.value.toLowerCase();
+        let firstMatchIndex = -1;
+
+        tableRows.forEach(function(row, index) {
+            let framework = records[index].toLowerCase();
+            if (framework.startsWith(searchTerm)) {
+                if (firstMatchIndex === -1) {
+                    firstMatchIndex = index;
+                }
+                row.style.display = '';  // Show matching row
+            } else {
+                row.style.display = 'none'; // Hide non-matching row
+            }
+        });
+
+        // Scroll to the first matching row
+        if (firstMatchIndex !== -1) {
+            let firstMatchRow = tableRows[firstMatchIndex];
+            firstMatchRow.scrollIntoView({ behavior: 'smooth' , block: "center"});
+        }
+    });
 }
 
 function displaySelectedFrameworkInfo(record) {
@@ -197,8 +244,11 @@ function displayFrameworkBuildListSelection(records, onFrameworkSelected) {
     let recordsContainer = document.getElementById('frameworkBuildContainer');
     let selectedFramework = window.selectedFramework
 
+    console.log('Record 1:', records[1].fields["Name"])
+
     let content = '<h3>Frameworks Build List</h3>';
     content += `<div id="selectedFrameworkLabel"><br><strong>Selected Framework from Mapping:</strong> ${selectedFramework}\n</div>`;
+    content += '<input type="text" id="frameworkSearch2" placeholder="Search for Framework Name..." style="margin-bottom: 10px; width: 100%;"/>';
     content += '<div id="tableContainer"><table><thead><tr>';
 
     orderedFields.forEach(function(field){
@@ -226,10 +276,7 @@ function displayFrameworkBuildListSelection(records, onFrameworkSelected) {
     recordsContainer.innerHTML = content;
     modal.style.display = 'block';
 
-    addFrameworkBuildSelectionRowEventListeners(records, onFrameworkSelected);
-}
-
-function addFrameworkBuildSelectionRowEventListeners(records, onFrameworkSelected) {
+    // addFrameworkBuildSelectionRowEventListeners(records, onFrameworkSelected);
     let tableRows = document.querySelectorAll('#frameworkBuildContainer tbody tr');
     tableRows.forEach(function(row, index) {
         row.addEventListener('click', function() {
@@ -241,8 +288,30 @@ function addFrameworkBuildSelectionRowEventListeners(records, onFrameworkSelecte
             onFrameworkSelected(selectedRecord);
         });
     });
-}
 
+    // event listener for search input
+    document.getElementById('frameworkSearch2').addEventListener('input', function(e) {
+        let searchTerm = e.target.value.toLowerCase();
+        let firstMatchIndex = -1;
+        tableRows.forEach(function(row, index) {
+            let frameworkName = records[index].fields["Name"].toLowerCase();
+            if (frameworkName.startsWith(searchTerm)) {
+                if (firstMatchIndex === -1) {
+                    firstMatchIndex = index;
+                }
+                row.style.display = '';  // Show matching row
+            } else {
+                row.style.display = 'none'; // Hide non-matching row
+            }
+        });
+
+        // Scroll to the first matching row
+        if (firstMatchIndex !== -1) {
+            let firstMatchRow = tableRows[firstMatchIndex];
+            firstMatchRow.scrollIntoView({ behavior: 'smooth' , block: "center"});
+        }
+    });
+}
 
 function displaySelectedFrameworkFromBuildListSelection(selectedFramework) {
     let fields = selectedFramework.fields;
@@ -251,6 +320,10 @@ function displaySelectedFrameworkFromBuildListSelection(selectedFramework) {
     let prodNumber = fields['Production Framework Number'] || 'N/A';
     let stageNumber = fields['Stage Framework Number'] || 'N/A';
 
+    let searchBox = document.getElementById('frameworkSearch');
+    let searchBox2 = document.getElementById('frameworkSearch2');
+    searchBox.style.display = 'none';
+    searchBox2.style.display = 'none';
     let detailsDiv = document.getElementById('selectedFrameworkDetails');
     detailsDiv.innerHTML = `
         <strong>Selected Framework from Build List</strong>
@@ -311,12 +384,16 @@ function displayUpdateFrameworkTablesModal(tables, bases) {
 
     content += '<label for="baseSelect">Select Base: </label> ';
     content += '<select id="baseSelect">';
-
     bases.forEach(function (base) {
         content += `<option value="${base.id}">${base.name}</option>`;
     });
     content += '</select><hr>';
-    content += '<ul id="tablesList"></ul>';
+
+    // search input for filtering the table
+    content += '<input type="text" id="tableSearch" placeholder="Search Tables..." style="margin-bottom: 10px; width: 100%;">';
+
+    content += '<div id="tableContainer">';
+    content += '<ul id="tablesList"></ul></div>';
 
     container.innerHTML = content
     modal.style.display = 'block';
@@ -340,6 +417,7 @@ function fetchTablesForBase(baseID) {
         .then(function (response) {
             document.getElementById('loadingNotification').style.display = 'none';
             let tablesList = document.getElementById('tablesList');
+            let tableSearch = document.getElementById('tableSearch');
             let content = '';
 
             response.tables.forEach(function (table, index) {
@@ -354,8 +432,6 @@ function fetchTablesForBase(baseID) {
                 });
                 content += `</ul></li>`;
             });
-
-            // content += '</ul>';
 
             tablesList.innerHTML = content;
 
@@ -382,6 +458,25 @@ function fetchTablesForBase(baseID) {
                     handleUpdateTableViewSelector(baseID, tableName, viewName, tableID);
                 });
             });
+
+            // Filter tables based on search input
+            tableSearch.addEventListener('input', function(e) {
+                let searchTerm = e.target.value.toLowerCase();
+
+                tableItems.forEach(function(item) {
+                    let tableName = item.querySelector('.table-name').innerText.toLowerCase();
+
+                    if (tableName.startsWith(searchTerm)) {
+                        item.style.display = ''; // Show matching table
+                    } else {
+                        item.style.display = 'none'; // Hide non-matching table
+                    }
+                });
+            });
+        })
+        .catch(function (err) {
+            console.error('Error fetching Airtable tables:', err);
+            alert('Failed to fetch tables for the selected base.');
         });
 }
 
@@ -428,7 +523,7 @@ function updateSelectFrameworkModalWithTableView() {
 
 function updateSelectedFrameworkLookup() {
     let data = {
-        missingFrameworkName: window.selectedMissingFramework,
+        mappedName: window.selectedMissingFramework,
         ceName: window.selectedFrameworkDetails.name,
         uatStage: window.selectedFrameworkDetails.uatStage,
         prodNumber: window.selectedFrameworkDetails.prodNumber,

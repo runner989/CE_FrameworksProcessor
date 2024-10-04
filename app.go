@@ -109,7 +109,7 @@ func toFloat64(value interface{}) float64 {
 }
 
 func (a *App) UpdateFrameworkLookup(data map[string]interface{}) error {
-	missingFrameworkName, ok := data["missingFrameworkName"].(string)
+	missingFrameworkName, ok := data["mappedName"].(string)
 	if !ok {
 		return fmt.Errorf("invalid missing framework name")
 	}

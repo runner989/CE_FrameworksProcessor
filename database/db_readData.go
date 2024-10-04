@@ -225,7 +225,8 @@ func CheckForMissing(db *sql.DB, table string) ([]int, error) {
 	return evidenceIDs, nil
 }
 
-func getEvidenceMapping(db *sql.DB) ([]structs.EvidenceRecord, error) {
+func getEvidenceSheet(db *sql.DB) ([]structs.EvidenceRecord, error) {
+	// This query is to get only Evidence that is mapped to a framework
 	query := `
 		WITH CEFrameworkMapping AS (
 		-- First Query: Select CE Framework mappings
@@ -262,4 +263,61 @@ func getEvidenceMapping(db *sql.DB) ([]structs.EvidenceRecord, error) {
 	}
 
 	return evidenceList, nil
+}
+
+func getEvidenceMapping(db *sql.DB) ([]structs.EvidenceMapRecord, error) {
+	query := `
+		WITH CEFrameworkMapping AS (
+			-- First Query: Select CE Framework mappings
+			SELECT Mapping.EvidenceID, Mapping.Framework, Mapping.Requirement
+			FROM Mapping
+			WHERE Mapping.Framework = 'CE Framework'
+		),
+		NonCEFrameworkMapping AS (
+			-- Second Query: Select Non-CE Framework mappings
+			SELECT DISTINCT CEFrameworkMapping.EvidenceID AS CEEvidenceID, Mapping.EvidenceID, Mapping.Framework, CEFrameworkMapping.Requirement
+			FROM CEFrameworkMapping
+			LEFT JOIN Mapping ON CEFrameworkMapping.EvidenceID = Mapping.EvidenceID
+			WHERE Mapping.Framework <> 'CE Framework' OR CEFrameworkMapping.Requirement = ''
+		),
+		EvidenceExport AS (
+			-- Third Query: Select relevant evidence records
+			SELECT DISTINCT Evidence.*
+			FROM CEFrameworkMapping
+			INNER JOIN NonCEFrameworkMapping ON CEFrameworkMapping.EvidenceID = NonCEFrameworkMapping.CEEvidenceID
+			INNER JOIN Evidence ON CEFrameworkMapping.EvidenceID = Evidence.EvidenceID
+		)
+		
+		-- Final Query: Export relevant data
+		SELECT DISTINCT 
+			Mapping.EvidenceID, 
+			Framework_Lookup.CEFramework AS Framework, 
+			Framework_Lookup.FrameworkId_Staging AS FrameworkId, 
+			Mapping.Requirement, 
+			Mapping.Description, 
+			Mapping.Guidance, 
+			'Requirement' AS RequirementType, 
+			Mapping."Delete"
+		FROM EvidenceExport
+		INNER JOIN Mapping ON EvidenceExport.EvidenceID = Mapping.EvidenceID
+		INNER JOIN Framework_Lookup ON Mapping.Framework = Framework_Lookup.EvidenceLibraryMappedName
+		WHERE Framework_Lookup.FrameworkId_Staging <> 0 
+		  AND Mapping.Requirement <> ''
+	`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying CE Framework Mapping: %v", err)
+	}
+	defer rows.Close()
+	var mappingList []structs.EvidenceMapRecord
+	for rows.Next() {
+		var mapping structs.EvidenceMapRecord
+		err := rows.Scan(&mapping.EvidenceID, &mapping.Framework, &mapping.FrameworkID, &mapping.Requirement, &mapping.Description, &mapping.Guidance, &mapping.RequirementType, &mapping.Delete)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+		mappingList = append(mappingList, mapping)
+	}
+	return mappingList, nil
 }

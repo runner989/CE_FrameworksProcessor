@@ -13,7 +13,7 @@ import (
 )
 
 func ExportEvidenceMapReportToExcel(db *sql.DB, table string) error {
-	evidenceList, err := getEvidenceMapping(db)
+	evidenceList, err := getEvidenceSheet(db)
 	if err != nil {
 		return fmt.Errorf("error getting mapped evidence list: %v", err)
 	}
@@ -44,6 +44,35 @@ func ExportEvidenceMapReportToExcel(db *sql.DB, table string) error {
 		f.SetCellValue("Evidence", "D"+strconv.Itoa(rowIndex), safeString(evidence.AnecdotesEvidenceIds))
 		f.SetCellValue("Evidence", "E"+strconv.Itoa(rowIndex), safeString(evidence.Priority))
 		f.SetCellValue("Evidence", "F"+strconv.Itoa(rowIndex), safeString(evidence.EvidenceType))
+		rowIndex++
+	}
+
+	mappingList, err := getEvidenceMapping(db)
+	if err != nil {
+		return fmt.Errorf("error getting mapped evidence list: %v", err)
+	}
+
+	f.NewSheet("Mapping")
+
+	f.SetCellValue("Mapping", "A1", "EvidenceID")
+	f.SetCellValue("Mapping", "B1", "Framework")
+	f.SetCellValue("Mapping", "C1", "FrameworkId")
+	f.SetCellValue("Mapping", "D1", "Requirement")
+	f.SetCellValue("Mapping", "E1", "Description")
+	f.SetCellValue("Mapping", "F1", "Guidance")
+	f.SetCellValue("Mapping", "G1", "RequirementType")
+	f.SetCellValue("Mapping", "H1", "Delete")
+
+	rowIndex = 2
+	for _, mapping := range mappingList {
+		f.SetCellValue("Mapping", "A"+strconv.Itoa(rowIndex), mapping.EvidenceID)
+		f.SetCellValue("Mapping", "B"+strconv.Itoa(rowIndex), mapping.Framework)
+		f.SetCellValue("Mapping", "C"+strconv.Itoa(rowIndex), mapping.FrameworkID)
+		f.SetCellValue("Mapping", "D"+strconv.Itoa(rowIndex), safeString(mapping.Requirement))
+		f.SetCellValue("Mapping", "E"+strconv.Itoa(rowIndex), safeString(mapping.Description))
+		f.SetCellValue("Mapping", "F"+strconv.Itoa(rowIndex), safeString(mapping.Guidance))
+		f.SetCellValue("Mapping", "G"+strconv.Itoa(rowIndex), safeString(mapping.RequirementType))
+		f.SetCellValue("Mapping", "H"+strconv.Itoa(rowIndex), safeString(mapping.Delete))
 		rowIndex++
 	}
 

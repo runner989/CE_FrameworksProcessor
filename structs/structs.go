@@ -56,11 +56,11 @@ type EvidenceMapRecord struct {
 	EvidenceID      int // Assuming EvidenceID should be an int
 	Framework       string
 	FrameworkID     int // Assuming FrameworkID should be an int
-	Requirement     string
-	Description     string
-	Guidance        string
-	RequirementType string
-	Delete          string
+	Requirement     sql.NullString
+	Description     sql.NullString
+	Guidance        sql.NullString
+	RequirementType sql.NullString
+	Delete          sql.NullString
 }
 
 type FrameworkTable struct {

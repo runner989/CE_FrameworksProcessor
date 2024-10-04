@@ -28,6 +28,8 @@ function displayMissingRecords(records) {
     let content = '<h3>Frameworks Missing From Lookup Table</h3>';
     content += '<p>Frameworks listed are from the Mapped table that are not in the Framework Lookup table</p>';
     content += '<div id="selectedRecordLabel"></div>';
+    // search input box
+    content += '<input type="text" id="frameworkSearch" placeholder="Search Framework..." style="margin-bottom: 10px; width: 100%;">';
     content += '<div id="tableContainer"><table><thead><tr>';
 
     content += '<th>Framework</th>';
@@ -42,10 +44,6 @@ function displayMissingRecords(records) {
     recordsContainer.innerHTML = content;
     modal.style.display = 'block';
 
-    addMissingRowEventListeners(records);
-}
-
-function addMissingRowEventListeners(records) {
     let tableRows = document.querySelectorAll('#recordsContainer tbody tr');
     tableRows.forEach(function(row, index) {
         row.addEventListener('click', function() {
@@ -57,7 +55,31 @@ function addMissingRowEventListeners(records) {
             let selectedRecord = records[index];
             displaySelectedFrameworkDetails(selectedRecord);
         });
-    }); 
+    });
+
+    // event listener for search input
+    document.getElementById('frameworkSearch').addEventListener('input', function(e) {
+        let searchTerm = e.target.value.toLowerCase();
+        let firstMatchIndex = -1;
+
+        tableRows.forEach(function(row, index) {
+            let framework = records[index].toLowerCase();
+            if (framework.startsWith(searchTerm)) {
+                if (firstMatchIndex === -1) {
+                    firstMatchIndex = index;
+                }
+                row.style.display = '';  // Show matching row
+            } else {
+                row.style.display = 'none'; // Hide non-matching row
+            }
+        });
+
+        // Scroll to the first matching row
+        if (firstMatchIndex !== -1) {
+            let firstMatchRow = tableRows[firstMatchIndex];
+            firstMatchRow.scrollIntoView({ behavior: 'smooth' , block: "center"});
+        }
+    });
 }
 
 function displaySelectedFrameworkDetails(record) {
@@ -94,6 +116,7 @@ function displayFrameworkBuildList(records, onFrameworkSelected) {
     let missingFramework = window.selectedMissingFramework
     let content = '<h3>Frameworks Build List</h3>';
     content += '<div id="selectedFrameworkDetails">Looking for Framework: '+ missingFramework +'</div>';
+    content += '<input type="text" id="frameworkSearch2" placeholder="Search for Framework Name..." style="margin-bottom: 10px; width: 100%;"/>';
     content += '<div id="tableContainer"><table><thead><tr>';
 
     orderedFields.forEach(function(field){
@@ -121,10 +144,6 @@ function displayFrameworkBuildList(records, onFrameworkSelected) {
     recordsContainer.innerHTML = content;
     modal.style.display = 'block';
 
-    addFrameworkBuildRowEventListeners(records, onFrameworkSelected);
-}
-
-function addFrameworkBuildRowEventListeners(records, onFrameworkSelected) {
     let tableRows = document.querySelectorAll('#frameworkBuildContainer tbody tr');
     tableRows.forEach(function(row, index) {
         row.addEventListener('click', function() {
@@ -135,6 +154,29 @@ function addFrameworkBuildRowEventListeners(records, onFrameworkSelected) {
             let selectedRecord = records[index];
             onFrameworkSelected(selectedRecord);
         });
+    });
+
+    // event listener for search input
+    document.getElementById('frameworkSearch2').addEventListener('input', function(e) {
+        let searchTerm = e.target.value.toLowerCase();
+        let firstMatchIndex = -1;
+        tableRows.forEach(function(row, index) {
+            let frameworkName = records[index].fields["Name"].toLowerCase();
+            if (frameworkName.startsWith(searchTerm)) {
+                if (firstMatchIndex === -1) {
+                    firstMatchIndex = index;
+                }
+                row.style.display = '';  // Show matching row
+            } else {
+                row.style.display = 'none'; // Hide non-matching row
+            }
+        });
+
+        // Scroll to the first matching row
+        if (firstMatchIndex !== -1) {
+            let firstMatchRow = tableRows[firstMatchIndex];
+            firstMatchRow.scrollIntoView({ behavior: 'smooth' , block: "center"});
+        }
     });
 }
 
@@ -150,6 +192,10 @@ function displaySelectedFrameworkFromBuildList(selectedFramework) {
     let prodNumber = fields['Production Framework Number'] || 'N/A';
     let stageNumber = fields['Stage Framework Number'] || 'N/A';
 
+    let searchBox = document.getElementById('frameworkSearch');
+    let searchBox2 = document.getElementById('frameworkSearch2');
+    searchBox.style.display = 'none';
+    searchBox2.style.display = 'none';
     let detailsDiv = document.getElementById('selectedFrameworkDetails');
     detailsDiv.innerHTML = `
         <strong>Selected Framework from Build List</strong>
@@ -213,7 +259,12 @@ function displayFrameworkTablesModal(tables, bases) {
         content += `<option value="${base.id}">${base.name}</option>`;
     });
     content += '</select><hr>';
-    content += '<ul id="tablesList"></ul>';
+
+    // search input for filtering the table
+    content += '<input type="text" id="tableSearch" placeholder="Search Tables..." style="margin-bottom: 10px; width: 100%;">';
+
+    content += '<div id="tableContainer">';
+    content += '<ul id="tablesList"></ul></div>';
 
     container.innerHTML = content
     modal.style.display = 'block';
@@ -238,6 +289,7 @@ function fetchTablesForBase(baseID) {
         .then(function (response) {
             document.getElementById('loadingNotification').style.display = 'none';
             let tablesList = document.getElementById('tablesList');
+            let tableSearch = document.getElementById('tableSearch');
             let content = '';
 
             response.tables.forEach(function (table, index) {
@@ -274,6 +326,21 @@ function fetchTablesForBase(baseID) {
                     let viewName = item.getAttribute('data-view-name');
                     let tableID = item.getAttribute('data-table-id');
                     handleTableViewSelector(baseID, tableID, tableName, viewName);
+                });
+            });
+
+            // Filter tables based on search input
+            tableSearch.addEventListener('input', function(e) {
+                let searchTerm = e.target.value.toLowerCase();
+
+                tableItems.forEach(function(item) {
+                    let tableName = item.querySelector('.table-name').innerText.toLowerCase();
+
+                    if (tableName.startsWith(searchTerm)) {
+                        item.style.display = ''; // Show matching table
+                    } else {
+                        item.style.display = 'none'; // Hide non-matching table
+                    }
                 });
             });
         })
@@ -324,7 +391,7 @@ function updateMissingFrameworkModalWithTableView() {
 
 function updateFrameworkLookup() {
     let data = {
-        missingFrameworkName: window.selectedMissingFramework,
+        mappedName: window.selectedMissingFramework,
         ceName: window.selectedFrameworkDetails.name,
         uatStage: window.selectedFrameworkDetails.uatStage,
         prodNumber: window.selectedFrameworkDetails.prodNumber,

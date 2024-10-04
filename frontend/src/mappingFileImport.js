@@ -3,10 +3,10 @@ window.runtime.EventsOn("mappingprogress", (message) => {
 });
 
 function updateMappingProgressModal(message) {
-    let modal = document.getElementById('recordsModal');
-    let recordsContainer = document.getElementById('recordsContainer');
+    var modal = document.getElementById('recordsModal');
+    var recordsContainer = document.getElementById('recordsContainer');
 
-    let p = document.createElement('p');
+    var p = document.createElement('p');
     p.textContent = message;
 
     recordsContainer.appendChild(p);
@@ -23,6 +23,7 @@ function updateMappingProgressModal(message) {
 
 document.getElementById('importStagingButton').addEventListener('click', function() {
     let modal = document.getElementById('recordsModal');
+    let recordsContainer = document.getElementById('recordsContainer');
     // Use Wails' OpenFileDialog to select a file
     window.go.main.App.OpenFileDialog()
         .then(filePath => {
@@ -33,34 +34,6 @@ document.getElementById('importStagingButton').addEventListener('click', functio
 
             // Send the file path to the Go backend
             window.go.main.App.ProcessEvidenceStagingFile(filePath)
-                .then(function()  {
-                    modal.style.display = 'none';
-                    alert("File processed successfully.");
-                })
-                .catch(err => {
-                    console.error("Error processing file:", err);
-                    alert("Failed to process the file.");
-                    modal.style.display = 'none';
-                });
-        })
-        .catch(err => {
-            console.error("Error selecting file:", err);
-        });
-});
-
-
-document.getElementById('importProdButton').addEventListener('click', function() {
-    let modal = document.getElementById('recordsModal');
-    // Use Wails' OpenFileDialog to select a file
-    window.go.main.App.OpenFileDialog()
-        .then(filePath => {
-            if (!filePath) {
-                alert("No file selected.");
-                return;
-            }
-
-            // Send the file path to the Go backend
-            window.go.main.App.ProcessEvidenceProdFile(filePath)
                 .then(() => {
                     modal.style.display = 'none';
                     alert("File processed successfully.");
@@ -74,4 +47,34 @@ document.getElementById('importProdButton').addEventListener('click', function()
         .catch(err => {
             console.error("Error selecting file:", err);
         });
+    recordsContainer.innerHTML = '';
+});
+
+
+document.getElementById('importProdButton').addEventListener('click', function() {
+    let modal = document.getElementById('recordsModal');
+    let recordsContainer = document.getElementById('recordsContainer');
+    // Use Wails' OpenFileDialog to select a file
+    window.go.main.App.OpenFileDialog()
+        .then(filePath => {
+            if (!filePath) {
+                alert("No file selected.");
+                return;
+            }
+
+            // Send the file path to the Go backend
+            window.go.main.App.ProcessEvidenceProdFile(filePath)
+                .then(() => {
+                    alert("File processed successfully.");
+                })
+                .catch(err => {
+                    console.error("Error processing file:", err);
+                    alert("Failed to process the file.");
+                });
+        })
+        .catch(err => {
+            console.error("Error selecting file:", err);
+        });
+    modal.style.display = 'none';
+    recordsContainer.innerHTML = '';
 });
