@@ -6,13 +6,12 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
-	"log"
-	"os"
-
 	"github.com/joho/godotenv"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"log"
+	"os"
 )
 
 //go:embed all:frontend/dist
@@ -85,6 +84,8 @@ func getAPIKey() string {
 	// Check if the API key is set in the environment
 	if envKey := os.Getenv("API_KEY"); envKey != "" {
 		apiKey = envKey
+	} else {
+		apiKey = secret.APIKey
 	}
 	return apiKey
 }

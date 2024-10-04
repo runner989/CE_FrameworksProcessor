@@ -34,6 +34,10 @@ export function GetAvailableAirtableBases() {
   return window['go']['main']['App']['GetAvailableAirtableBases']();
 }
 
+export function GetDeletionsList(arg1) {
+  return window['go']['main']['App']['GetDeletionsList'](arg1);
+}
+
 export function GetFrameworkDetails(arg1) {
   return window['go']['main']['App']['GetFrameworkDetails'](arg1);
 }

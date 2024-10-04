@@ -91,7 +91,8 @@
 <!--                            <input type="file" id="stagingFileInput" accept=".xlsx" style="display: none;" />-->
                             <button id="importStagingButton">Import Evidence Map from CE Staging</button>
                             <button id="exportStagingEvidenceMapButton">Create Staging Evidence Map Report</button>
-                            <button>Create CE UAT Evidence Map Report</button>
+                            <button id="exportUATEvidenceMapReport">Create CE UAT Evidence Map Report</button>
+                            <button id="reviewStagingDeleted">Review Deletions List</button>
                         </div>
                     </div>
 
@@ -101,6 +102,7 @@
 <!--                            <input type="file" id="prodFileInput" accept=".xlsx" style="display: none;" />-->
                             <button id="importProdButton">Import Evidence Map from CE Production</button>
                             <button id="exportProdEvidenceMapButton">Create Production Evidence Map Report</button>
+                            <button id="reviewProdDeleted">Review Deletions List</button>
                         </div>
                     </div>
                 </div>
@@ -254,9 +256,15 @@
                     <p>Working on updating the framework. Please wait...</p>
                 </div>
             </div>
+            <div id="deletionsModal" class="modal">
+                <div class="modal-content">
+                    <span id="closeDeletionsModal">&times;</span>
+                    <span id="deletionsContainer"></span>
+                </div>
+            </div>
         </div>
         <div id="settingsIconContainer">
-            <i id="settingsIcon" class="fas fa-cog"></i>
+            <i id="settingsIcon" class="fas fa-cog" style="display: none"></i>
         </div>
     </div>
     <script>
@@ -322,7 +330,6 @@
             document.getElementById('deleteFrameworkPage').style.display = 'none';
             document.getElementById('homePage').style.display = 'block';
         })
-
         document.getElementById('quitApp').addEventListener('click', function() {
             Quit(); // Assuming Quit() is implemented on the backend
         });

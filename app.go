@@ -480,7 +480,7 @@ func (a *App) ProcessEvidenceStagingFile(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("error checking for missing evidence IDs in staging: %v", err)
 	}
-	log.Println("missing ids:", ids)
+	//log.Println("missing ids:", ids)
 	if len(ids) > 0 {
 		for id := range ids {
 			err = database.AddPlaceholders(a.db, id)
@@ -634,6 +634,44 @@ func (a *App) ExportEvidenceMapReport(table string) error {
 		return fmt.Errorf("error exporting evidence map report: %v", err)
 	}
 	return nil
+}
+
+func (a *App) GetDeletionsList(table string) ([]map[string]interface{}, error) {
+	deletions, err := database.GetDeletions(a.db, table)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching deletions: %v", err)
+	}
+	//log.Println(deletions)
+	var deletedList []map[string]interface{}
+	for _, deletion := range deletions {
+		deleted := map[string]interface{}{
+			"EvidenceID":  deletion.EvidenceID,
+			"Framework":   deletion.Framework,
+			"FrameworkID": deletion.FrameworkID,
+			"Requirement": newSafeString(deletion.Requirement),
+			//"Description":     newSafeString(deletion.Description),
+			//"Guidance":        newSafeString(deletion.Guidance),
+			//"RequirementType": newSafeString(deletion.RequirementType),
+			"Delete": newSafeString(deletion.Delete),
+		}
+		deletedList = append(deletedList, deleted)
+	}
+	//log.Println(deletedList)
+	return deletedList, nil
+}
+
+func newSafeString(ns sql.NullString) string {
+	if ns.Valid {
+		return ns.String
+	}
+	return ""
+}
+
+func SafeInt(ns sql.NullInt64) int {
+	if ns.Valid {
+		return int(ns.Int64)
+	}
+	return 0
 }
 
 //func (a *App) UpdateFrameworkName(data map[string]string) error {

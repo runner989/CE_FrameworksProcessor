@@ -18,6 +18,8 @@ export function GetAllFrameworks():Promise<Array<string>>;
 
 export function GetAvailableAirtableBases():Promise<Array<structs.Base>>;
 
+export function GetDeletionsList(arg1:string):Promise<Array<{[key: string]: any}>>;
+
 export function GetFrameworkDetails(arg1:string):Promise<{[key: string]: any}>;
 
 export function GetFrameworkLookup():Promise<Array<structs.Framework>>;

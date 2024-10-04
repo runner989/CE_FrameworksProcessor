@@ -176,7 +176,7 @@ func GetDistinctFrameworks(db *sql.DB) ([]string, error) {
 		SELECT DISTINCT Framework.Framework 
 		FROM Framework_Lookup 
 		INNER JOIN Framework ON Framework_Lookup.EvidenceLibraryMappedName = Framework.Framework
-		WHERE Framework IS NOT NULL AND EvidenceLibraryMappedName IS NOT NULL;
+		WHERE Framework IS NOT NULL AND EvidenceLibraryMappedName IS NOT NULL ORDER BY Framework.Framework;
 	`
 	rows, err := db.Query(query)
 	if err != nil {
@@ -204,7 +204,7 @@ func CheckForMissing(db *sql.DB, table string) ([]int, error) {
 		return nil, fmt.Errorf("database connection is nil")
 	}
 	query := fmt.Sprintf("SELECT DISTINCT [CEMapping_%s].EvidenceID FROM [CEMapping_%s] LEFT JOIN Evidence ON [CEMapping_%s].EvidenceID = Evidence.EvidenceID WHERE (((Evidence.EvidenceID) Is Null));", table, table, table)
-	log.Println(query)
+	//log.Println(query)
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed checking for missing evidence: %v", err)
@@ -265,14 +265,23 @@ func getEvidenceSheet(db *sql.DB) ([]structs.EvidenceRecord, error) {
 	return evidenceList, nil
 }
 
-func getDeletions(db *sql.DB) ([]structs.EvidenceMapRecord, error) {
-	delQuery := `
-		SELECT DISTINCT CEMapping_Staging.EvidenceID,CEMapping_Staging.Framework, CEMapping_Staging.FrameworkId,CEMapping_Staging.Requirement,CEMapping_Staging.Description,CEMapping_Staging.Guidance,CEMapping_Staging.RequirementType, 'X' AS "Delete"
-		FROM ([CEMapping_Staging] LEFT JOIN Mapping ON [CEMapping_Staging].EvidenceID = Mapping.EvidenceID) 
-		LEFT JOIN Framework_Lookup ON [CEMapping_Staging].FrameworkId = Framework_Lookup.FrameworkId_Staging
-		WHERE (((Mapping.EvidenceID) Is Null));
-		`
+func GetDeletions(db *sql.DB, table string) ([]structs.EvidenceMapRecord, error) {
+	var designatedTable string
+	if table == "UAT" {
+		designatedTable = "Staging"
+	} else {
+		designatedTable = table
+	}
+	delQuery := fmt.Sprintf(`WITH Mapping_%s_FWID AS (
+		SELECT Mapping.EvidenceID, Mapping.Framework, Framework_Lookup.FrameworkId_%s, Mapping.Requirement, Mapping.Description, Mapping.Guidance, Mapping.RequirementType, Mapping."Delete", Framework_Lookup.CEFramework
+		FROM Mapping LEFT JOIN Framework_Lookup ON Mapping.Framework = Framework_Lookup.EvidenceLibraryMappedName
+		)
+		SELECT [CEMapping_%s].EvidenceID, [CEMapping_%s].Framework, [CEMapping_%s].FrameworkId, TRIM([CEMapping_%s].Requirement), [CEMapping_%s].Description, [CEMapping_%s].Guidance, [CEMapping_%s].RequirementType, "X" AS "Delete"
+		FROM [CEMapping_%s] LEFT JOIN Mapping_%s_FWID ON (TRIM([CEMapping_%s].Requirement) = TRIM(Mapping_%s_FWID.Requirement)) AND ([CEMapping_%s].FrameworkId = Mapping_%s_FWID.FrameworkId_%s) AND ([CEMapping_%s].EvidenceID = Mapping_%s_FWID.EvidenceID)
+		WHERE ((Mapping_%s_FWID.EvidenceID Is Null));
+		`, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable)
 
+	//log.Println(delQuery)
 	delRows, err := db.Query(delQuery)
 	if err != nil {
 		return nil, fmt.Errorf("error getting deletions list: %v", err)
@@ -294,8 +303,14 @@ func getDeletions(db *sql.DB) ([]structs.EvidenceMapRecord, error) {
 	return deleteList, nil
 }
 
-func getEvidenceMapping(db *sql.DB) ([]structs.EvidenceMapRecord, error) {
-	query := `
+func getEvidenceMapping(db *sql.DB, table string) ([]structs.EvidenceMapRecord, error) {
+	var designatedTable string
+	if table == "UAT" {
+		designatedTable = "Staging"
+	} else {
+		designatedTable = table
+	}
+	query := fmt.Sprintf(`
 		WITH CEFrameworkMapping AS (
 			-- First Query: Select CE Framework mappings
 			SELECT Mapping.EvidenceID, Mapping.Framework, Mapping.Requirement
@@ -321,7 +336,7 @@ func getEvidenceMapping(db *sql.DB) ([]structs.EvidenceMapRecord, error) {
 		SELECT DISTINCT 
 			Mapping.EvidenceID, 
 			Framework_Lookup.CEFramework AS Framework, 
-			Framework_Lookup.FrameworkId_Staging AS FrameworkId, 
+			Framework_Lookup.FrameworkId_%s AS FrameworkId, 
 			Mapping.Requirement, 
 			Mapping.Description, 
 			Mapping.Guidance, 
@@ -330,9 +345,9 @@ func getEvidenceMapping(db *sql.DB) ([]structs.EvidenceMapRecord, error) {
 		FROM EvidenceExport
 		INNER JOIN Mapping ON EvidenceExport.EvidenceID = Mapping.EvidenceID
 		INNER JOIN Framework_Lookup ON Mapping.Framework = Framework_Lookup.EvidenceLibraryMappedName
-		WHERE Framework_Lookup.FrameworkId_Staging <> 0 
+		WHERE Framework_Lookup.FrameworkId_%s <> 0 
 		  AND Mapping.Requirement <> ''
-	`
+	`, designatedTable, designatedTable)
 
 	rows, err := db.Query(query)
 	if err != nil {

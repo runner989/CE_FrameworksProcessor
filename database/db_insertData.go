@@ -119,7 +119,14 @@ func AddPlaceholders(db *sql.DB, id int) error {
 	return nil
 }
 
-func SafeString(value interface{}) sql.NullString {
+//func SafeString(ns sql.NullString) string {
+//	if ns.Valid {
+//		return ns.String
+//	}
+//	return ""
+//}
+
+func insertSafeString(value interface{}) sql.NullString {
 	if value == nil {
 		return sql.NullString{String: "", Valid: false}
 	}
@@ -164,11 +171,11 @@ func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, fileP
 			EvidenceID:      getIntOrZero(row[0]),
 			Framework:       getStringOrEmpty(row, 1),
 			FrameworkID:     getIntOrZero(getStringOrEmpty(row, 2)),
-			Requirement:     SafeString(row[3]),
-			Description:     SafeString(row[4]),
-			Guidance:        SafeString(row[5]),
-			RequirementType: SafeString(row[6]),
-			Delete:          SafeString(row[7]),
+			Requirement:     insertSafeString(row[3]),
+			Description:     insertSafeString(row[4]),
+			Guidance:        insertSafeString(row[5]),
+			RequirementType: insertSafeString(row[6]),
+			//Delete:          insertSafeString(row[7]),
 		}
 
 		message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", evidenceMapRecord.EvidenceID, evidenceMapRecord.Framework)

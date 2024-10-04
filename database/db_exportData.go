@@ -47,7 +47,7 @@ func ExportEvidenceMapReportToExcel(db *sql.DB, table string) error {
 		rowIndex++
 	}
 
-	mappingList, err := getEvidenceMapping(db)
+	mappingList, err := getEvidenceMapping(db, table)
 	if err != nil {
 		return fmt.Errorf("error getting mapped evidence list: %v", err)
 	}
@@ -66,7 +66,11 @@ func ExportEvidenceMapReportToExcel(db *sql.DB, table string) error {
 	rowIndex = 2
 	for _, mapping := range mappingList {
 		f.SetCellValue("Mapping", "A"+strconv.Itoa(rowIndex), mapping.EvidenceID)
-		f.SetCellValue("Mapping", "B"+strconv.Itoa(rowIndex), mapping.Framework)
+		if table == "UAT" && mapping.Framework == "CE" || mapping.Framework == "CE Framework" {
+			f.SetCellValue("Mapping", "B"+strconv.Itoa(rowIndex), fmt.Sprintf("UAT_%s", mapping.Framework))
+		} else {
+			f.SetCellValue("Mapping", "B"+strconv.Itoa(rowIndex), mapping.Framework)
+		}
 		f.SetCellValue("Mapping", "C"+strconv.Itoa(rowIndex), mapping.FrameworkID)
 		f.SetCellValue("Mapping", "D"+strconv.Itoa(rowIndex), safeString(mapping.Requirement))
 		f.SetCellValue("Mapping", "E"+strconv.Itoa(rowIndex), safeString(mapping.Description))
@@ -77,7 +81,10 @@ func ExportEvidenceMapReportToExcel(db *sql.DB, table string) error {
 	}
 
 	// Get deletions
-	deletedList, err := getDeletions(db)
+	deletedList, err := GetDeletions(db, table)
+	if err != nil {
+		return fmt.Errorf("error getting deleted mapped evidence list: %v", err)
+	}
 	for _, deleted := range deletedList {
 		f.SetCellValue("Mapping", "A"+strconv.Itoa(rowIndex), deleted.EvidenceID)
 		f.SetCellValue("Mapping", "B"+strconv.Itoa(rowIndex), deleted.Framework)

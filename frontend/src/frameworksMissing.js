@@ -182,7 +182,9 @@ function displayFrameworkBuildList(records, onFrameworkSelected) {
 
 function closeFrameworkBuildListModal() {
     let modal = document.getElementById('frameworkBuildModal');
+    // let container = document.getElementById('frameworkBuildContainer');
     modal.style.display = 'none';
+    // container.innerHTML = '';
 }
 
 function displaySelectedFrameworkFromBuildList(selectedFramework) {
@@ -238,7 +240,9 @@ function fetchAirtableTablesandViews() {
 
 function closeFrameworkTablesModalX() {
     let modal = document.getElementById('frameworkTablesModal');
+    // let container= document.getElementById('frameworkTableContainer');
     modal.style.display = 'none';
+    // container.innerHTML = '';
 }
 
 function displayFrameworkTablesModal(tables, bases) {

@@ -22,5 +22,6 @@ import {
     GetAllFrameworks,
     ExportAFramework,
     ExportAllFrameworks,
-    ExportEvidenceMapReport
+    ExportEvidenceMapReport,
+    GetDeletionsList
 } from '../wailsjs/go/main/App'

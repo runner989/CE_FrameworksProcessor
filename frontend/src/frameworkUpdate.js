@@ -235,7 +235,9 @@ function openFrameworkBuildListSelectionModal() {
 
 function closeFrameworkBuildListModal() {
     let modal = document.getElementById('frameworkBuildModal');
+    // let container = document.getElementById('frameworkBuildContainer');
     modal.style.display = 'none';
+    // container.innerHTML = '';
 }
 
 function displayFrameworkBuildListSelection(records, onFrameworkSelected) {
@@ -243,8 +245,6 @@ function displayFrameworkBuildListSelection(records, onFrameworkSelected) {
     let modal = document.getElementById('frameworkBuildModal');
     let recordsContainer = document.getElementById('frameworkBuildContainer');
     let selectedFramework = window.selectedFramework
-
-    console.log('Record 1:', records[1].fields["Name"])
 
     let content = '<h3>Frameworks Build List</h3>';
     content += `<div id="selectedFrameworkLabel"><br><strong>Selected Framework from Mapping:</strong> ${selectedFramework}\n</div>`;
@@ -584,6 +584,7 @@ function fetchFrameworkFromAirtable(data) {
 document.getElementById('updateAllFrameworksButton').addEventListener('click',function() {
     let modal = document.getElementById('recordsModal');
     let recordsContainer = document.getElementById('recordsContainer');
+    recordsContainer.innerHTML = "";
     window.go.main.App.UpdateAllFrameworks()
         .then(function(message) {
             document.getElementById('loadingNotification').style.display = 'none';

@@ -65,16 +65,17 @@ document.getElementById('importProdButton').addEventListener('click', function()
             // Send the file path to the Go backend
             window.go.main.App.ProcessEvidenceProdFile(filePath)
                 .then(() => {
+                    modal.style.display = 'none';
                     alert("File processed successfully.");
                 })
                 .catch(err => {
                     console.error("Error processing file:", err);
                     alert("Failed to process the file.");
+                    modal.style.display = 'none';
                 });
         })
         .catch(err => {
             console.error("Error selecting file:", err);
         });
-    modal.style.display = 'none';
     recordsContainer.innerHTML = '';
 });

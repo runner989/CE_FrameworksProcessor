@@ -3,7 +3,7 @@
 window.fetchFrameworks = function() {
     window.go.main.App.GetAllFrameworks()
         .then(function (frameworks) {
-            console.log(frameworks);
+            // console.log(frameworks);
             populateFrameworkDropdown(frameworks);
         })
         .catch(function (err) {
@@ -43,7 +43,7 @@ document.getElementById('exportFrameworkButton').addEventListener('click', funct
 
 // Call backend function to export the framework to Excel
 function exportFrameworkToExcel(framework) {
-    console.log('Exporting framework:', framework);
+    // console.log('Exporting framework:', framework);
     window.go.main.App.ExportAFramework(framework)
     .then(function() {
         alert('Framework exported successfully!');
@@ -58,6 +58,10 @@ function exportFrameworkToExcel(framework) {
 // document.addEventListener('DOMContentLoaded', fetchFrameworks);
 
 document.getElementById('exportAllButton').addEventListener('click', function() {
+    let modal = document.getElementById('loadingNotification')
+    // Update modal content first, then show it
+    modal.innerHTML = '<div class="alert alert-info" role="alert" style="padding: 20px; font-size: 18px;">Exporting All Frameworks...</div>';
+    modal.style.display = 'block';
     window.go.main.App.ExportAllFrameworks()
     .then(function() {
         alert('All Frameworks exported!');
@@ -66,4 +70,6 @@ document.getElementById('exportAllButton').addEventListener('click', function() 
         console.error('Error exporting all Frameworks.');
         alert('Failed to export all Frameworks');
     })
+    modal.style.display = 'none';
+    modal.innerHTML = '';
 })

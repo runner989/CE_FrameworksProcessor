@@ -89,6 +89,24 @@ body {
     font-size: 28px;
     font-weight: bold;
 }
+#closeFrameworkTablesModal {
+    float: right;
+    cursor: pointer;
+    font-size: 28px;
+    font-weight: bold;
+}
+#closeDeletionsModal {
+    float: right;
+    cursor: pointer;
+    font-size: 28px;
+    font-weight: bold;
+}
+#closeFrameworkBuildModal{
+    float: right;
+    cursor: pointer;
+    font-size: 28px;
+    font-weight: bold;
+}
 /* Table styles */
 table {
     width: 100%;
@@ -207,4 +225,19 @@ button:hover {
 
 #settingsIcon:hover {
     transform: rotate(90deg); /* Rotate the cog on hover */
+}
+
+#loadingNotification {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 9999;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
 }
