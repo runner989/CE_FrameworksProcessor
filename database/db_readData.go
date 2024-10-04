@@ -265,6 +265,35 @@ func getEvidenceSheet(db *sql.DB) ([]structs.EvidenceRecord, error) {
 	return evidenceList, nil
 }
 
+func getDeletions(db *sql.DB) ([]structs.EvidenceMapRecord, error) {
+	delQuery := `
+		SELECT DISTINCT CEMapping_Staging.EvidenceID,CEMapping_Staging.Framework, CEMapping_Staging.FrameworkId,CEMapping_Staging.Requirement,CEMapping_Staging.Description,CEMapping_Staging.Guidance,CEMapping_Staging.RequirementType, 'X' AS "Delete"
+		FROM ([CEMapping_Staging] LEFT JOIN Mapping ON [CEMapping_Staging].EvidenceID = Mapping.EvidenceID) 
+		LEFT JOIN Framework_Lookup ON [CEMapping_Staging].FrameworkId = Framework_Lookup.FrameworkId_Staging
+		WHERE (((Mapping.EvidenceID) Is Null));
+		`
+
+	delRows, err := db.Query(delQuery)
+	if err != nil {
+		return nil, fmt.Errorf("error getting deletions list: %v", err)
+	}
+	defer delRows.Close()
+	var deleteList []structs.EvidenceMapRecord
+	for delRows.Next() {
+		var deleted structs.EvidenceMapRecord
+		err := delRows.Scan(&deleted.EvidenceID, &deleted.Framework, &deleted.FrameworkID, &deleted.Requirement, &deleted.Description, &deleted.Guidance, &deleted.RequirementType, &deleted.Delete)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+		deleteList = append(deleteList, deleted)
+	}
+	if err := delRows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over rows: %w", err)
+	}
+
+	return deleteList, nil
+}
+
 func getEvidenceMapping(db *sql.DB) ([]structs.EvidenceMapRecord, error) {
 	query := `
 		WITH CEFrameworkMapping AS (

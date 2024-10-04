@@ -76,6 +76,19 @@ func ExportEvidenceMapReportToExcel(db *sql.DB, table string) error {
 		rowIndex++
 	}
 
+	// Get deletions
+	deletedList, err := getDeletions(db)
+	for _, deleted := range deletedList {
+		f.SetCellValue("Mapping", "A"+strconv.Itoa(rowIndex), deleted.EvidenceID)
+		f.SetCellValue("Mapping", "B"+strconv.Itoa(rowIndex), deleted.Framework)
+		f.SetCellValue("Mapping", "C"+strconv.Itoa(rowIndex), deleted.FrameworkID)
+		f.SetCellValue("Mapping", "D"+strconv.Itoa(rowIndex), safeString(deleted.Requirement))
+		f.SetCellValue("Mapping", "E"+strconv.Itoa(rowIndex), safeString(deleted.Description))
+		f.SetCellValue("Mapping", "F"+strconv.Itoa(rowIndex), safeString(deleted.Guidance))
+		f.SetCellValue("Mapping", "G"+strconv.Itoa(rowIndex), safeString(deleted.RequirementType))
+		f.SetCellValue("Mapping", "H"+strconv.Itoa(rowIndex), safeString(deleted.Delete))
+		rowIndex++
+	}
 	// Define the "Mappings" folder path
 	folderPath := "Mappings"
 
