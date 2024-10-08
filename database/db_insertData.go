@@ -16,6 +16,96 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
+func BackupMemoryToFile(memDB, db *sql.DB) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Fetch data from in-memory Evidence table
+	rows, err := memDB.Query("SELECT * FROM Evidence")
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to query Evidence from in-memory DB: %v", err)
+	}
+	defer rows.Close()
+
+	// Insert data into the file-based Evidence table
+	stmt, err := tx.Prepare("INSERT INTO Evidence (EvidenceID, Evidence, Description, AnecdotesEvidenceIds, Priority, EvidenceType) VALUES (?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to prepare insert statement for Evidence: %v", err)
+	}
+	defer stmt.Close()
+
+	for rows.Next() {
+		var EvidenceID int
+		var Evidence string
+		var Description string
+		var AnecdotesEvidenceIds sql.NullString
+		var Priority sql.NullString
+		var EvidenceType sql.NullString
+
+		err = rows.Scan(&EvidenceID, &Evidence, &Description, &AnecdotesEvidenceIds, &Priority, &EvidenceType)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to scan row from in-memory Evidence: %v", err)
+		}
+
+		_, err = stmt.Exec(EvidenceID, Evidence, Description, AnecdotesEvidenceIds, Priority, EvidenceType)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to insert row into file-based Evidence: %v", err)
+		}
+	}
+
+	// Fetch data from in-memory Mapping table
+	rows, err = memDB.Query("SELECT EvidenceID, Framework, FrameworkId, Requirement, Description, Guidance, RequirementType FROM Mapping")
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to query Mapping from in-memory DB: %v", err)
+	}
+	defer rows.Close()
+
+	// Insert data into the file-based Mapping table
+	stmt, err = tx.Prepare("INSERT INTO Mapping (EvidenceID, Framework, FrameworkId, Requirement, Description, Guidance, RequirementType) VALUES (?, ?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to prepare insert statement for Mapping: %v", err)
+	}
+	defer stmt.Close()
+
+	for rows.Next() {
+		var EvidenceID int
+		var Framework string
+		var FrameworkId sql.NullInt32
+		var Requirement sql.NullString
+		var Description sql.NullString
+		var Guidance sql.NullString
+		var RequirementType sql.NullString
+
+		err = rows.Scan(&EvidenceID, &Framework, &FrameworkId, &Requirement, &Description, &Guidance, &RequirementType)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to scan row from in-memory Mapping: %v", err)
+		}
+
+		_, err = stmt.Exec(EvidenceID, Framework, FrameworkId, Requirement, Description, Guidance, RequirementType)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to insert row into file-based Mapping: %v", err)
+		}
+	}
+
+	// Commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %v", err)
+	}
+
+	return nil
+}
+
 func UpdateFrameworkLookupTable(db *sql.DB, lookupRecord structs.FrameworkLookup) error { //missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableID, tableName, viewName string) error {
 	if db == nil {
 		return fmt.Errorf("database connection is nil")

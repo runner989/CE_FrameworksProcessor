@@ -21,14 +21,16 @@ import (
 type App struct {
 	ctx    context.Context
 	db     *sql.DB
+	memDB  *sql.DB
 	apiKey string
 }
 
 // NewApp creates a new App application struct
-func NewApp(apiKey string, db *sql.DB) *App {
+func NewApp(apiKey string, db *sql.DB, memDB *sql.DB) *App {
 	return &App{
 		apiKey: apiKey,
 		db:     db,
+		memDB:  memDB,
 	}
 }
 
@@ -41,11 +43,16 @@ func (a *App) startup(ctx context.Context) {
 
 // ReadAPIEvidenceTable get all records from the Evidence table in Airtable
 func (a *App) ReadAPIEvidenceTable() (string, error) {
-	err := airtable.ReadAPIEvidenceTable(a.ctx, a.db, a.apiKey)
+	err := airtable.ReadAPIEvidenceTable(a.ctx, a.db, a.memDB, a.apiKey)
 	if err != nil {
 		log.Printf("Error updating evidence table: %v", err)
 		return "", fmt.Errorf("failed to read/update evidence table")
 	}
+	err = database.BackupMemoryToFile(a.memDB, a.db)
+	if err != nil {
+		log.Printf("Error updating evidence and mapping tables: %v", err)
+	}
+
 	message := "Updated Evidence and Mapping tables"
 	return message, nil
 }

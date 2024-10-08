@@ -17,19 +17,16 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
-type FrameworkLookup struct {
-	MissingFrameworkName string
-	CeName               string
-	UatStage             string
-	StageNumber          string
-	ProdNumber           string
-	TableID              string
-	TableName            string
-	TableView            string
-}
-
 func main() {
 
+	memDB, err := database.CreateInMemoryDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = database.InitializeMemoryDB(memDB)
+	if err != nil {
+		log.Fatal(err)
+	}
 	db, err := database.NewDB("cefp.db")
 	if err != nil {
 		log.Fatalf("Failed to create database: %v", err)
@@ -47,7 +44,7 @@ func main() {
 	}
 
 	// Create an instance of the app structure with initialized fields
-	app := NewApp(apiKey, db)
+	app := NewApp(apiKey, db, memDB)
 
 	// Create application with options
 	err = wails.Run(&options.App{

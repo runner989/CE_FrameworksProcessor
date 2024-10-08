@@ -9,6 +9,40 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+func CreateInMemoryDB() (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		log.Printf("failed to create in-memory database: %v", err)
+		return nil, fmt.Errorf("failed to create in-memory database: %w", err)
+	}
+	return db, nil
+}
+
+func InitializeMemoryDB(db *sql.DB) error {
+	err := CreateFrameworkTable(db)
+	if err != nil {
+		return err
+	}
+	err = CreateMemEvidenceTable(db)
+	if err != nil {
+		return err
+	}
+	err = CreateCEMappingStagingTable(db)
+	if err != nil {
+		return err
+	}
+	err = CreateCEMappingProdTable(db)
+	if err != nil {
+		return err
+	}
+	err = CreateMemMappingTable(db)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func CreateFrameworkTable(db *sql.DB) error {
 	if db == nil {
 		return fmt.Errorf("database connection is nil")
@@ -17,6 +51,7 @@ func CreateFrameworkTable(db *sql.DB) error {
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='Framework';`
 	err := db.QueryRow(query).Scan(&tableName)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Printf("failed to create framework table: %v", err)
 		return fmt.Errorf("error checking for table existence: %v", err)
 	}
 
@@ -254,6 +289,44 @@ func CreateEvidenceTable(db *sql.DB) error {
 	return nil
 }
 
+func CreateMemEvidenceTable(db *sql.DB) error {
+	if db == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+	var tableName string
+	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='Evidence';`
+	err := db.QueryRow(query).Scan(&tableName)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("error checking for table existence: %v", err)
+	}
+
+	if tableName != "" {
+		log.Println("Evidence table already exists, skipping creation")
+		return nil
+	}
+
+	createTableSQL := `CREATE TABLE Evidence (
+		"EvidenceID" INTEGER NOT NULL PRIMARY KEY,
+		"Evidence" TEXT,
+		"Description" TEXT,
+		"AnecdotesEvidenceIds" TEXT,
+		"Priority" TEXT,
+		"EvidenceType" TEXT
+	);`
+
+	log.Println("Create Evidence table...")
+	_, createErr := db.Exec(createTableSQL)
+	if createErr != nil {
+		log.Fatal(createErr.Error())
+	}
+	//_, err = statement.Exec()
+	//if err != nil {
+	//	return fmt.Errorf("error creating Evidence table: %v", err)
+	//}
+	log.Println("Evidence table created")
+	return nil
+}
+
 func CreatePlaceholderMappingsTable(db *sql.DB) error {
 	if db == nil {
 		return fmt.Errorf("database connection is nil")
@@ -330,6 +403,46 @@ func CreateMappingTable(db *sql.DB) error {
 	if err != nil {
 		return fmt.Errorf("error creating Mapping table: %v", err)
 	}
+	log.Println("Mapping table created")
+	return err
+}
+
+func CreateMemMappingTable(db *sql.DB) error {
+	if db == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+	var tableName string
+	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='Mapping';`
+	err := db.QueryRow(query).Scan(&tableName)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("error checking for table existence: %v", err)
+	}
+
+	if tableName != "" {
+		log.Println("Mapping table already exists, skipping creation")
+		return nil
+	}
+
+	createTableSQL := `CREATE TABLE Mapping (
+		"EvidenceID" INTEGER,
+		"Framework" TEXT,
+		"FrameworkId" INTEGER,
+		"Requirement" TEXT,
+		"Description" TEXT,
+		"Guidance" TEXT,
+		"RequirementType" TEXT,
+		"Delete" TEXT
+	);`
+
+	log.Println("Create Mapping table...")
+	_, err = db.Exec(createTableSQL)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	//_, err = statement.Exec()
+	//if err != nil {
+	//	return fmt.Errorf("error creating Mapping table: %v", err)
+	//}
 	log.Println("Mapping table created")
 	return err
 }
