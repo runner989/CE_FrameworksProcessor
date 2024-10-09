@@ -32,6 +32,20 @@ export namespace structs {
 	        this.fields = source["fields"];
 	    }
 	}
+	export class FrameworkMappedCount {
+	    Framework: string;
+	    Count: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new FrameworkMappedCount(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Framework = source["Framework"];
+	        this.Count = source["Count"];
+	    }
+	}
 
 }
 

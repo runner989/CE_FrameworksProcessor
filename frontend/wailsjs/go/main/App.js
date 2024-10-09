@@ -58,6 +58,10 @@ export function GetMappedFrameworks() {
   return window['go']['main']['App']['GetMappedFrameworks']();
 }
 
+export function GetMappingCounts() {
+  return window['go']['main']['App']['GetMappingCounts']();
+}
+
 export function GetMissingFramework() {
   return window['go']['main']['App']['GetMissingFramework']();
 }

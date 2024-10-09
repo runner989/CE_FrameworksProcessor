@@ -53,7 +53,6 @@ func GetFrameworksLookup(apiKey string) ([]structs.Framework, error) {
 			log.Fatalf("Error parsing JSON: %v", err)
 			return allRecords, err
 		}
-		//log.Printf("airtableFrameworksResp: %v", airtableFrameworksResp)
 
 		// Append the records to the slice of all records
 		allRecords = append(allRecords, airtableFrameworksResp.Records...)
@@ -78,14 +77,11 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 
 	tableView := strings.ReplaceAll(lr.TableView.String, " ", "+")
 	reqURL := fmt.Sprintf("https://api.airtable.com/v0/%s/%s?view=%s&Rand=%s", devMasterBase, lr.TableID.String, tableView, GenerateRandomString())
-	//log.Printf("Getting framework data for %s", reqURL)
 
 	done := false
-	//log.Printf("Mapped Name: %s", lr.MappedName.String)
 	delQry := fmt.Sprintf("DELETE FROM Framework WHERE Framework='%s';", lr.MappedName.String)
 	_, err := db.Exec(delQry)
 	if err != nil {
-		//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Error deleting from Framework: %v", err))
 		log.Printf("error deleting from Framework: %v", err)
 		return fmt.Errorf("error deleting from Framework: %v", err)
 	}
@@ -116,7 +112,6 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 		}
 		sortID := 0
 		for _, record := range airtableFrameworksResp.Records {
-			//log.Println(record)
 			var testType string
 			identifier, ok := record.Fields["Identifier"].(string)
 			if !ok {

@@ -13,7 +13,6 @@ func DeleteFromFrameworkLookup(db *sql.DB, framework structs.FrameworkLookup) er
 	if err != nil {
 		return fmt.Errorf("unable to prepare the delete from framework_lookup query: %v", err)
 	}
-	//log.Printf("RowID: %v", framework.RowID)
 	defer stmt.Close()
 
 	_, err = stmt.Exec(framework.RowID)
@@ -31,7 +30,6 @@ func DeleteFromFramework(db *sql.DB, framework structs.FrameworkLookup) error {
 	}
 	defer stmt.Close()
 
-	//log.Printf("Deleting MappedName: %v", framework.TableName.String)
 	_, err = stmt.Exec(framework.TableName.String)
 	if err != nil {
 		log.Printf("failed to delete from framework query: %v", err)

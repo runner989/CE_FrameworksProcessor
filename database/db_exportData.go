@@ -198,8 +198,6 @@ func ExportFrameworkToExcel(db *sql.DB, selectedFramework string) error {
 		if err != nil {
 			return fmt.Errorf("error scanning Framework row for requirements: %v", err)
 		}
-		//log.Printf("displayName: %v, Valid: %v", displayName.String, displayName.Valid)
-		//log.Printf("description: %v, Valid: %v", description.String, description.Valid)
 
 		f.SetCellValue("Requirements", fmt.Sprintf("A%d", rowIndex), safeString(identifier))
 		f.SetCellValue("Requirements", fmt.Sprintf("B%d", rowIndex), safeString(parentIdentifier))

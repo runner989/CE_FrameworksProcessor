@@ -30,6 +30,8 @@ export function GetFrameworkRecords(arg1:{[key: string]: any}):Promise<void>;
 
 export function GetMappedFrameworks():Promise<Array<string>>;
 
+export function GetMappingCounts():Promise<Array<structs.FrameworkMappedCount>>;
+
 export function GetMissingFramework():Promise<Array<string>>;
 
 export function GetUniqueFrameworks():Promise<Array<string>>;

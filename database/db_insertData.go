@@ -111,7 +111,6 @@ func UpdateFrameworkLookupTable(db *sql.DB, lookupRecord structs.FrameworkLookup
 		return fmt.Errorf("database connection is nil")
 	}
 
-	//log.Printf("missing framework %s, cename: %s, uatStage: %s, stageNumber: %s, prodNumber: %s, tableName: %s, viewName: %s", missingFrameworkName, cename, uatStage, stageNumber, prodNumber, tableName, viewName)
 	query := `
 		INSERT INTO Framework_Lookup (EvidenceLibraryMappedName, CEFramework, FrameworkId_UAT, FrameworkId_Staging, FrameworkId_Prod, AirtableTableID ,AirtableFramework, AirtableView, AirtableBase)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -229,7 +228,7 @@ func insertSafeString(value interface{}) sql.NullString {
 	return sql.NullString{String: str, Valid: true}
 }
 
-func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, filePath, table string) error {
+func ReadExcelAndSaveToDB(ctx context.Context, memDB, db *sql.DB, file io.Reader, filePath, table string) error {
 	f, err := excelize.OpenReader(file)
 	if err != nil {
 		return fmt.Errorf("error opening Excel file: %v", err)
@@ -242,6 +241,7 @@ func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, fileP
 	qry := fmt.Sprintf("DELETE FROM CEMapping_%s", table)
 
 	_, err = db.Exec(qry)
+	_, err = memDB.Exec(qry)
 	if err != nil {
 		runtime.EventsEmit(ctx, "mappingprogress", fmt.Sprintf("Error deleting from CEMapping_%s: %v", table, err))
 		return fmt.Errorf("error deleting from CEMapping_%s: %v", table, err)
@@ -271,28 +271,93 @@ func ReadExcelAndSaveToDB(ctx context.Context, db *sql.DB, file io.Reader, fileP
 		message := fmt.Sprintf("Processing EvidenceID: %d, Evidence: %s", evidenceMapRecord.EvidenceID, evidenceMapRecord.Framework)
 		runtime.EventsEmit(ctx, "mappingprogress", message)
 
-		err = saveEvidenceRecordToDB(db, evidenceMapRecord, table)
+		err = saveMappingRecordToMemDB(memDB, evidenceMapRecord, table)
 		if err != nil {
 			log.Printf("error saving evidence record: %v", err)
 		}
 	}
+	err = saveMappingRecordsToDB(memDB, db, table)
 
 	message := fmt.Sprintf("Done updating CEMapping_%s table!", table)
 	runtime.EventsEmit(ctx, "mappingprogress", message)
 	return nil
 }
 
+func saveMappingRecordsToDB(memDB, db *sql.DB, table string) error {
+	if db == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+	if memDB == nil {
+		return fmt.Errorf("memory database connection is nil")
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Fetch data from in-memory Mapping table
+	query := fmt.Sprintf("SELECT EvidenceID, Framework, FrameworkId, Requirement, Description, Guidance, RequirementType FROM CEMapping_%s", table)
+	log.Printf("memDB select: %s", query)
+	rows, err := memDB.Query(query)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to query Mapping from in-memory DB: %v", err)
+	}
+	defer rows.Close()
+
+	// Insert data into the file-based Mapping table
+	insertQuery := fmt.Sprintf("INSERT INTO CEMapping_%s (EvidenceID, Framework, FrameworkId, Requirement, Description, Guidance, RequirementType) VALUES (?, ?, ?, ?, ?, ?, ?)", table)
+
+	stmt, err := tx.Prepare(insertQuery)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to prepare insert statement for Mapping: %v", err)
+	}
+	defer stmt.Close()
+
+	for rows.Next() {
+		var EvidenceID int
+		var Framework string
+		var FrameworkId sql.NullInt32
+		var Requirement sql.NullString
+		var Description sql.NullString
+		var Guidance sql.NullString
+		var RequirementType sql.NullString
+
+		err = rows.Scan(&EvidenceID, &Framework, &FrameworkId, &Requirement, &Description, &Guidance, &RequirementType)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to scan row from in-memory Mapping: %v", err)
+		}
+
+		_, err = stmt.Exec(EvidenceID, Framework, FrameworkId, Requirement, Description, Guidance, RequirementType)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to insert row into file-based Mapping: %v", err)
+		}
+	}
+
+	// Commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %v", err)
+	}
+
+	return nil
+}
+
 // Function to save the record to the database
-func saveEvidenceRecordToDB(db *sql.DB, record structs.EvidenceMapRecord, table string) error {
+func saveMappingRecordToMemDB(memDB *sql.DB, record structs.EvidenceMapRecord, table string) error {
 
 	query := fmt.Sprintf("INSERT INTO CEMapping_%s "+
-		"(EvidenceID, Framework, FrameworkID, Requirement, Description, Guidance, RequirementType, \"Delete\" "+
-		") VALUES (?, ?, ?, ?, ?, ?, ?, ?)", table)
+		"(EvidenceID, Framework, FrameworkID, Requirement, Description, Guidance, RequirementType"+
+		") VALUES (?, ?, ?, ?, ?, ?, ?)", table)
 
-	_, err := db.Exec(query,
+	_, err := memDB.Exec(query,
 		record.EvidenceID, record.Framework, record.FrameworkID,
 		record.Requirement, record.Description, record.Guidance,
-		record.RequirementType, record.Delete)
+		record.RequirementType)
 	return err
 }
 

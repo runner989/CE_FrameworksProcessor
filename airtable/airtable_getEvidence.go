@@ -86,7 +86,6 @@ func ReadAPIEvidenceTable(ctx context.Context, db *sql.DB, memDB *sql.DB, apiKey
 	}
 
 	reqURL := fmt.Sprintf("%s?view=%s&Rand=%s", baseURL, evidenceViewName, GenerateRandomString())
-	//log.Printf("Fetching Evidence Table from %s", reqURL)
 
 	done := false
 
@@ -114,8 +113,6 @@ func ReadAPIEvidenceTable(ctx context.Context, db *sql.DB, memDB *sql.DB, apiKey
 			return err
 		}
 
-		//log.Printf("response: %s", response)
-		// strResponses = strResponses + response
 		var airtableResp structs.AirtableResponse
 		err = json.Unmarshal([]byte(response), &airtableResp)
 		if err != nil {
@@ -172,7 +169,7 @@ func ReadAPIEvidenceTable(ctx context.Context, db *sql.DB, memDB *sql.DB, apiKey
 			runtime.EventsEmit(ctx, "progress", message)
 
 			// Insert CE Framework mapping
-			err = insertMappingRecord(db, memDB, int(evidenceID), "CE Framework", strings.Trim(evidenceRecord.Requirement.String, " "))
+			err = insertMappingRecord(memDB, int(evidenceID), "CE Framework", strings.Trim(evidenceRecord.Requirement.String, " "))
 			if err != nil {
 				log.Printf("skipping CE Framework mapping due to error: %v", err)
 				runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping CE Framework mapping Evidence ID: %d due to error: %v", int(evidenceID), err))
@@ -194,7 +191,7 @@ func ReadAPIEvidenceTable(ctx context.Context, db *sql.DB, memDB *sql.DB, apiKey
 				// split value and iterate through each with insertMappingRecord:
 				values := strings.Split(fmt.Sprintf("%v", value), ", ")
 				for i := 0; i < len(values); i++ {
-					err = insertMappingRecord(db, memDB, int(evidenceID), key, fmt.Sprintf("%v", values[i]))
+					err = insertMappingRecord(memDB, int(evidenceID), key, fmt.Sprintf("%v", values[i]))
 					if err != nil {
 						log.Printf("skipping dynamic field %s for EvidenceID %d due to error: %v", key, int(evidenceID), err)
 						runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping dynamic field %s for EvidenceID %d due to error: %v", key, int(evidenceID), err))
@@ -229,7 +226,7 @@ func insertEvidenceRecord(db *sql.DB, er structs.EvidenceRecord) error { //evide
 	return nil
 }
 
-func insertMappingRecord(db *sql.DB, memDB *sql.DB, evidenceID int, framework, requirement string) error {
+func insertMappingRecord(memDB *sql.DB, evidenceID int, framework, requirement string) error {
 	_, err := memDB.Exec("INSERT INTO Mapping (EvidenceID, Framework, Requirement) VALUES (?, ?, ?)",
 		evidenceID, framework, requirement)
 	if err != nil {

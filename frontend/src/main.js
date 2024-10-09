@@ -19,9 +19,10 @@ import {
     GetAvailableAirtableBases,
     UpdateAirtableBasesTable,
     UpdateAllFrameworks,
+    GetMappingCounts,
     GetAllFrameworks,
     ExportAFramework,
     ExportAllFrameworks,
     ExportEvidenceMapReport,
-    GetDeletionsList
+    GetDeletionsList,
 } from '../wailsjs/go/main/App'

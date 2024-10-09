@@ -63,6 +63,11 @@ type EvidenceMapRecord struct {
 	Delete          sql.NullString
 }
 
+type FrameworkMappedCount struct {
+	Framework string
+	Count     int
+}
+
 type FrameworkTable struct {
 	TableName string `json:"tableName"`
 	TableID   string `json:"tableID"`

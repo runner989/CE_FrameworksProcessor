@@ -204,7 +204,7 @@ func CheckForMissing(db *sql.DB, table string) ([]int, error) {
 		return nil, fmt.Errorf("database connection is nil")
 	}
 	query := fmt.Sprintf("SELECT DISTINCT [CEMapping_%s].EvidenceID FROM [CEMapping_%s] LEFT JOIN Evidence ON [CEMapping_%s].EvidenceID = Evidence.EvidenceID WHERE (((Evidence.EvidenceID) Is Null));", table, table, table)
-	//log.Println(query)
+
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed checking for missing evidence: %v", err)
@@ -281,7 +281,6 @@ func GetDeletions(db *sql.DB, table string) ([]structs.EvidenceMapRecord, error)
 		WHERE ((Mapping_%s_FWID.EvidenceID Is Null));
 		`, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable, designatedTable)
 
-	//log.Println(delQuery)
 	delRows, err := db.Query(delQuery)
 	if err != nil {
 		return nil, fmt.Errorf("error getting deletions list: %v", err)
@@ -364,4 +363,35 @@ func getEvidenceMapping(db *sql.DB, table string) ([]structs.EvidenceMapRecord, 
 		mappingList = append(mappingList, mapping)
 	}
 	return mappingList, nil
+}
+
+func GetEvidenceMappingCounts(db *sql.DB) ([]structs.FrameworkMappedCount, error) {
+	qry := `
+		WITH Unique_EvID AS (
+		SELECT DISTINCT Mapping.Framework, Mapping.EvidenceID
+		FROM Mapping
+		GROUP BY Mapping.Framework, Mapping.EvidenceID
+		)
+		SELECT Unique_EvID.Framework, Count(Unique_EvID.EvidenceID) AS CountOfEvidenceID
+		FROM Unique_EvID
+		GROUP BY Unique_EvID.Framework;
+		`
+
+	rows, err := db.Query(qry)
+	if err != nil {
+		return nil, fmt.Errorf("error querying CE Framework Mapping: %v", err)
+	}
+	defer rows.Close()
+
+	var results []structs.FrameworkMappedCount
+
+	for rows.Next() {
+		var count structs.FrameworkMappedCount
+		err := rows.Scan(&count.Framework, &count.Count)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+		results = append(results, count)
+	}
+	return results, nil
 }

@@ -478,7 +478,7 @@ func (a *App) ProcessEvidenceStagingFile(filePath string) error {
 	}
 	defer file.Close()
 
-	err = database.ReadExcelAndSaveToDB(a.ctx, a.db, file, filePath, "Staging")
+	err = database.ReadExcelAndSaveToDB(a.ctx, a.memDB, a.db, file, filePath, "Staging")
 	if err != nil {
 		return fmt.Errorf("error processing evidence staging file: %v", err)
 	}
@@ -487,7 +487,6 @@ func (a *App) ProcessEvidenceStagingFile(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("error checking for missing evidence IDs in staging: %v", err)
 	}
-	//log.Println("missing ids:", ids)
 	if len(ids) > 0 {
 		for id := range ids {
 			err = database.AddPlaceholders(a.db, id)
@@ -507,7 +506,7 @@ func (a *App) ProcessEvidenceProdFile(filePath string) error {
 	}
 	defer file.Close()
 
-	err = database.ReadExcelAndSaveToDB(a.ctx, a.db, file, filePath, "Prod")
+	err = database.ReadExcelAndSaveToDB(a.ctx, a.memDB, a.db, file, filePath, "Prod")
 	if err != nil {
 		return fmt.Errorf("error processing evidence prod file: %v", err)
 	}
@@ -648,7 +647,7 @@ func (a *App) GetDeletionsList(table string) ([]map[string]interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error fetching deletions: %v", err)
 	}
-	//log.Println(deletions)
+
 	var deletedList []map[string]interface{}
 	for _, deletion := range deletions {
 		deleted := map[string]interface{}{
@@ -663,7 +662,7 @@ func (a *App) GetDeletionsList(table string) ([]map[string]interface{}, error) {
 		}
 		deletedList = append(deletedList, deleted)
 	}
-	//log.Println(deletedList)
+
 	return deletedList, nil
 }
 
@@ -679,6 +678,14 @@ func SafeInt(ns sql.NullInt64) int {
 		return int(ns.Int64)
 	}
 	return 0
+}
+
+func (a *App) GetMappingCounts() ([]structs.FrameworkMappedCount, error) {
+	records, err := database.GetEvidenceMappingCounts(a.db)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching evidence mapping counts: %v", err)
+	}
+	return records, nil
 }
 
 //func (a *App) UpdateFrameworkName(data map[string]string) error {

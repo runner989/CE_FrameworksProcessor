@@ -439,10 +439,7 @@ func CreateMemMappingTable(db *sql.DB) error {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	//_, err = statement.Exec()
-	//if err != nil {
-	//	return fmt.Errorf("error creating Mapping table: %v", err)
-	//}
+
 	log.Println("Mapping table created")
 	return err
 }
