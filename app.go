@@ -310,7 +310,7 @@ func (a *App) GetFrameworkRecords(data map[string]interface{}) error {
 		TableID:    sql.NullString{String: data["tableID"].(string), Valid: true},
 		TableView:  sql.NullString{String: tableView, Valid: true},
 	}
-	err := airtable.GetFrameworkData(a.db, a.apiKey, lookupRecord)
+	err := airtable.GetFrameworkData(a.db, a.memDB, a.apiKey, lookupRecord)
 	if err != nil {
 		return fmt.Errorf("error fetching framework data: %v", err)
 	}
@@ -595,12 +595,16 @@ func (a *App) UpdateAllFrameworks() (string, error) {
 
 	for _, framework := range frameworks {
 		runtime.EventsEmit(a.ctx, "progress", fmt.Sprintf("Updating framework: %v", framework.CeName.String))
-		err := airtable.GetFrameworkData(a.db, a.apiKey, framework)
+		err := airtable.GetFrameworkData(a.db, a.memDB, a.apiKey, framework)
 		if err != nil {
 			return "", fmt.Errorf("error getting framework from airtable: %v", err)
 		}
 	}
 
+	err = database.MoveFrameworkMemDBToFile(a.db, a.memDB)
+	if err != nil {
+		return "", fmt.Errorf("error backing up framework memdb: %v", err)
+	}
 	return "All frameworks updated successfully!", nil
 }
 

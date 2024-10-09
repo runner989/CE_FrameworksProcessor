@@ -283,6 +283,70 @@ func ReadExcelAndSaveToDB(ctx context.Context, memDB, db *sql.DB, file io.Reader
 	return nil
 }
 
+func MoveFrameworkMemDBToFile(db, memDB *sql.DB) error {
+	if db == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+	if memDB == nil {
+		return fmt.Errorf("memory database connection is nil")
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	rows, err := memDB.Query("SELECT SORTID, FRAMEWORK, IDENTIFIER, PARENTIDENTIFIER, DISPLAYNAME, DESCRIPTION, GUIDANCE, TESTTYPE, TAGS, POLICYANDPROCEDUREAIPROMPTTEMPLATEID, CONTROLNARRATIVEAIPROMPTTEMPLATEID FROM Framework")
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error reading Framework: %v", err)
+	}
+	defer rows.Close()
+
+	insertQuery := `INSERT INTO Framework (sortID, Framework, Identifier, ParentIdentifier, DisplayName, Description, Guidance, TestType, Tags, PolicyAndProcedureAIPromptTemplateId, ControlNarrativeAIPromptTemplateId) 
+    	VALUES (?,?,?,?,?,?,?,?,?,?,?)
+    `
+	stmt, err := tx.Prepare(insertQuery)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to prepare insert statement for Mapping: %v", err)
+	}
+	defer stmt.Close()
+
+	for rows.Next() {
+		var sortID sql.NullString
+		var frameworkName sql.NullString
+		var identifier sql.NullString
+		var parentID sql.NullString
+		var displayName sql.NullString
+		var description sql.NullString
+		var guidance sql.NullString
+		var tags sql.NullString
+		var testType sql.NullString
+		var promptID sql.NullInt32
+		var controlNarrative sql.NullInt32
+
+		err = rows.Scan(&sortID, &frameworkName, &identifier, &parentID, &displayName, &description, &guidance, &tags, &controlNarrative, &testType, &promptID, &controlNarrative)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error scanning row: %v", err)
+		}
+		_, err = stmt.Exec(sortID, frameworkName, identifier, parentID, displayName, description, guidance, testType, tags, promptID, controlNarrative)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to insert row into file-based Framework: %v", err)
+		}
+	}
+
+	// Commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %v", err)
+	}
+
+	return nil
+}
+
 func saveMappingRecordsToDB(memDB, db *sql.DB, table string) error {
 	if db == nil {
 		return fmt.Errorf("database connection is nil")

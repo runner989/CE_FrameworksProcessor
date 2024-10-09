@@ -67,7 +67,7 @@ func GetFrameworksLookup(apiKey string) ([]structs.Framework, error) {
 	return allRecords, nil
 }
 
-func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) error {
+func GetFrameworkData(db, memDB *sql.DB, apiKey string, lr structs.FrameworkLookup) error {
 	if db == nil {
 		return fmt.Errorf("db is nil")
 	}
@@ -81,6 +81,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 	done := false
 	delQry := fmt.Sprintf("DELETE FROM Framework WHERE Framework='%s';", lr.MappedName.String)
 	_, err := db.Exec(delQry)
+	_, err = memDB.Exec(delQry)
 	if err != nil {
 		log.Printf("error deleting from Framework: %v", err)
 		return fmt.Errorf("error deleting from Framework: %v", err)
@@ -130,6 +131,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 				parentID = ""
 			default:
 				log.Printf("unknown type for ParentIdentifier: %T", v)
+				parentID = ""
 			}
 			//parentID, _ := record.Fields["ParentIdentifier"].(string)
 			var displayName string
@@ -144,6 +146,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 				displayName = ""
 			default:
 				log.Printf("unknown type for DisplayName: %T", v)
+				displayName = ""
 			}
 			var description string
 			switch v := record.Fields["Description"].(type) {
@@ -157,6 +160,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 				description = ""
 			default:
 				log.Printf("unknown type for Description: %T", v)
+				description = ""
 			}
 			//guidance, _ := record.Fields["Guidance"].(string)
 			var guidance string
@@ -171,6 +175,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 				guidance = ""
 			default:
 				log.Printf("unknown type for Guidance: %T", v)
+				guidance = ""
 			}
 			tags, _ := record.Fields["Tags"].(string)
 			//promptID, _ := record.Fields["Prompt ID"].(int)
@@ -211,6 +216,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 				testType = ""
 			default:
 				log.Printf("unknown type for TestType: %T", v)
+				testType = ""
 			}
 
 			frameworkRecord := structs.FrameworkRecord{
@@ -228,7 +234,7 @@ func GetFrameworkData(db *sql.DB, apiKey string, lr structs.FrameworkLookup) err
 			}
 
 			// Insert records
-			err = database.InsertFrameworkRecord(db, frameworkRecord)
+			err = database.InsertFrameworkRecord(memDB, frameworkRecord)
 			if err != nil {
 				log.Printf("skipping Framework %s Identifier %s due to error: %v", identifier, frameworkName, err)
 				//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping EvidenceID %d due to error: %v", int(evidenceID), err))
