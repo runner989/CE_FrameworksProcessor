@@ -309,7 +309,8 @@ func MoveFrameworkMemDBToFile(db, memDB *sql.DB) error {
 	stmt, err := tx.Prepare(insertQuery)
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("failed to prepare insert statement for Mapping: %v", err)
+		log.Printf("failed to prepare insert statement for Framework: %v", err)
+		return fmt.Errorf("failed to prepare insert statement for Framework: %v", err)
 	}
 	defer stmt.Close()
 
@@ -326,14 +327,16 @@ func MoveFrameworkMemDBToFile(db, memDB *sql.DB) error {
 		var promptID sql.NullInt32
 		var controlNarrative sql.NullInt32
 
-		err = rows.Scan(&sortID, &frameworkName, &identifier, &parentID, &displayName, &description, &guidance, &tags, &controlNarrative, &testType, &promptID, &controlNarrative)
+		err = rows.Scan(&sortID, &frameworkName, &identifier, &parentID, &displayName, &description, &guidance, &tags, &testType, &promptID, &controlNarrative)
 		if err != nil {
 			tx.Rollback()
+			log.Printf("error scanning row: %v", err)
 			return fmt.Errorf("error scanning row: %v", err)
 		}
 		_, err = stmt.Exec(sortID, frameworkName, identifier, parentID, displayName, description, guidance, testType, tags, promptID, controlNarrative)
 		if err != nil {
 			tx.Rollback()
+			log.Printf("error executing insert statement for Framework: %v", err)
 			return fmt.Errorf("failed to insert row into file-based Framework: %v", err)
 		}
 	}
@@ -341,6 +344,7 @@ func MoveFrameworkMemDBToFile(db, memDB *sql.DB) error {
 	// Commit the transaction
 	err = tx.Commit()
 	if err != nil {
+		log.Printf("failed to commit transaction: %v", err)
 		return fmt.Errorf("failed to commit transaction: %v", err)
 	}
 
