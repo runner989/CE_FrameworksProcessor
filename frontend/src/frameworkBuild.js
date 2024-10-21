@@ -28,7 +28,7 @@ function displayRecords(records) {
 
 
     var content = '<h2>Frameworks Build List</h2>';
-    content += '<div><button id="updateFrameworkLookupTableButton">Update Framework Lookup Table</button></div>';
+    content += '<div><button class="lcars-button" id="updateFrameworkLookupTableButton">Update Framework Lookup Table</button></div>';
     content += '<div id="selectedRecordLabel"></div>';
     content += '<div id="tableContainer"><table><thead><tr>';
 

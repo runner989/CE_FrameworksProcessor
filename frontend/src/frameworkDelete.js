@@ -22,7 +22,7 @@ function displayFrameworkTable(records) {
             <td>${record.FrameworkId_UAT}</td>
             <td>${record.FrameworkId_Staging}</td>
             <td>${record.FrameworkId_Prod}</td>
-            <td><button class="delete-button" data-index="${index}">Delete</button></td>
+            <td><button class="lcars-button delete-button" data-index="${index}">Delete</button></td>
         </tr>`;
     });
 

@@ -331,7 +331,7 @@ function displaySelectedFrameworkFromBuildListSelection(selectedFramework) {
         <br><strong>UAT Stage:</strong> ${uatStage}
         <br><strong>Staging Number:</strong> ${stageNumber}
         <br><strong>Production Framework Number:</strong> ${prodNumber}
-        <br><button id="selectTableViewButton">Select Framework Table and View</button>
+        <br><button class="lcars-button" id="selectTableViewButton">Select Framework Table and View</button>
     `;
 
     window.selectedFrameworkDetails = {
@@ -502,7 +502,7 @@ function updateSelectFrameworkModalWithTableView() {
     <br><strong>Table Name:</strong> ${window.selectedFrameworkTable}
     <br><strong>View Name:</strong> ${window.selectedFrameworkView}
     <span style="display: none;">${window.selectedFrameworkTableID}</span>
-    <br><button id="okButton">OK</button>
+    <br><button class="lcars-button" id="okButton">OK</button>
     `;
 
     let existingInfo = detailsDiv.querySelector('.table-view-info');

@@ -50,9 +50,9 @@ func main() {
 	err = wails.Run(&options.App{
 		Title:            "Compliance Essentials Frameworks Processor",
 		Width:            1020,
-		Height:           768,
+		Height:           875,
 		Fullscreen:       false,
-		DisableResize:    false,
+		DisableResize:    true,
 		WindowStartState: options.Normal,
 		AssetServer: &assetserver.Options{
 			Assets: assets,

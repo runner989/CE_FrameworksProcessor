@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>CE Frameworks Processor</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>-->
     <link rel="stylesheet" href="src/style.css" />
 </head>
 <body>
@@ -21,67 +21,46 @@
 <script type="module" src="./src/mappingExports.js"></script>
 <script type="module" src="./src/mappingCounts.js"></script>
     <div id="app">
-        <div class="logo-title-container">
+        <div class="lcars-header">
             <img alt="CE logo" class="logo" src="./src/assets/images/CFLogo.png">
-            <h1>Compliance Essentials Frameworks Processor</h1>
+            <h1 class="lcars-title">Compliance Essentials Frameworks Processor</h1>
         </div>
-        <div id="homePage" style="display: block;">
-            <div class="row">
-                <strong>Evidence List/Mapping</strong>
-            </div>
-            <div class="row">
-                <div class="button-container">
-                    <button id="updateEvidenceButton">Update Evidence List from Airtable</button>
-                </div>    
-                <div class="button-container">
-                    <button id="processEvidenceMappingsButton">Process Evidence Mappings</button>
-                </div>
+        <div class="lcars-content">
+            <div id="homePage" style="display: block;">
+                <div class="lcars-panel">
+                    <div class="lcars-text">Evidence List/Mapping</div>
+                    <div class="button-container">
+                        <button class="lcars-button" id="updateEvidenceButton">Update Evidence List from Airtable</button>
+                        <button class="lcars-button" id="processEvidenceMappingsButton">Process Evidence Mappings</button>
+                    </div>
             </div>
 
-            <div class="row">
-                <strong>Framework Build List</strong>
-            </div>
-            <div class="row">
+            <div class="lcars-panel">
+                <div class="lcars-text">Framework Build List</div>
                 <div class="button-container">
-                    <button id="getFrameworkBuildListButton">Import Frameworks Build List</button>
+                    <button class="lcars-button" id="getFrameworkBuildListButton">Import Frameworks Build List</button>
+                    <button class="lcars-button" id="editFrameworkLookupButton">Edit Framework Lookup</button>
                 </div>
                 <div class="button-container">
-                    <button id="editFrameworkLookupButton">Edit Framework Lookup</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="button-container">
-                    <button id="getMissingFrameworksButton">Missing from Framework Lookup Table</button>
+                    <button class="lcars-button" id="getMissingFrameworksButton">Missing from Framework Lookup Table</button>
                 </div>
             </div>
-            <div class="row">
-                <strong>Frameworks</strong>
-            </div>
-            <div class="row">
+            <div class="lcars-panel">
+                <div class="lcars-text">Frameworks</div>
                 <div class="button-container">
-                    <button id="addFrameworkButton">Add/Update Framework</button>
+                    <button class="lcars-button" id="addFrameworkButton">Add/Update Framework</button>
+                    <button class="lcars-button" id="updateAllFrameworksButton">Update All Frameworks</button>
                 </div>
                 <div class="button-container">
-                    <button id="updateAllFrameworksButton">Update All Frameworks</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="button-container">
-                    <button id="exportFrameworksButton">Export Framework(s)</button>
-                </div>
-                <div class="button-container">
-                    <button id="deleteFrameworkButton">Remove/Delete Framework</button>
-                </div>
-                <div class="button-container">
-                    <button id="mappingCountsButton">Show EvID Counts Per Framework</button>
+                    <button class="lcars-button" id="exportFrameworksButton">Export Framework(s)</button>
+                    <button class="lcars-button" id="deleteFrameworkButton">Remove/Delete Framework</button>
+                    <button class="lcars-button" id="mappingCountsButton">Show EvID Counts Per Framework</button>
                 </div>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; grid-gap:10px;">
-                <div></div><div></div>
-                <div class="button-container">
-                    <button id="quitApp">Quit</button>
-                </div>
-                <div></div>
+<!--            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; grid-gap:10px;">-->
+<!--                <div></div><div></div>-->
+            <div class="quit-button-container">
+                <button class="lcars-button" id="quitApp">Quit</button>
             </div>
         </div>
 
@@ -91,28 +70,28 @@
                 <div class="evidence-container">
                     <div class="column">
                         <h2>Staging</h2>
-                        <div class="row">
+                        <div class="lcars-panel">
 <!--                            <input type="file" id="stagingFileInput" accept=".xlsx" style="display: none;" />-->
-                            <button id="importStagingButton">Import Evidence Map from CE Staging</button>
-                            <button id="exportStagingEvidenceMapButton">Create Staging Evidence Map Report</button>
-                            <button id="exportUATEvidenceMapReport">Create CE UAT Evidence Map Report</button>
-                            <button id="reviewStagingDeleted">Review Deletions List</button>
+                            <button class="lcars-button" id="importStagingButton">Import Evidence Map from CE Staging</button>
+                            <button class="lcars-button" id="exportStagingEvidenceMapButton">Create Staging Evidence Map Report</button>
+                            <button class="lcars-button" id="exportUATEvidenceMapReport">Create CE UAT Evidence Map Report</button>
+                            <button class="lcars-button" id="reviewStagingDeleted">Review Deletions List</button>
                         </div>
                     </div>
 
                     <div class="column">
                         <h2>Production</h2>
-                        <div class="row">
+                        <div class="lcars-panel">
 <!--                            <input type="file" id="prodFileInput" accept=".xlsx" style="display: none;" />-->
-                            <button id="importProdButton">Import Evidence Map from CE Production</button>
-                            <button id="exportProdEvidenceMapButton">Create Production Evidence Map Report</button>
-                            <button id="reviewProdDeleted">Review Deletions List</button>
+                            <button class="lcars-button" id="importProdButton">Import Evidence Map from CE Production</button>
+                            <button class="lcars-button" id="exportProdEvidenceMapButton">Create Production Evidence Map Report</button>
+                            <button class="lcars-button" id="reviewProdDeleted">Review Deletions List</button>
                         </div>
                     </div>
                 </div>
                 <hr>
                 <div class="exit-button-container">
-                    <button id="exitButton">Back to Main Page</button>
+                    <button class="lcars-button" id="exitButton">Back to Main Page</button>
                 </div>
             </div>
         </div>
@@ -126,22 +105,22 @@
                     </select>
                 </div>
                 <div class="row">
-                    <button id="exportFrameworkButton">Export A Framework</button>
+                    <button class="lcars-button" id="exportFrameworkButton">Export A Framework</button>
                 </div>
                 <div class="row">
-                    <button id="exportAllButton">Export All Frameworks</button>
+                    <button class="lcars-button" id="exportAllButton">Export All Frameworks</button>
                 </div>
             </div>
             <hr>
             <div class="exit-button-container">
-                <button id="exitFrameworksButton">Back to Main Page</button>
+                <button class="lcars-button" id="exitFrameworksButton">Back to Main Page</button>
             </div>
         </div>
 
         <div id="editFrameworkLookupPage" style="display: none;">
             <h1>Edit Frameworks Lookup Table</h1>
             <!--  <div class="button-container"><button id="getFrameworkLookupButton">Open Framework Lookup Table</button></div>-->
-            <button id="editBackToHome">Back to Main Page</button>
+            <button class="lcars-button" id="editBackToHome">Back to Main Page</button>
             <div id="editFrameworkTableContainer">
                 <!-- This is where the table will be dynamically rendered -->
             </div>
@@ -210,8 +189,8 @@
                     </div>
 
                     <div class="buttons" style="grid-column: span 2;">
-                        <button type="button" id="saveButton">Save Changes</button>
-                        <button type="button" id="cancelButton">Cancel</button>
+                        <button class="lcars-button" type="button" id="saveButton">Save Changes</button>
+                        <button class="lcars-button" type="button" id="cancelButton">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -221,15 +200,15 @@
             <h1>Delete Framework</h1>
             <p><strong>NOTE:</strong> Deleting a framework will remove it from all tables!</p>
             <p><strong>Ensure no other frameworks have the same Mapped Name before deleting, or you will have to run Add/Update Framework again.</strong></p>
-            <button id="backToHome">Back to Main Page</button>
+            <button class="lcars-button" id="backToHome">Back to Main Page</button>
             <div id="deleteFrameworkTableContainer">
                 <!-- This is where the table will be dynamically rendered -->
             </div>
         </div>
         <div id="settingsPage" style="display: none;">
             <h1>Settings</h1>
-            <button id="airtableBasesButton">Available Airtable Bases</button>
-            <button id="settingsToHome">Back to Main Page</button>
+            <button class="lcars-button" id="airtableBasesButton">Available Airtable Bases</button>
+            <button class="lcars-button" id="settingsToHome">Back to Main Page</button>
         </div>
         <div id="modals">
             <div id="loadingNotification" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 10px; background-color: #000; color: #fff; border-radius: 5px; z-index: 1000;">
@@ -271,6 +250,7 @@
             <i id="settingsIcon" class="fas fa-cog" style="display: none"></i>
         </div>
     </div>
+    <div class="lcars-footer"></div>
     <script>
         document.getElementById('processEvidenceMappingsButton').addEventListener('click', function() {
             document.getElementById('homePage').style.display = 'none';

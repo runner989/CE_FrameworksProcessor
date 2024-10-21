@@ -21,7 +21,7 @@ function displayBasesRecords(records) {
     var recordsContainer = document.getElementById('recordsContainer');
 
     var content = '<h2>Available Airtable Bases for this API Key</h2>';
-    content += '<div><button id="updateAirtableBaseTableButton">Update Airtable Base Table</button></div>';
+    content += '<div><button class="lcars-button" id="updateAirtableBaseTableButton">Update Airtable Base Table</button></div>';
     content += '<div id="selectedRecordLabel"></div>';
     content += '<div id="tableContainer"><table><thead><tr>';
 
