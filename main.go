@@ -49,8 +49,8 @@ func main() {
 	// Create application with options
 	err = wails.Run(&options.App{
 		Title:            "Compliance Essentials Frameworks Processor",
-		Width:            1020,
-		Height:           768,
+		Width:            1040,
+		Height:           780,
 		Fullscreen:       false,
 		DisableResize:    false,
 		WindowStartState: options.Normal,

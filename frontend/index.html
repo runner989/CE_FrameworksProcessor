@@ -4,7 +4,9 @@
     <meta charset="UTF-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>CE Frameworks Processor</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">-->
+<!--    <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Oxanium:wght@400;600&display=swap" rel="stylesheet">-->
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="src/style.css" />
 </head>
 <body>
@@ -20,331 +22,333 @@
 <script type="module" src="./src/frameworkExport.js"></script>
 <script type="module" src="./src/mappingExports.js"></script>
 <script type="module" src="./src/mappingCounts.js"></script>
-    <div id="app">
-        <div class="logo-title-container">
-            <img alt="CE logo" class="logo" src="./src/assets/images/CFLogo.png">
-            <h1>Compliance Essentials Frameworks Processor</h1>
+<!--<div id="background">-->
+<div id="app">
+    <div class="logo-title-container">
+        <img alt="CE logo" class="logo" src="./src/assets/images/CFLogo.png">
+        <h1>Compliance Essentials Frameworks Processor</h1>
+    </div>
+    <div id="homePage" style="display: block;">
+        <div class="row">
+            <strong>Evidence List/Mapping</strong>
         </div>
-        <div id="homePage" style="display: block;">
-            <div class="row">
-                <strong>Evidence List/Mapping</strong>
+        <div class="row">
+            <div class="button-container">
+                <button id="updateEvidenceButton">Update Evidence List from Airtable</button>
             </div>
-            <div class="row">
-                <div class="button-container">
-                    <button id="updateEvidenceButton">Update Evidence List from Airtable</button>
-                </div>    
-                <div class="button-container">
-                    <button id="processEvidenceMappingsButton">Process Evidence Mappings</button>
-                </div>
-            </div>
-
-            <div class="row">
-                <strong>Framework Build List</strong>
-            </div>
-            <div class="row">
-                <div class="button-container">
-                    <button id="getFrameworkBuildListButton">Import Frameworks Build List</button>
-                </div>
-                <div class="button-container">
-                    <button id="editFrameworkLookupButton">Edit Framework Lookup</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="button-container">
-                    <button id="getMissingFrameworksButton">Missing from Framework Lookup Table</button>
-                </div>
-            </div>
-            <div class="row">
-                <strong>Frameworks</strong>
-            </div>
-            <div class="row">
-                <div class="button-container">
-                    <button id="addFrameworkButton">Add/Update Framework</button>
-                </div>
-                <div class="button-container">
-                    <button id="updateAllFrameworksButton">Update All Frameworks</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="button-container">
-                    <button id="exportFrameworksButton">Export Framework(s)</button>
-                </div>
-                <div class="button-container">
-                    <button id="deleteFrameworkButton">Remove/Delete Framework</button>
-                </div>
-                <div class="button-container">
-                    <button id="mappingCountsButton">Show EvID Counts Per Framework</button>
-                </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; grid-gap:10px;">
-                <div></div><div></div>
-                <div class="button-container">
-                    <button id="quitApp">Quit</button>
-                </div>
-                <div></div>
+            <div class="button-container">
+                <button id="processEvidenceMappingsButton">Process Evidence Mappings</button>
             </div>
         </div>
 
-        <div id="processEvidencePage" style="display: none;">
-            <div class="appContainer">
-                <h2>Process Evidence Mappings</h2>
-                <div class="evidence-container">
-                    <div class="column">
-                        <h2>Staging</h2>
-                        <div class="row">
-<!--                            <input type="file" id="stagingFileInput" accept=".xlsx" style="display: none;" />-->
-                            <button id="importStagingButton">Import Evidence Map from CE Staging</button>
-                            <button id="exportStagingEvidenceMapButton">Create Staging Evidence Map Report</button>
-                            <button id="exportUATEvidenceMapReport">Create CE UAT Evidence Map Report</button>
-                            <button id="reviewStagingDeleted">Review Deletions List</button>
-                        </div>
-                    </div>
+        <div class="row">
+            <strong>Framework Build List</strong>
+        </div>
+        <div class="row">
+            <div class="button-container">
+                <button id="getFrameworkBuildListButton">Import Frameworks Build List</button>
+            </div>
+            <div class="button-container">
+                <button id="editFrameworkLookupButton">Edit Framework Lookup</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="button-container">
+                <button id="getMissingFrameworksButton">Missing from Framework Lookup Table</button>
+            </div>
+        </div>
+        <div class="row">
+            <strong>Frameworks</strong>
+        </div>
+        <div class="row">
+            <div class="button-container">
+                <button id="addFrameworkButton">Add/Update Framework</button>
+            </div>
+            <div class="button-container">
+                <button id="updateAllFrameworksButton">Update All Frameworks</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="button-container">
+                <button id="exportFrameworksButton">Export Framework(s)</button>
+            </div>
+            <div class="button-container">
+                <button id="deleteFrameworkButton">Remove/Delete Framework</button>
+            </div>
+            <div class="button-container">
+                <button id="mappingCountsButton">Show EvID Counts Per Framework</button>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; grid-gap:10px;">
+            <div></div><div></div>
+            <div class="button-container">
+                <button id="quitApp">Quit</button>
+            </div>
+            <div></div>
+        </div>
+    </div>
 
-                    <div class="column">
-                        <h2>Production</h2>
-                        <div class="row">
-<!--                            <input type="file" id="prodFileInput" accept=".xlsx" style="display: none;" />-->
-                            <button id="importProdButton">Import Evidence Map from CE Production</button>
-                            <button id="exportProdEvidenceMapButton">Create Production Evidence Map Report</button>
-                            <button id="reviewProdDeleted">Review Deletions List</button>
-                        </div>
+    <div id="processEvidencePage" style="display: none;">
+        <div class="appContainer">
+            <h2>Process Evidence Mappings</h2>
+            <div class="evidence-container">
+                <div class="column">
+                    <h2>Staging</h2>
+                    <div class="row">
+                        <!--                            <input type="file" id="stagingFileInput" accept=".xlsx" style="display: none;" />-->
+                        <button id="importStagingButton">Import Evidence Map from CE Staging</button>
+                        <button id="exportStagingEvidenceMapButton">Create Staging Evidence Map Report</button>
+                        <button id="exportUATEvidenceMapReport">Create CE UAT Evidence Map Report</button>
+                        <button id="reviewStagingDeleted">Review Deletions List</button>
                     </div>
                 </div>
-                <hr>
-                <div class="exit-button-container">
-                    <button id="exitButton">Back to Main Page</button>
-                </div>
-            </div>
-        </div>
 
-        <div id="exportFrameworksPage" style="display: none;">
-            <h2>Export Framework(s)</h2>
-            <div class="container">
-                <div class="row">
-                    <select id="frameworkSelect">
-                        <option value="" disabled selected>Select a Framework</option>
-                    </select>
-                </div>
-                <div class="row">
-                    <button id="exportFrameworkButton">Export A Framework</button>
-                </div>
-                <div class="row">
-                    <button id="exportAllButton">Export All Frameworks</button>
+                <div class="column">
+                    <h2>Production</h2>
+                    <div class="row">
+                        <!--                            <input type="file" id="prodFileInput" accept=".xlsx" style="display: none;" />-->
+                        <button id="importProdButton">Import Evidence Map from CE Production</button>
+                        <button id="exportProdEvidenceMapButton">Create Production Evidence Map Report</button>
+                        <button id="reviewProdDeleted">Review Deletions List</button>
+                    </div>
                 </div>
             </div>
             <hr>
             <div class="exit-button-container">
-                <button id="exitFrameworksButton">Back to Main Page</button>
+                <button id="exitButton">Back to Main Page</button>
             </div>
-        </div>
-
-        <div id="editFrameworkLookupPage" style="display: none;">
-            <h1>Edit Frameworks Lookup Table</h1>
-            <!--  <div class="button-container"><button id="getFrameworkLookupButton">Open Framework Lookup Table</button></div>-->
-            <button id="editBackToHome">Back to Main Page</button>
-            <div id="editFrameworkTableContainer">
-                <!-- This is where the table will be dynamically rendered -->
-            </div>
-
-            <div id="editFormContainer" style="display:none;">
-                <h2>Edit Record</h2>
-                <form id="editFrameworkForm" style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px;">
-                    <span id="rowID" style="display: none"></span>
-
-                    <!-- Left Column -->
-                    <div>
-                        <div class="row">
-                            <input type="text" id="airtableBase" name="airtableBase" />
-                            <label for="airtableBase">&lt;= Airtable Base</label>
-                        </div>
-                        <div class="row">
-                            <input type="text" id="airtableTableID" name="airtableTableID" />
-                            <label for="airtableTableID">&lt;= Airtable Table ID</label>
-                        </div>
-                        <div class="row">
-                            <input type="text" id="airtableFramework" name="airtableFramework" />
-                            <label for="airtableFramework">&lt;= Airtable Framework</label>
-                        </div>
-                        <div class="row">
-                            <input type="text" id="airtableView" name="airtableView" />
-                            <label for="airtableView">&lt;= Airtable View</label>
-                        </div>
-                        <div class="row">
-                            <input type="text" id="evidenceLibraryMappedName" name="evidenceLibraryMappedName" readonly />
-                            <label for="evidenceLibraryMappedName">&lt;= Evidence Library Mapped Name  *Read Only*</label>
-                        </div>
-                    </div>
-
-                    <!-- Right Column -->
-                    <div>
-                        <div class="row">
-<!--                            <input type="hidden" id="originalCeFramework" name="originalCeFramework" />-->
-                            <input type="text" id="ceFramework" name="ceFramework"/>
-                            <label for="ceFramework">&lt;= CE Framework Name</label>
-                        </div>
-                        <div class="row">
-                            <input type="number" id="frameworkId_UAT" name="frameworkId_UAT" />
-                            <label for="frameworkId_UAT">&lt;= Framework ID UAT</label>
-                        </div>
-                        <div class="row">
-                            <input type="number" id="frameworkId_Staging" name="frameworkId_Staging" />
-                            <label for="frameworkId_Staging">&lt;= Framework ID Staging</label>
-                        </div>
-                        <div class="row">
-                            <input type="number" id="frameworkId_Prod" name="frameworkId_Prod" />
-                            <label for="frameworkId_Prod">&lt;= Framework ID Prod</label>
-                        </div>
-                        <div class="row">
-                            <input type="number" id="version" name="version" />
-                            <label for="version">&lt;= Version</label>
-                        </div>
-                    </div>
-
-                    <!-- Full Width Fields -->
-                    <div style="grid-column: span 2;">
-                        <label for="description">Description:</label>
-                        <textarea id="description" name="description"></textarea>
-
-                        <label for="comments">Comments:</label>
-                        <textarea id="comments" name="comments"></textarea>
-                    </div>
-
-                    <div class="buttons" style="grid-column: span 2;">
-                        <button type="button" id="saveButton">Save Changes</button>
-                        <button type="button" id="cancelButton">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div id="deleteFrameworkPage" style="display: none;">
-            <h1>Delete Framework</h1>
-            <p><strong>NOTE:</strong> Deleting a framework will remove it from all tables!</p>
-            <p><strong>Ensure no other frameworks have the same Mapped Name before deleting, or you will have to run Add/Update Framework again.</strong></p>
-            <button id="backToHome">Back to Main Page</button>
-            <div id="deleteFrameworkTableContainer">
-                <!-- This is where the table will be dynamically rendered -->
-            </div>
-        </div>
-        <div id="settingsPage" style="display: none;">
-            <h1>Settings</h1>
-            <button id="airtableBasesButton">Available Airtable Bases</button>
-            <button id="settingsToHome">Back to Main Page</button>
-        </div>
-        <div id="modals">
-            <div id="loadingNotification" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 10px; background-color: #000; color: #fff; border-radius: 5px; z-index: 1000;">
-                Loading framework data, please wait...
-            </div>
-            <div id="recordsModal" class="modal">
-                <div class="modal-content">
-                    <span id="closeModal">&times;</span>
-                    <div id="recordsContainer"></div>
-                </div>
-            </div>
-            <div id="frameworkBuildModal" class="modal">
-                <div class="modal-content">
-                    <span id="closeFrameworkBuildModal">&times;</span>
-                    <div id="frameworkBuildContainer"></div>
-                </div>
-            </div>
-            <div id="frameworkTablesModal" class="modal">
-                <div class="modal-content">
-                    <span id="closeFrameworkTablesModal">&times;</span>
-                    <div id="frameworkTablesContainer"></div>
-                </div>
-            </div>
-            <!-- Update Framework Modal -->
-            <div id="updateFrameworkModal" class="modal">
-                <div class="modal-content">
-                    <span id="frameworkName"></span>
-                    <p>Working on updating the framework. Please wait...</p>
-                </div>
-            </div>
-            <div id="deletionsModal" class="modal">
-                <div class="modal-content">
-                    <span id="closeDeletionsModal">&times;</span>
-                    <span id="deletionsContainer"></span>
-                </div>
-            </div>
-        </div>
-        <div id="settingsIconContainer">
-            <i id="settingsIcon" class="fas fa-cog" style="display: none"></i>
         </div>
     </div>
+
+    <div id="exportFrameworksPage" style="display: none;">
+        <h2>Export Framework(s)</h2>
+        <div class="container">
+            <div class="row">
+                <select id="frameworkSelect">
+                    <option value="" disabled selected>Select a Framework</option>
+                </select>
+            </div>
+            <div class="row">
+                <button id="exportFrameworkButton">Export A Framework</button>
+            </div>
+            <div class="row">
+                <button id="exportAllButton">Export All Frameworks</button>
+            </div>
+        </div>
+        <hr>
+        <div class="exit-button-container">
+            <button id="exitFrameworksButton">Back to Main Page</button>
+        </div>
+    </div>
+
+    <div id="editFrameworkLookupPage" style="display: none;">
+        <h1>Edit Frameworks Lookup Table</h1>
+        <!--  <div class="button-container"><button id="getFrameworkLookupButton">Open Framework Lookup Table</button></div>-->
+        <button id="editBackToHome">Back to Main Page</button>
+        <div id="editFrameworkTableContainer">
+            <!-- This is where the table will be dynamically rendered -->
+        </div>
+
+        <div id="editFormContainer" style="display:none;">
+            <h2>Edit Record</h2>
+            <form id="editFrameworkForm" style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px;">
+                <span id="rowID" style="display: none"></span>
+
+                <!-- Left Column -->
+                <div>
+                    <div class="row">
+                        <input type="text" id="airtableBase" name="airtableBase" />
+                        <label for="airtableBase">&lt;= Airtable Base</label>
+                    </div>
+                    <div class="row">
+                        <input type="text" id="airtableTableID" name="airtableTableID" />
+                        <label for="airtableTableID">&lt;= Airtable Table ID</label>
+                    </div>
+                    <div class="row">
+                        <input type="text" id="airtableFramework" name="airtableFramework" />
+                        <label for="airtableFramework">&lt;= Airtable Framework</label>
+                    </div>
+                    <div class="row">
+                        <input type="text" id="airtableView" name="airtableView" />
+                        <label for="airtableView">&lt;= Airtable View</label>
+                    </div>
+                    <div class="row">
+                        <input type="text" id="evidenceLibraryMappedName" name="evidenceLibraryMappedName" readonly />
+                        <label for="evidenceLibraryMappedName">&lt;= Evidence Library Mapped Name  *Read Only*</label>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <div class="row">
+                        <!--                            <input type="hidden" id="originalCeFramework" name="originalCeFramework" />-->
+                        <input type="text" id="ceFramework" name="ceFramework"/>
+                        <label for="ceFramework">&lt;= CE Framework Name</label>
+                    </div>
+                    <div class="row">
+                        <input type="number" id="frameworkId_UAT" name="frameworkId_UAT" />
+                        <label for="frameworkId_UAT">&lt;= Framework ID UAT</label>
+                    </div>
+                    <div class="row">
+                        <input type="number" id="frameworkId_Staging" name="frameworkId_Staging" />
+                        <label for="frameworkId_Staging">&lt;= Framework ID Staging</label>
+                    </div>
+                    <div class="row">
+                        <input type="number" id="frameworkId_Prod" name="frameworkId_Prod" />
+                        <label for="frameworkId_Prod">&lt;= Framework ID Prod</label>
+                    </div>
+                    <div class="row">
+                        <input type="number" id="version" name="version" />
+                        <label for="version">&lt;= Version</label>
+                    </div>
+                </div>
+
+                <!-- Full Width Fields -->
+                <div style="grid-column: span 2;">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description"></textarea>
+
+                    <label for="comments">Comments:</label>
+                    <textarea id="comments" name="comments"></textarea>
+                </div>
+
+                <div class="buttons" style="grid-column: span 2;">
+                    <button type="button" id="saveButton">Save Changes</button>
+                    <button type="button" id="cancelButton">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteFrameworkPage" style="display: none;">
+        <h1>Delete Framework</h1>
+        <p><strong>NOTE:</strong> Deleting a framework will remove it from all tables!</p>
+        <p><strong>Ensure no other frameworks have the same Mapped Name before deleting, or you will have to run Add/Update Framework again.</strong></p>
+        <button id="backToHome">Back to Main Page</button>
+        <div id="deleteFrameworkTableContainer">
+            <!-- This is where the table will be dynamically rendered -->
+        </div>
+    </div>
+    <div id="settingsPage" style="display: none;">
+        <h1>Settings</h1>
+        <button id="airtableBasesButton">Available Airtable Bases</button>
+        <button id="settingsToHome">Back to Main Page</button>
+    </div>
+    <div id="modals">
+        <div id="loadingNotification" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 10px; background-color: #000; color: #fff; border-radius: 5px; z-index: 1000;">
+            Loading framework data, please wait...
+        </div>
+        <div id="recordsModal" class="modal">
+            <div class="modal-content">
+                <span id="closeModal">&times;</span>
+                <div id="recordsContainer"></div>
+            </div>
+        </div>
+        <div id="frameworkBuildModal" class="modal">
+            <div class="modal-content">
+                <span id="closeFrameworkBuildModal">&times;</span>
+                <div id="frameworkBuildContainer"></div>
+            </div>
+        </div>
+        <div id="frameworkTablesModal" class="modal">
+            <div class="modal-content">
+                <span id="closeFrameworkTablesModal">&times;</span>
+                <div id="frameworkTablesContainer"></div>
+            </div>
+        </div>
+        <!-- Update Framework Modal -->
+        <div id="updateFrameworkModal" class="modal">
+            <div class="modal-content">
+                <span id="frameworkName"></span>
+                <p>Working on updating the framework. Please wait...</p>
+            </div>
+        </div>
+        <div id="deletionsModal" class="modal">
+            <div class="modal-content">
+                <span id="closeDeletionsModal">&times;</span>
+                <span id="deletionsContainer"></span>
+            </div>
+        </div>
+    </div>
+    <div id="settingsIconContainer">
+        <i id="settingsIcon" class="fas fa-cog" style="display: none"></i>
+    </div>
+</div>
+
     <script>
-        document.getElementById('processEvidenceMappingsButton').addEventListener('click', function() {
-            document.getElementById('homePage').style.display = 'none';
-            document.getElementById('processEvidencePage').style.display = 'block';
-        });
+    document.getElementById('processEvidenceMappingsButton').addEventListener('click', function() {
+        document.getElementById('homePage').style.display = 'none';
+        document.getElementById('processEvidencePage').style.display = 'block';
+    });
 
-        document.getElementById('exportFrameworksButton').addEventListener('click', function() {
-            document.getElementById('homePage').style.display = 'none';
-            document.getElementById('exportFrameworksPage').style.display='block'
-            fetchFrameworks()
-        })
+    document.getElementById('exportFrameworksButton').addEventListener('click', function() {
+        document.getElementById('homePage').style.display = 'none';
+        document.getElementById('exportFrameworksPage').style.display='block'
+        fetchFrameworks()
+    })
 
-        document.getElementById('editFrameworkLookupButton').addEventListener('click', function() {
-            document.getElementById('homePage').style.display = 'none';
-            document.getElementById('editFrameworkLookupPage').style.display = 'block';
-            loadEditFrameworkLookupTable()
-        });
+    document.getElementById('editFrameworkLookupButton').addEventListener('click', function() {
+        document.getElementById('homePage').style.display = 'none';
+        document.getElementById('editFrameworkLookupPage').style.display = 'block';
+        loadEditFrameworkLookupTable()
+    });
 
-        document.getElementById('deleteFrameworkButton').addEventListener('click', function() {
-            document.getElementById('homePage').style.display = 'none';
-            document.getElementById('deleteFrameworkPage').style.display = 'block';
-            loadDeleteFrameworkLookupTable()
-        });
+    document.getElementById('deleteFrameworkButton').addEventListener('click', function() {
+        document.getElementById('homePage').style.display = 'none';
+        document.getElementById('deleteFrameworkPage').style.display = 'block';
+        loadDeleteFrameworkLookupTable()
+    });
 
-        document.getElementById('backToHome').addEventListener('click', function() {
-            document.getElementById('processEvidencePage').style.display = 'none';
-            document.getElementById('editFrameworkLookupPage').style.display = 'none';
-            document.getElementById('deleteFrameworkPage').style.display = 'none';
-            document.getElementById('homePage').style.display = 'block';
-        });
-        document.getElementById('editBackToHome').addEventListener('click', function() {
-            document.getElementById('processEvidencePage').style.display = 'none';
-            document.getElementById('editFrameworkLookupPage').style.display = 'none';
-            document.getElementById('deleteFrameworkPage').style.display = 'none';
-            document.getElementById('homePage').style.display = 'block';
-        });
-        document.getElementById('exitButton').addEventListener('click', function() {
-            document.getElementById('processEvidencePage').style.display = 'none';
-            document.getElementById('editFrameworkLookupPage').style.display = 'none';
-            document.getElementById('deleteFrameworkPage').style.display = 'none';
-            document.getElementById('homePage').style.display = 'block';
-        });
-        document.getElementById('settingsIcon').addEventListener('click', function() {
-            document.getElementById('settingsPage').style.display = 'block';
-            document.getElementById('processEvidencePage').style.display = 'none';
-            document.getElementById('editFrameworkLookupPage').style.display = 'none';
-            document.getElementById('deleteFrameworkPage').style.display = 'none';
-            document.getElementById('homePage').style.display = 'none';
-        });
-        document.getElementById('settingsToHome').addEventListener('click', function() {
-            document.getElementById('settingsPage').style.display = 'none';
-            document.getElementById('processEvidencePage').style.display = 'none';
-            document.getElementById('editFrameworkLookupPage').style.display = 'none';
-            document.getElementById('deleteFrameworkPage').style.display = 'none';
-            document.getElementById('homePage').style.display = 'block';
-        });
-        document.getElementById('exitFrameworksButton').addEventListener('click', function() {
-            document.getElementById('exportFrameworksPage').style.display = 'none';
-            document.getElementById('processEvidencePage').style.display = 'none';
-            document.getElementById('editFrameworkLookupPage').style.display = 'none';
-            document.getElementById('deleteFrameworkPage').style.display = 'none';
-            document.getElementById('homePage').style.display = 'block';
-        })
-        document.getElementById('quitApp').addEventListener('click', function() {
-            Quit(); // Assuming Quit() is implemented on the backend
-        });
-    </script>
-    <script type="module">
-        import { Quit } from './wailsjs/runtime'
-        document.getElementById('quitApp').addEventListener('click', function() {
-            Quit()
-        })
-    </script>
+    document.getElementById('backToHome').addEventListener('click', function() {
+        document.getElementById('processEvidencePage').style.display = 'none';
+        document.getElementById('editFrameworkLookupPage').style.display = 'none';
+        document.getElementById('deleteFrameworkPage').style.display = 'none';
+        document.getElementById('homePage').style.display = 'block';
+    });
+    document.getElementById('editBackToHome').addEventListener('click', function() {
+        document.getElementById('processEvidencePage').style.display = 'none';
+        document.getElementById('editFrameworkLookupPage').style.display = 'none';
+        document.getElementById('deleteFrameworkPage').style.display = 'none';
+        document.getElementById('homePage').style.display = 'block';
+    });
+    document.getElementById('exitButton').addEventListener('click', function() {
+        document.getElementById('processEvidencePage').style.display = 'none';
+        document.getElementById('editFrameworkLookupPage').style.display = 'none';
+        document.getElementById('deleteFrameworkPage').style.display = 'none';
+        document.getElementById('homePage').style.display = 'block';
+    });
+    document.getElementById('settingsIcon').addEventListener('click', function() {
+        document.getElementById('settingsPage').style.display = 'block';
+        document.getElementById('processEvidencePage').style.display = 'none';
+        document.getElementById('editFrameworkLookupPage').style.display = 'none';
+        document.getElementById('deleteFrameworkPage').style.display = 'none';
+        document.getElementById('homePage').style.display = 'none';
+    });
+    document.getElementById('settingsToHome').addEventListener('click', function() {
+        document.getElementById('settingsPage').style.display = 'none';
+        document.getElementById('processEvidencePage').style.display = 'none';
+        document.getElementById('editFrameworkLookupPage').style.display = 'none';
+        document.getElementById('deleteFrameworkPage').style.display = 'none';
+        document.getElementById('homePage').style.display = 'block';
+    });
+    document.getElementById('exitFrameworksButton').addEventListener('click', function() {
+        document.getElementById('exportFrameworksPage').style.display = 'none';
+        document.getElementById('processEvidencePage').style.display = 'none';
+        document.getElementById('editFrameworkLookupPage').style.display = 'none';
+        document.getElementById('deleteFrameworkPage').style.display = 'none';
+        document.getElementById('homePage').style.display = 'block';
+    })
+    document.getElementById('quitApp').addEventListener('click', function() {
+        Quit(); // Assuming Quit() is implemented on the backend
+    });
+</script>
+<script type="module">
+    import { Quit } from './wailsjs/runtime'
+    document.getElementById('quitApp').addEventListener('click', function() {
+        Quit()
+    })
+</script>
 
-    
+
 </body>
 </html>
