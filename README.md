@@ -1,5 +1,4 @@
-# cefp
-CE Frameworks Processor
+# CE Frameworks Processor (CEFP)
 
 ### This is a special use application I created to automate the workflow.
 
