@@ -19,7 +19,7 @@ set new_version=%major_version%.%new_minor_version%
 echo %new_version% > version.txt
 
 :: Build the Wails app with the versioned filename (ensure no spaces)
-set output_file=cefp_v%version%.exe
+set output_file=cefp_scifi_v%version%.exe
 wails build -o "%output_file%"
 
 echo Build complete: %output_file%

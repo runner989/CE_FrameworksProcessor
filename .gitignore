@@ -36,6 +36,7 @@ go.work.sum
 *.db
 *.db-journal
 *.bak
+*.old
 
 #app output files
 *.xlsx

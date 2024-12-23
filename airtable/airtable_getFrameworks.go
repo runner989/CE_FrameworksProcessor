@@ -234,7 +234,7 @@ func GetFrameworkData(db, memDB *sql.DB, apiKey string, lr structs.FrameworkLook
 			}
 
 			// Insert records
-			err = database.InsertFrameworkRecord(memDB, frameworkRecord)
+			err = database.InsertFrameworkRecord(db, frameworkRecord)
 			if err != nil {
 				log.Printf("skipping Framework %s Identifier %s due to error: %v", identifier, frameworkName, err)
 				//runtime.EventsEmit(ctx, "progress", fmt.Sprintf("Skipping EvidenceID %d due to error: %v", int(evidenceID), err))

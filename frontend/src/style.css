@@ -244,6 +244,41 @@ textarea:focus {
     font-size: 16px;
 }
 
+.table-name {
+    display: block;  /* or inline-block, up to you */
+    font-weight: bold;
+    margin: 10px 0;
+    /* Add borders, padding, or other styles if needed */
+}
+.table-name:hover {
+    background-color: #39ff14;
+    color: #0e0e0e;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.view-item {
+    display: block;
+    border: 1px solid #39ff14;
+    padding: 10px;
+    margin: 5px 0;
+    /* This replicates some of the table cell styling */
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Add hover effects, just like your table rows */
+.view-item:hover {
+    background-color: #39ff14;
+    color: #0e0e0e;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* If you want "zebra striping" like even rows in your table: */
+.table-name:nth-of-type(even) {
+    background-color: #045314;
+}
+
+
 /* Cool Scrolling Effects */
 ::-webkit-scrollbar {
     width: 10px;
