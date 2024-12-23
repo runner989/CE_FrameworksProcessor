@@ -189,12 +189,13 @@ func InsertFrameworkRecord(db *sql.DB, fr structs.FrameworkRecord) error {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) && errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
 			// Handle UNIQUE constraint violation (e.g. duplicate record)
+			fmt.Println("duplicate record.")
 			return fmt.Errorf("duplicate record: %s", fr.Identifier)
 		}
+		fmt.Println("error inserting Framework.")
 		return fmt.Errorf("error inserting Framework: %v", err)
 	}
 	return nil
-
 }
 
 func AddPlaceholders(db *sql.DB, id int) error {
